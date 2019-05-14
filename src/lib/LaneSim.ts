@@ -1,10 +1,11 @@
+import { RPMProfile } from "./RPMProfile";
 import { ProfileGenerator2 } from "./ProfileGenerator2";
 import { RPMSimulator } from "./RPMSimulator";
 import { CameraSimulator } from "./CameraSimulator";
 import { CannedImageSimulator } from "./CannedImageSimulator";
 import { AnimatedTruckSimulator } from "./AnimatedTruckSimulator";
 import { Settings, LaneSettings, RPMSettings, CameraSettings } from "./settings";
-import { Logger } from "./Logger";
+import { Logger, ELogLevel } from "./Logger";
 
 var NextLaneID = 1;
 
@@ -32,8 +33,8 @@ export class LaneSimulator {
     }
 
     constructor(settings: LaneSettings, canvas: HTMLCanvasElement) {
-        this.Log = new Logger(settings.LaneName, 0);
-        console.log("Creating LaneSimulator", settings);
+        this.Log = new Logger(settings.LaneName, ELogLevel.LOG_INFO);
+        //console.log("Creating LaneSimulator", settings);
         this.Settings = settings;
         this.CanvasElement = canvas;
         this.LaneID = NextLaneID;
@@ -87,9 +88,14 @@ export class LaneSimulator {
         }
     }
 
-    public GenerateAlarm(alarmtype: string, algorithm: string = "computed"): void {
+    public GenerateRPMData(
+        alarmtype: string,
+        duration: number,
+        save: boolean,
+        algorithm: string = "computed"
+    ): RPMProfile {
+        let result: RPMProfile = null;
         if (this.RPM) {
-            let duration = 7.0 + Math.random() * 10; // 7 to 17 second dureation
             let gamma_nsigma = 0;
             let neutron_amplitude = 0;
             if (alarmtype == "GA" || alarmtype == "NG")
@@ -97,8 +103,8 @@ export class LaneSimulator {
             if (alarmtype == "NA" || alarmtype == "NG")
                 neutron_amplitude =
                     this.RPM.m_neutron_threshold + Math.random() * this.RPM.m_neutron_threshold;
-            console.log("RPM n-sigma: " + this.RPM.m_gamma_nsigma);
-            console.log("Model n-sigma: " + gamma_nsigma);
+            //console.log("RPM n-sigma: " + this.RPM.m_gamma_nsigma);
+            //console.log("Model n-sigma: " + gamma_nsigma);
             this.Log.Debug(
                 "Generating " + alarmtype + " alarm in " + this.Name + " with duration " + duration
             );
@@ -113,6 +119,14 @@ export class LaneSimulator {
                 gamma_nsigma: gamma_nsigma,
                 neutron_amplitude: neutron_amplitude,
             };
+            result = this.RPM.GenerateFromModel(model, save);
+        }
+        return result;
+    }
+
+    public GenerateAlarm(alarmtype: string, algorithm: string = "computed"): void {
+        if (this.RPM) {
+            let duration = 7.0 + Math.random() * 10; // 7 to 17 second duration
             this.Log.Debug("Checking " + this.Cameras.length + " cameras");
             let container_number = this.generate_container_number();
             for (let ix = 0; ix < this.Cameras.length; ix++) {
@@ -125,7 +139,7 @@ export class LaneSimulator {
                 } else console.log("    " + cam.m_name + " is not enabled");
             }
             if (algorithm == "files") this.RPM.GenerateFromFile(alarmtype);
-            else this.RPM.GenerateFromModel(model);
+            else this.GenerateRPMData(alarmtype, duration, true, algorithm);
         } else {
             console.log(this.Name + " is not active");
         }

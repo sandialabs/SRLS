@@ -162,6 +162,12 @@ export class RPMProfile {
         return result;
     }
 
+    public Dump(): void {
+        for (let counts of this.m_counts) {
+            console.log(counts.ToString());
+        }
+    }
+
     private ParseTimestamp(timestamp: string): number {
         let m = this.m_re.exec(timestamp);
         if (m) {

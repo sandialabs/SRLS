@@ -95,11 +95,11 @@ export class SettingsManager {
     };
 
     constructor(filepath: string = "") {
-        console.log("In SettingsManager constructor");
+        //console.log("In SettingsManager constructor");
         if (filepath) {
             this.m_file_path = filepath;
             if (fs.existsSync(filepath)) {
-                console.log("File exists " + filepath);
+                //console.log("File exists " + filepath);
                 let json: string = fs.readFileSync(filepath, "UTF8");
                 this.Data = JSON.parse(json);
             } else {
@@ -108,9 +108,9 @@ export class SettingsManager {
             }
         } else {
             this.Data = this.default_settings();
-            console.log("No file path specified");
+            //console.log("No file path specified");
         }
-        console.log("Utility test:", clone_object(this.Data, true));
+        //console.log("Utility test:", clone_object(this.Data, true));
     }
 
     default_settings(): Settings {
@@ -203,6 +203,9 @@ export class SettingsManager {
             LaneID: 0,
             LaneName: "",
             Enabled: false,
+            ClientCount: "0",
+            Status: "",
+            OccupancyState: "",
             AutoGammaProbability: 0,
             AutoNeutronProbability: 0,
             AutoInterval: 0,
@@ -256,6 +259,9 @@ export class SettingsManager {
             LaneID: new Date().getTime(),
             LaneName: name,
             Enabled: false,
+            ClientCount: "0",
+            Status: "",
+            OccupancyState: "",
             AutoGammaProbability: this.Data.DefaultAutoGammaProbability,
             AutoNeutronProbability: this.Data.DefaultAutoNeutronProbability,
             AutoInterval: this.Data.DefaultAutoInterval,

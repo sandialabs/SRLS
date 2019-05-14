@@ -78,6 +78,7 @@ export class RPMSimulator extends Component {
     m_auto_mode_next_occupancy_time: number;
 
     m_is_paused = false;
+    m_debug = false;
 
     get Name(): string {
         return this.m_name;
@@ -383,7 +384,7 @@ export class RPMSimulator extends Component {
     /** Generate a profile */
     public GenerateFromModel(model: any, save: boolean = true): RPMProfile {
         this.LogDebug("GenerateFromModel");
-        if (this.m_logger.Level >= ELogLevel.LOG_DEBUG) console.log(model);
+        if (this.m_logger.Level <= ELogLevel.LOG_DEBUG) console.log(model);
 
         // since we are modifying the model values, make a copy of it
         model = Object.assign({}, model);
@@ -392,7 +393,7 @@ export class RPMSimulator extends Component {
         // where time goes from 1 to n and count ranges from 0 to 1.0
         //console.log("RPMSimulator.GenerateFromModel  Gamma BG: " + gamma_bg + "  Neutron BG: " + neutron_bg);
         let gamma_counts = this.m_profile_generator.generate_profile(model);
-        console.log("Gamma counts from profile generator", gamma_counts);
+        //console.log("Gamma counts from profile generator", gamma_counts);
         model.time_increment = 5;
         let neutron_counts = this.m_profile_generator.generate_profile(model);
 
@@ -409,28 +410,35 @@ export class RPMSimulator extends Component {
         let max_gamma_count = (model.gamma_nsigma * sqrtbg + gamma_bg) / 5;
         let offset = max_gamma_count - gamma_bg / 5;
 
-        console.log("gamma_bg", gamma_bg);
-        console.log("RPM n-sigma", this.m_gamma_nsigma);
-        console.log("Model n-sigma", model.gamma_nsigma);
-        console.log("Max gamma count", max_gamma_count);
-        console.log("Offset", offset);
-        this.LogInfo("########################################################################");
-        this.LogInfo("#");
-        this.LogInfo("# Model");
-        this.LogInfo(`#     Duration: ${model.duration}`);
-        this.LogInfo(`#     Stddev:   ${model.stddev}`);
-        this.LogInfo(`#     Shift:    ${model.shift}`);
-        this.LogInfo(`#     N-sigma:  ${model.gamma_nsigma}`);
-        this.LogInfo("# Computed");
-        this.LogInfo(`#     gamma_bg:         ${gamma_bg}, ${sqrtbg}`);
-        this.LogInfo(`#     RPM n-sigma:      ${this.m_gamma_nsigma}`);
-        this.LogInfo(`#     max_gamma_count:  ${max_gamma_count} = ${gamma_bg / 5} + ${offset}`);
+        if (this.m_debug) {
+            this.LogInfo(
+                "########################################################################"
+            );
+            this.LogInfo("#");
+            this.LogInfo("# Model");
+            this.LogInfo(`#     Duration: ${model.duration}`);
+            this.LogInfo(`#     Stddev:   ${model.stddev}`);
+            this.LogInfo(`#     Shift:    ${model.shift}`);
+            this.LogInfo(`#     N-sigma:  ${model.gamma_nsigma}`);
+            this.LogInfo("# Computed");
+            this.LogInfo(`#     gamma_bg:         ${gamma_bg.toFixed(2)}, ${sqrtbg.toFixed(2)}`);
+            this.LogInfo(`#     offset:           ${offset.toFixed(2)}`);
+            this.LogInfo(`#     RPM n-sigma:      ${this.m_gamma_nsigma.toFixed(2)}`);
+            this.LogInfo(
+                `#     max_gamma_count:  ${max_gamma_count.toFixed(
+                    2
+                )} = (${model.gamma_nsigma.toFixed(2)} * ${sqrtbg.toFixed(2)} + ${gamma_bg}) / 5`
+            );
+        }
 
         // GS/GA and NS/NA are determined using our threshold values
         let gamma_threshold = this.m_gamma_high_threshold;
         let neutron_threshold = this.m_neutron_threshold;
-        this.LogInfo(`# gamma alarm thresh:   ${gamma_threshold}`);
-        this.LogInfo(`# neutron alarm thresh: ${neutron_threshold}`);
+
+        if (this.m_debug) {
+            this.LogInfo(`# gamma alarm thresh:   ${gamma_threshold}`);
+            this.LogInfo(`# neutron alarm thresh: ${neutron_threshold}`);
+        }
 
         // insert the initial set of 5 gamma counts
         let gamma1 = gamma_counts[0];
@@ -457,9 +465,19 @@ export class RPMSimulator extends Component {
                         // xval = the time index * 200 ms
                         // yval = the single-detector gamma count for this time
                         let xval = gdata[0] * 200;
-                        let yval = gamma_bg / 5.0 + gdata[1] * offset;
-                        //let yval = max_gamma_count * gdata[1];
-                        //console.log('yval', gamma_bg/5.0, gdata[1], offset, yval);
+                        let amp = gdata[1];
+                        let yval = gamma_bg / 5.0 + amp * offset;
+                        //console.log(
+                        //    `yval = ${yval.toFixed(2)} = ${(gamma_bg / 5.0).toFixed(
+                        //        2
+                        //    )} + ${amp.toFixed(2)} * ${offset.toFixed(2)}`
+                        //);
+                        //let yval = max_gamma_count * amp;
+                        //console.log(
+                        //    `yval = ${yval.toFixed(2)} = ${max_gamma_count.toFixed(
+                        //        2
+                        //    )} * ${amp.toFixed(2)}`
+                        //);
                         // remember our min and max single-detector gamma values
                         if (yval < min_gcount) min_gcount = yval;
                         if (yval > max_gcount) max_gcount = yval;
@@ -467,7 +485,7 @@ export class RPMSimulator extends Component {
                         let dv = this.convert_count_to_detector_values(
                             "G",
                             xval,
-                            yval,
+                            yval * 4.0,
                             gamma_threshold
                         );
                         result.AddSample(dv);
@@ -509,9 +527,13 @@ export class RPMSimulator extends Component {
                 neutron_cursor += 1;
             }
         }
-        this.LogInfo(`# min/max gamma: ${min_gcount}, ${max_gcount}`);
-        this.LogInfo("#");
-        this.LogInfo("########################################################################");
+        if (this.m_debug) {
+            this.LogInfo(`# min/max gamma:        ${min_gcount}, ${max_gcount}`);
+            this.LogInfo("#");
+            this.LogInfo(
+                "########################################################################"
+            );
+        }
         // results contains merged gamma and neutron counts
         // add a GX
         this.m_gx_counter += 1;
