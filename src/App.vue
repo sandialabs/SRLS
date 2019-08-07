@@ -15,7 +15,7 @@
                 <v-icon title="Settings">settings</v-icon>
             </router-link>
 
-            <router-link to="/test" class="router-link">
+            <router-link to="/test" class="router-link" v-if="appdata.is_dev">
                 <v-icon title="Test">bar_chart</v-icon>
             </router-link>
 
@@ -33,6 +33,7 @@
 import HelloWorld from "./components/HelloWorld";
 import HomePage from "./components/HomePage";
 import { AppData } from "./main";
+import { banner } from "./lib/Utility";
 
 export default {
     name: "App",
@@ -53,7 +54,7 @@ export default {
         },
     },
     mounted() {
-        console.log("In App.vue.mounted", this.$route);
+        banner(["App.vue.mounted"]);
     },
 };
 </script>

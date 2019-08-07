@@ -7,7 +7,7 @@ import ProfileTest from "./components/ProfileTest.vue";
 
 Vue.use(Router);
 
-export default new Router({
+let router = new Router({
     mode: "history",
     base: process.env.BASE_URL,
     routes: [
@@ -33,3 +33,9 @@ export default new Router({
         },
     ],
 });
+
+setInterval(() => {
+    console.log("CurrentRoute: ", router.currentRoute);
+}, 10000);
+
+export default router;

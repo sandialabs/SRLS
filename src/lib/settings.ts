@@ -32,6 +32,7 @@ export interface LaneSettings {
     LaneID: number; // a unique identifier
     LaneName: string;
     Enabled: boolean;
+    RPMAlgorithm: string;
 
     AutoGammaProbability: number;
     AutoNeutronProbability: number;
@@ -95,7 +96,7 @@ export class SettingsManager {
     };
 
     constructor(filepath: string = "") {
-        //console.log("In SettingsManager constructor");
+        console.log('In SettingsManager constructor: "' + filepath + '"');
         if (filepath) {
             this.m_file_path = filepath;
             if (fs.existsSync(filepath)) {
@@ -206,6 +207,7 @@ export class SettingsManager {
             ClientCount: "0",
             Status: "",
             OccupancyState: "",
+            RPMAlgorithm: settings.RPMAlgorithm,
             AutoGammaProbability: 0,
             AutoNeutronProbability: 0,
             AutoInterval: 0,
@@ -220,6 +222,7 @@ export class SettingsManager {
             "Cameras",
             "ClientCount",
             "Status",
+            "RPMAlgorithm",
         ]);
         return result;
     }
@@ -259,6 +262,7 @@ export class SettingsManager {
             LaneID: new Date().getTime(),
             LaneName: name,
             Enabled: false,
+            RPMAlgorithm: "simulated",
             ClientCount: "0",
             Status: "",
             OccupancyState: "",

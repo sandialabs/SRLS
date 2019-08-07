@@ -9,6 +9,7 @@ let settings = {
     Enabled: false,
     ClientCount: "0",
     Status: "",
+    RPMAlgorithm: "simulated",
     OccupancyState: "",
     AutoGammaProbability: 0.05,
     AutoNeutronProbability: 0.05,

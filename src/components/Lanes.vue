@@ -226,10 +226,18 @@ export default {
         // create a LaneSimulator for each lane and save it in the
         // lanes LaneSettings.  If the lane is enabled, start the simulator.
         this.lanedata.forEach(lane => {
-            lane["simulator"] = new LaneSimulator(lane, document.getElementById("render-canvas"));
-            lane["ClientCount"] = 0;
-            if (lane.Enabled) {
-                this.start_simulator(lane);
+            if (lane["simulator"]) {
+                console.log("    simulator already exists");
+            } else {
+                console.log("    creating new simulator");
+                lane["simulator"] = new LaneSimulator(
+                    lane,
+                    document.getElementById("render-canvas")
+                );
+                lane["ClientCount"] = 0;
+                if (lane.Enabled) {
+                    this.start_simulator(lane);
+                }
             }
         });
     },
@@ -384,11 +392,22 @@ export default {
         },
 
         start_simulator: function(lane) {
-            console.log("Starting simulator on " + lane.LaneName, lane);
-            this.show_lane(lane);
             let sim = lane["simulator"];
-            sim.IsEnabled = true;
-            sim.Start();
+            console.log(
+                "In start_simulator.  IsEnabled = " +
+                    sim.IsEnabled +
+                    "  Is Running = " +
+                    sim.IsRunning
+            );
+            console.log("Lane data: ", lane);
+            if (lane.Status == "running") {
+                console.log("    Simulator is already enabled.");
+            } else {
+                console.log("    Starting simulator on " + lane.LaneName, lane);
+                this.show_lane(lane);
+                sim.IsEnabled = true;
+                sim.Start();
+            }
         },
 
         stop_simulator: function(lane) {

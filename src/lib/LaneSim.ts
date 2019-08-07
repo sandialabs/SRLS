@@ -10,10 +10,12 @@ import { Logger, ELogLevel } from "./Logger";
 var NextLaneID = 1;
 
 export class LaneSimulator {
+    m_is_paused: boolean = false;
+
     Settings: LaneSettings;
     Name: string;
     IsEnabled: boolean = false;
-    m_is_paused: boolean = false;
+    IsRunning: boolean = false;
     OccupancyState: string = "normal";
     IsInAutoMode: boolean = false;
     RPM: RPMSimulator;
@@ -34,7 +36,7 @@ export class LaneSimulator {
 
     constructor(settings: LaneSettings, canvas: HTMLCanvasElement) {
         this.Log = new Logger(settings.LaneName, ELogLevel.LOG_INFO);
-        //console.log("Creating LaneSimulator", settings);
+        console.log("Creating LaneSimulator", settings);
         this.Settings = settings;
         this.CanvasElement = canvas;
         this.LaneID = NextLaneID;
@@ -73,11 +75,19 @@ export class LaneSimulator {
     // }
 
     public Start(): void {
-        console.log("Starting " + this.Name);
+        console.log(
+            "Starting lane simulator " +
+                this.Name +
+                ": IsEnabled = " +
+                this.IsEnabled +
+                ", Status = " +
+                this.Status
+        );
         this.RPM.Start();
         for (let cam of this.Cameras) {
             if (cam.m_is_enabled) cam.Start();
         }
+        this.Settings.Status = "running";
     }
 
     public Stop(): void {
@@ -86,6 +96,7 @@ export class LaneSimulator {
         for (let cam of this.Cameras) {
             cam.Stop();
         }
+        this.Settings.Status = "stopped";
     }
 
     public GenerateRPMData(

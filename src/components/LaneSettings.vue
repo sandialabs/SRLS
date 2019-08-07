@@ -87,6 +87,13 @@
                                             persistent-hint
                                         ></v-text-field>
                                     </v-flex>
+                                    <v-flex xs12 sm3 md3>
+                                        <v-select
+                                            label="RPM Algorithm"
+                                            :items="rpm_algorithms"
+                                            v-model="settings.RPMAlgorithm"
+                                        ></v-select>
+                                    </v-flex>
                                 </v-layout>
                                 <v-layout wrap>
                                     <v-flex xs12 sm3 md3>
@@ -211,6 +218,7 @@ export default {
         activetab: null,
         title: "SETTINGS DIALOG",
         camtypes: ["canned", "animated"],
+        rpm_algorithms: ["simulated", "replay"],
         settings: { RPM: {}, Cameras: [{ Name: "" }, { Name: "" }] },
     }),
     created: function() {

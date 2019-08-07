@@ -9,7 +9,7 @@
 
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="primary" @click="is_visible=false">Yes</v-btn>
+                <v-btn color="primary" @click="is_visible=false">Ok</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
@@ -22,7 +22,7 @@ module.exports = {
         return {
             is_visible: false,
             title: "Notification",
-            text: "Notification"
+            text: "Notification",
         };
     },
     created: function() {
@@ -33,8 +33,8 @@ module.exports = {
             this.title = title;
             this.text = text;
             this.is_visible = true;
-        }
-    }
+        },
+    },
 };
 </script>
 
