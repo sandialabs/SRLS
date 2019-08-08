@@ -52,7 +52,7 @@
                                 tooltip="Innocent Alarm"
                                 size="32px"
                                 style="margin-right: 20px;"
-                                v-on:icon-clicked="on_trigger_all('OCCUP')"
+                                v-on:icon-clicked="on_trigger_all('OC')"
                             ></ActionIcon>
                             <ActionIcon
                                 icon="lock_open"
@@ -291,7 +291,7 @@ export default {
         },
 
         on_trigger_lane: function(lane, event_name) {
-            console.log("Lane Trigger " + event_name, lane);
+            //console.log("Lane Trigger " + event_name, lane);
             if (lane.Enabled) {
             }
             switch (event_name) {
@@ -441,7 +441,7 @@ export default {
         },
 
         edit_lane: function(lane) {
-            console.log("In edit_lane", lane);
+            //console.log("In edit_lane", lane);
             let lane_index = -1;
             for (let ix = 0; ix < this.lanedata.length; ix++) {
                 if (this.lanedata[ix].LaneID == lane.LaneID) lane_index = ix;

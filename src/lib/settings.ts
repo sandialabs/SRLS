@@ -2,6 +2,7 @@
 
 import * as fs from "fs";
 import { clone_object } from "./Utility";
+import { AppVersion } from "./Globals";
 
 export interface RPMSettings {
     IPAddr: string;
@@ -50,6 +51,7 @@ export interface LaneSettings {
 }
 
 export interface Settings {
+    Version: string; // version of app that created this file
     DefaultGammaBG: number;
     DefaultNeutronBG: number;
     DefaultGammaDistribution: number[];
@@ -64,6 +66,9 @@ export interface Settings {
     DefaultAutoGammaProbability: number;
     DefaultAutoNeutronProbability: number;
     DefaultAutoInterval: number;
+
+    LogLevel: string;
+    LogFilename: string;
 
     Lanes: LaneSettings[];
 }
@@ -103,6 +108,10 @@ export class SettingsManager {
                 //console.log("File exists " + filepath);
                 let json: string = fs.readFileSync(filepath, "UTF8");
                 this.Data = JSON.parse(json);
+                // upgrade older versions
+                if (typeof this.Data.LogLevel == "undefined") this.Data.LogLevel = "warning";
+                if (typeof this.Data.LogFilename == "undefined") this.Data.LogFilename = "";
+                if (typeof this.Data.Version == "undefined") this.Data.Version = AppVersion;
             } else {
                 this.Data = this.default_settings();
                 this.save();
@@ -116,6 +125,7 @@ export class SettingsManager {
 
     default_settings(): Settings {
         let result: Settings = {
+            Version: AppVersion,
             DefaultGammaBG: 256,
             DefaultNeutronBG: 3,
             DefaultGammaDistribution: [0.25, 0.25, 0.25, 0.25],
@@ -128,6 +138,8 @@ export class SettingsManager {
             DefaultAutoGammaProbability: 0.05,
             DefaultAutoNeutronProbability: 0.05,
             DefaultAutoInterval: 30.0,
+            LogLevel: "warning",
+            LogFilename: "",
             Lanes: [],
         };
         return result;
@@ -229,6 +241,7 @@ export class SettingsManager {
 
     static clone_settings(settings: Settings) {
         let result = {
+            Version: AppVersion,
             DefaultGammaBG: 0,
             DefaultNeutronBG: 0,
             DefaultGammaDistribution: [0.25, 0.25, 0.25, 0.25],
@@ -243,6 +256,9 @@ export class SettingsManager {
             DefaultAutoGammaProbability: 0,
             DefaultAutoNeutronProbability: 0,
             DefaultAutoInterval: 0,
+
+            LogLevel: "warning",
+            LogFilename: "",
 
             Lanes: [],
         };

@@ -34,8 +34,4 @@ let router = new Router({
     ],
 });
 
-setInterval(() => {
-    console.log("CurrentRoute: ", router.currentRoute);
-}, 10000);
-
 export default router;
