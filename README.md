@@ -13,9 +13,10 @@ sudo npm install -g @vue/cli
 This project was created using the following commands.
 
 ```
-vue create from-scratch
-    - added TypeScript support
-cd from-scratch
+# create the base project
+vue create rpmsimulator
+   - add TypeScript support when prompted
+cd rpmsimulator
 vue add electron-builder
     - selected version 4.0.0
 vue add vuetify
@@ -35,7 +36,7 @@ The default typescript code generates many warnings and one error. I fixed the e
 }
 ```
 
-This project was installed without lint support. Using lint is a major POS because of the boilerplate code that the CLI creates. If you chose to use lint, you will need to add rules in tslint.json to ignore warnings from generated code and do some minor edits to App.vue and HelloWorld.vue to remove some warnings.
+This project was installed without lint support. Using lint is a major annoyance because of the boilerplate code that the CLI creates. If you chose to use lint, you will need to add rules in tslint.json to ignore warnings from generated code and do some minor edits to App.vue and HelloWorld.vue to remove some warnings.
 
 ```
 "rules": {
@@ -62,25 +63,24 @@ This project was installed without lint support. Using lint is a major POS becau
 npm install
 ```
 
-### Compiles and hot-reloads for development
-
-```
-npm run serve
-```
-
-### Compiles and hot-reloads in Electron
+### Compile and run in Electron (with hot reloads)
 
 ```
 npm run electron:serve
 ```
 
-### Compiles and minifies for production
+The browser-based testing (npm run serve) does not work for because an
+internal JavaScript function throws an exception.
+
+### Compile and minify for production
 
 ```
 npm run electron:build
 ```
 
-### Run your unit tests
+This produces an installation executable named SRLS*Setup-1.0.0 in the \_electron_dist* subdirectory.
+
+### Run unit tests
 
 ```
 npm run test:unit
@@ -90,37 +90,10 @@ npm run test:unit
 
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
-# Adding Functionality
+# Developer Notes
 
-## Better toolbar
-
-In App.vue, replace the toolbar markup with the following.
-
-```html
-<v-toolbar dark color="primary">
-    <v-toolbar-side-icon></v-toolbar-side-icon>
-
-    <v-toolbar-title class="white--text">Title</v-toolbar-title>
-
-    <v-spacer></v-spacer>
-
-    <v-btn icon>
-        <v-icon></v-icon>
-    </v-btn>
-
-    <v-btn icon>
-        <v-icon>apps</v-icon>
-    </v-btn>
-
-    <v-btn icon>
-        <v-icon>refresh</v-icon>
-    </v-btn>
-
-    <v-btn icon>
-        <v-icon>more_vert</v-icon>
-    </v-btn>
-</v-toolbar>
-```
+1.  If you want to see console output from the main process (e.g. from background.js), you
+    need to set an environment variable, ELECTRON_ENABLE_LOGGING, to 1.
 
 ## Global model data
 

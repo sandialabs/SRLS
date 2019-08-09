@@ -1,7 +1,9 @@
 "use strict";
 
-import { app, protocol, BrowserWindow } from "electron";
+import { app, protocol, BrowserWindow, shell } from "electron";
 import { createProtocol, installVueDevtools } from "vue-cli-plugin-electron-builder/lib";
+import * as path from "path";
+
 const isDevelopment = process.env.NODE_ENV !== "production";
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -75,3 +77,18 @@ if (isDevelopment) {
         });
     }
 }
+
+//############################################################
+//
+// IPC services
+//
+//############################################################
+
+const ipc = require("electron").ipcMain;
+
+ipc.on("open-asset", (evt, arg) => {
+    console.log("ipc.on('open-file'): ", arg);
+    let filepath = path.join(__dirname, "..", "Assets", arg);
+    console.log("Opening " + filepath);
+    shell.openItem(filepath);
+});

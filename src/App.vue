@@ -1,6 +1,6 @@
 <template>
     <v-app>
-        <v-toolbar dark color="primary">
+        <v-toolbar app dark color="primary">
             <!-- <v-toolbar-side-icon></v-toolbar-side-icon> -->
 
             <v-toolbar-title class="white--text">{{appdata.apptitle}}</v-toolbar-title>
@@ -21,6 +21,10 @@
 
             <router-link to="/about" class="router-link">
                 <v-icon title="About">info</v-icon>
+            </router-link>
+
+            <router-link to="/help" class="router-link">
+                <v-icon title="Help">help</v-icon>
             </router-link>
         </v-toolbar>
         <v-content fluid>
