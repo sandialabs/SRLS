@@ -1,6 +1,8 @@
 {
     "name": "srls",
     "version": "1.0.0",
+    "description": "RPM lane simulation application.",
+    "author": "Pete Humphrey - Sandia National Laboratories",
     "private": true,
     "scripts": {
         "start": "vue-cli-service electron:serve",
