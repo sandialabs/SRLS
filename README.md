@@ -1,4 +1,4 @@
-# Sandia RPM Lane Simulator
+# SRLS - Sandia RPM Lane Simulator
 
 # Creating the Project
 
@@ -8,9 +8,9 @@
 sudo npm install -g @vue/cli
 ```
 
-## Use Vue CLI to create the project
-
-This project was created using the following commands.
+The project is ready to build after downloading from GitHub.  For those who
+are contemplating creating other electron/vue/vuetify projects, this project 
+was created using the following commands.
 
 ```
 # create the base project
@@ -22,19 +22,6 @@ vue add electron-builder
 vue add vuetify
 ```
 
-The default typescript code generates many warnings and one error. I fixed the error by adding "vuetify" to tsconfig.json "compilerOptions"."types".
-
-```
-{
-  "compilerOptions": {
-      ...
-    "types": [
-      "webpack-env",
-      "vuetify"
-    ],
-    ...
-}
-```
 
 This project was installed without lint support. Using lint is a major annoyance because of the boilerplate code that the CLI creates. If you chose to use lint, you will need to add rules in tslint.json to ignore warnings from generated code and do some minor edits to App.vue and HelloWorld.vue to remove some warnings.
 
@@ -69,8 +56,8 @@ npm install
 npm run electron:serve
 ```
 
-The browser-based testing (npm run serve) does not work for because an
-internal JavaScript function throws an exception.
+*Note: At the current time, browser-based testing (npm run serve) does not 
+work because of an internal JavaScript exception.*
 
 ### Compile and minify for production
 
@@ -85,6 +72,22 @@ This produces an installation executable named SRLS*Setup-1.0.0 in the \_electro
 ```
 npm run test:unit
 ```
+
+# Creating an installer
+
+To create an installer for SRLS, run the following command.
+
+```
+npm run electron:build
+```
+This will create an installer for the platform that you are running on and put it in ./dist_electron.
+
+|Platform |Build Product       |
+|---------|--------------------|
+|Mac      |SRLS_Setup-1.0.0.dmg| 
+|Windows  |SRLS_Setup-1.0.0.exe|
+|Linux    |TBD|
+
 
 ### Customize configuration
 
@@ -128,3 +131,4 @@ export default {
 
 
 ```
+
