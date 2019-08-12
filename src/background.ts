@@ -3,6 +3,7 @@
 import { app, protocol, BrowserWindow, shell } from "electron";
 import { createProtocol, installVueDevtools } from "vue-cli-plugin-electron-builder/lib";
 import * as path from "path";
+import { fstat, existsSync } from "fs";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
@@ -86,9 +87,35 @@ if (isDevelopment) {
 
 const ipc = require("electron").ipcMain;
 
+function find_assets(dir_name) {
+    console.log('Looking for Assets in "' + dir_name + '"');
+    let dir = dir_name;
+    for (let i = 0; i < 4; i++) {
+        let tpath = path.join(dir, "Assets");
+        console.log('    checking for "' + tpath + '"');
+        if (existsSync(tpath)) {
+            console.log('   Found in "' + dir + '"');
+            return tpath;
+        }
+        dir = path.dirname(dir);
+    }
+    return dir_name; // I give up
+}
+
 ipc.on("open-asset", (evt, arg) => {
+    // The __dirname variable will be either
+    //      "D:\Projects\Development\RPMSimulator\dist_electron"
+    // or
+    //      "C:\Users\wrhumph\AppData\Local\Programs\srls\resources\app.asar"
     console.log("ipc.on('open-file'): ", arg);
-    let filepath = path.join(__dirname, "..", "Assets", arg);
+    console.log('__dirname is "' + __dirname + '"');
+    let assets_dir = find_assets(__dirname);
+    let filepath = path.join(assets_dir, arg);
+    console.log('filepath is "' + filepath + '"');
     console.log("Opening " + filepath);
     shell.openItem(filepath);
+});
+
+ipc.on("devtools", evt => {
+    win.webContents.openDevTools();
 });

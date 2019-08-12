@@ -6,7 +6,7 @@
                     <div class="text-md-center display-1 mb-4">Sandia RPM Lane Simulator</div>
                     <hr />
                     <p class="mt-4 text-md-center">
-                        Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+                        Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
                         Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
                         certain rights in this software.
                     </p>
@@ -20,7 +20,7 @@
                                 </tr>
                                 <tr>
                                     <td>Build date:</td>
-                                    <td>August 7, 2019</td>
+                                    <td>August 12, 2019</td>
                                 </tr>
                             </tbody>
                         </table>
