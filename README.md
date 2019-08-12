@@ -59,13 +59,6 @@ npm run electron:serve
 *Note: At the current time, browser-based testing (npm run serve) does not 
 work because of an internal JavaScript exception.*
 
-### Compile and minify for production
-
-```
-npm run electron:build
-```
-
-This produces an installation executable named SRLS*Setup-1.0.0 in the \_electron_dist* subdirectory.
 
 ### Run unit tests
 
