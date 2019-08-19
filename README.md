@@ -8,8 +8,8 @@
 sudo npm install -g @vue/cli
 ```
 
-The project is ready to build after downloading from GitHub.  For those who
-are contemplating creating other electron/vue/vuetify projects, this project 
+The project is ready to build after downloading from GitHub. For those who
+are contemplating creating other electron/vue/vuetify projects, this project
 was created using the following commands.
 
 ```
@@ -21,7 +21,6 @@ vue add electron-builder
     - selected version 4.0.0
 vue add vuetify
 ```
-
 
 This project was installed without lint support. Using lint is a major annoyance because of the boilerplate code that the CLI creates. If you chose to use lint, you will need to add rules in tslint.json to ignore warnings from generated code and do some minor edits to App.vue and HelloWorld.vue to remove some warnings.
 
@@ -56,9 +55,8 @@ npm install
 npm run electron:serve
 ```
 
-*Note: At the current time, browser-based testing (npm run serve) does not 
-work because of an internal JavaScript exception.*
-
+_Note: At the current time, browser-based testing (npm run serve) does not
+work because of an internal JavaScript exception._
 
 ### Run unit tests
 
@@ -73,14 +71,14 @@ To create an installer for SRLS, run the following command.
 ```
 npm run electron:build
 ```
+
 This will create an installer for the platform that you are running on and put it in ./dist_electron.
 
-|Platform |Build Product       |
-|---------|--------------------|
-|Mac      |SRLS_Setup-1.0.0.dmg| 
-|Windows  |SRLS_Setup-1.0.0.exe|
-|Linux    |TBD|
-
+| Platform | Build Product        |
+| -------- | -------------------- |
+| Mac      | SRLS_Setup-1.0.0.dmg |
+| Windows  | SRLS_Setup-1.0.0.exe |
+| Linux    | TBD                  |
 
 ### Customize configuration
 
@@ -88,15 +86,17 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 # Developer Notes
 
-1.  If you want to see console output from the main process (e.g. from background.js), you
-    need to set an environment variable, ELECTRON_ENABLE_LOGGING, to 1.
+## 1. Console output
 
-## Global model data
+If you want to see console output from the main process (e.g. from background.js), you
+need to set an environment variable, ELECTRON_ENABLE_LOGGING, to 1.
 
-To share your Vue model data among components, define and export it in main.js. Then add references to it in the components that need it.
+## 2. Global model data
 
-```typescript
-# main.js
+A simple way to share Vue model data among components is to define and export it in main.ts. Then add references to it in the components that need it.
+
+```
+# main.ts
 export let AppData = {
     apptitle: "RPM Simulator"
 }
@@ -124,4 +124,3 @@ export default {
 
 
 ```
-
