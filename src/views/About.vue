@@ -16,11 +16,11 @@
                             <tbody>
                                 <tr>
                                     <td>Version:</td>
-                                    <td>1.0.0</td>
+                                    <td>1.0.1</td>
                                 </tr>
                                 <tr>
                                     <td>Build date:</td>
-                                    <td>August 12, 2019</td>
+                                    <td>August 19, 2019</td>
                                 </tr>
                             </tbody>
                         </table>

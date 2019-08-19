@@ -16,7 +16,7 @@
             </router-link>
 
             <router-link to="/test" class="router-link" v-if="appdata.is_dev">
-                <v-icon title="Test">bar_chart</v-icon>
+                <v-icon title="Test">insert_chart</v-icon>
             </router-link>
 
             <router-link to="/about" class="router-link">
