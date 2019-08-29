@@ -1,46 +1,5 @@
 # SRLS - Sandia RPM Lane Simulator
 
-# Creating the Project
-
-## Install the Vue CLI
-
-```
-sudo npm install -g @vue/cli
-```
-
-The project is ready to build after downloading from GitHub. For those who
-are contemplating creating other electron/vue/vuetify projects, this project
-was created using the following commands.
-
-```
-# create the base project
-vue create rpmsimulator
-   - add TypeScript support when prompted
-cd rpmsimulator
-vue add electron-builder
-    - selected version 4.0.0
-vue add vuetify
-```
-
-This project was installed without lint support. Using lint is a major annoyance because of the boilerplate code that the CLI creates. If you chose to use lint, you will need to add rules in tslint.json to ignore warnings from generated code and do some minor edits to App.vue and HelloWorld.vue to remove some warnings.
-
-```
-"rules": {
-    "quotemark": false,
-    "indent": [true, "spaces", 4],
-    "interface-name": false,
-    "ordered-imports": false,
-    "object-literal-sort-keys": false,
-    "no-consecutive-blank-lines": false,
-    "semicolon": false,
-    "no-var-requires": false,
-    "no-console": false,
-    "trailing-comma": false,
-    "space-before-function-paren": false
-}
-
-```
-
 # Building and Running
 
 ## Project setup
