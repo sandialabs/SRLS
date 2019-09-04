@@ -92,6 +92,8 @@ This project is licensed under the MIT license.
 
 Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in this software.
 
+Sandia National Laboratories is a multimission laboratory managed and operated by National Technology & Engineering Solutions of Sandia, LLC, a wholly owned subsidiary of Honeywell International Inc., for the U.S. Department of Energy’s National Nuclear Security Administration under contract DE-NA0003525
+
 ## Acknowledgement
 
 The Sandia RPM Lane Simulator was developed with funds from the National Nuclear Security Administration of the US Department of Energy.
