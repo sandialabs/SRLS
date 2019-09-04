@@ -76,8 +76,8 @@ This will create an installer for the platform that you are running on and put i
 
 | Platform | Build Product        |
 | -------- | -------------------- |
-| Mac      | SRLS_Setup-1.0.0.dmg |
-| Windows  | SRLS_Setup-1.0.0.exe |
+| Mac      | SRLS_Setup-1.0.1.dmg |
+| Windows  | SRLS_Setup-1.0.1.exe |
 | Linux    | TBD                  |
 
 ### Customize configuration
@@ -124,3 +124,19 @@ export default {
 
 
 ```
+
+## License
+
+This project is licensed under the MIT license.
+
+## Copyright
+
+Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in this software.
+
+## Acknowledgement
+
+The Sandia RPM Lane Simulator was developed with funds from the National Nuclear Security Administration of the US Department of Energy.
+
+## Privacy Policy
+
+The Sandia RPM Lane Simulator (SRLS) application does not collect or store any personal information. SRLS stores application configuration information locally on your computer. This information does not leave your computer, and can be deleted by removing the application data folder in the operating system's standard location for the application.
