@@ -16,7 +16,7 @@
     },
     "main": "background.js",
     "dependencies": {
-        "chart.js": "^2.8.0",
+        "chart.js": "^2.9.4",
         "electron-chartjs": "^1.0.0",
         "electron-is-dev": "^1.0.1",
         "jquery": "^3.4.1",
