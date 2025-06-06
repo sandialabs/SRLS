@@ -5,6 +5,9 @@ import {
     ipcMain,
     dialog
 } from 'electron';
+const electron = require("electron");
+import * as remoteMain from '@electron/remote/main';
+  remoteMain.initialize();
 
 const isDev = process.env.npm_lifecycle_event === "app:dev" ? true : false;
 
@@ -22,8 +25,12 @@ function createWindow() {
         height: 600,
         webPreferences: {
             preload: join(__dirname, '../preload/preload.js'),
+            nodeIntegration: true, // This is required for @electron/remote
+            contextIsolation: true,    // Disables context isolation
         },
     });
+
+    remoteMain.enable(mainWindow.webContents);
 
     // and load the index.html of the app.
     if (isDev) {
