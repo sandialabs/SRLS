@@ -37,10 +37,6 @@ import HelloWorld from "./components/HelloWorld.vue";
             <router-view style="font-size: smaller;"></router-view>
         </v-content>
   <HelloWorld msg="Vite + Vue 3 + Electron + TypeScript" />
-  <br />
-  <p class="plugins">Plugins</p>
-  <img alt="vue router logo" width="120" src="./assets/vueRouter.png" />
-  <img alt="pinia logo" width="120" src="./assets/pinia.svg" />
 </template>
 
 <style>

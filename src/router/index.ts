@@ -1,6 +1,9 @@
 import { createWebHistory, createRouter } from "vue-router";
 import Home from "../components/Home.vue";
-import About from "../components/About.vue";
+// import HomePage from "../components/HomePage.vue";
+import About from "../views/About.vue";
+import Help from "../views/Help.vue";
+import GlobalSettings from "../components/GlobalSettings.vue";
 
 const routes = [
     {
@@ -13,6 +16,21 @@ const routes = [
         name: "About",
         component: About,
     },
+    {
+        path: "/settings",
+        name: "settings",
+        component: GlobalSettings,
+    },
+    {
+        path: "/help",
+        name: "help",
+        component: Help,
+    },
+        // {
+        //     path: "/test",
+        //     name: "test",
+        //     component: ProfileTest,
+        // },
 ];
 
 const router = createRouter({
