@@ -1,15 +1,9 @@
-<script setup lang="ts">
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import HelloWorld from "./components/HelloWorld.vue";
-
-// import { AppData } from "./main";
-</script>
 
 <template>
+    <v-app>
         <v-toolbar app dark color="primary">
 
-            <!-- <v-toolbar-title class="white--text">{{appdata.apptitle}}</v-toolbar-title> -->
+            <v-toolbar-title class="white--text">{{appdata.apptitle}}</v-toolbar-title>
 
             <v-spacer></v-spacer>
 
@@ -30,14 +24,48 @@ import HelloWorld from "./components/HelloWorld.vue";
             </router-link>
 
             <router-link to="/help" class="router-link">
+            <v-icon icon="$vuetify"></v-icon>
                 <v-icon title="Help">help</v-icon>
             </router-link>
         </v-toolbar>
         <v-content fluid>
             <router-view style="font-size: smaller;"></router-view>
+            <v-icon icon="mdiTruck"></v-icon>
         </v-content>
-  <HelloWorld msg="Vite + Vue 3 + Electron + TypeScript" />
+        <v-icon icon="$vuetify"></v-icon>
+  <!-- <HelloWorld msg="Vite + Vue 3 + Electron + TypeScript" /> -->
+  </v-app>
 </template>
+
+<script>
+import HelloWorld from "./components/HelloWorld.vue";
+import HomePage from "./components/HomePage.vue";
+import { AppData } from "./main";
+import { banner } from "./lib/Utility.ts";
+
+export default {
+    name: "App",
+    components: {
+        HelloWorld,
+        HomePage,
+    },
+    data() {
+        return {
+            appdata: AppData,
+            home_component: null,
+        };
+    },
+    methods: {
+        on_click_me: function() {
+            console.log("on_click_me", this.$routes);
+            this.$refs["home_page"].say_hello();
+        },
+    },
+    mounted() {
+        banner(["App.vue.mounted"]);
+    },
+};
+</script>
 
 <style>
 #app {

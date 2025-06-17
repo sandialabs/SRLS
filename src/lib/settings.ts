@@ -104,7 +104,7 @@ export class SettingsManager {
         console.log('In SettingsManager constructor: "' + filepath + '"');
         if (filepath) {
             this.m_file_path = filepath;
-            if (window.electronAPI.existsSync(filepath)) {
+            if (window.electronAPI && window.electronAPI.existsSync(filepath)) {
                 console.log("File exists " + filepath);
                 let json: string = window.electronAPI.readFileSync(filepath, "utf8");
                 this.Data = JSON.parse(json);
@@ -158,7 +158,11 @@ export class SettingsManager {
     }
 
     serialize(to_path: string = "settings.json"): void {
-        window.electronAPI.writeFileSync(to_path, this.to_string() + "\n");
+        if(window.electronAPI) {
+            window.electronAPI.writeFileSync(to_path, this.to_string() + "\n");
+        }
+        else {console.log("Cannot access Electron file functions from browser.");
+        }
     }
 
     save(): void {

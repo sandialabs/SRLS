@@ -19,6 +19,7 @@
                     </p>
                     <p>
                         The SRLS user interface comprises four main pages:
+                    </p>
                         <ul>
                             <li class='spaced'>Lanes
                                 &nbsp;
@@ -42,7 +43,6 @@
                                 a list of the software libraries that are used to build SRLS.
                             </li>
                         </ul>
-                    </p>
                     <div class='h1'>The Lane Management Page <v-icon color='primary' style='margin-top: 10px;'>local_shipping</v-icon>
                     </div>
                     <p>This page displays a list of all the scanning lanes that you have defined.
@@ -56,6 +56,7 @@
                         <v-icon color="red">do_not_disturb</v-icon>
                         icon to the right of
                         the lane name.  On the left side of each lane are four icons for managing the lane.
+                    </p>
                         <ul>
                             <li class='spaced'>Edit&nbsp;<v-icon color='primary'>create</v-icon>
                                 <br>Edit RPM and camera settings.
@@ -70,9 +71,9 @@
                                 <br>Delete this lane.
                             </li>
                         </ul>
-                    </p>
                     <p>
                         To control each lane, use the <i>Action</i> buttons at the right of the lane.
+                    </p>
                         <ul>
                             <li class='spaced'>AutoMode&nbsp;<v-icon color='red'>repeat</v-icon>
                                 <br>Toggle <i>Auto</i> mode for the RPM.  This causes the RPM to simulate
@@ -96,7 +97,6 @@
                                 <br>Simulate a case tamper event.
                             </li>
                         </ul>
-                    </p>
                 </v-flex>
             </v-layout>
         </v-container>

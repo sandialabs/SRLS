@@ -11,6 +11,7 @@ import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
+import { aliases, mdi } from 'vuetify/iconsets/mdi'
 
 // Components
 import { SettingsManager } from "./lib/settings";
@@ -31,7 +32,7 @@ if (AppData.settings.Data.Lanes.length == 0) {
 }
 
 // make a directory for replay data if one doesn't exist
-if (!window.electronAPI.existsSync("Replay")) {
+if (window.electronAPI && !window.electronAPI.existsSync("Replay")) {
     window.electronAPI.mkdir("Replay", err => {
         return;
     });
@@ -39,12 +40,20 @@ if (!window.electronAPI.existsSync("Replay")) {
 
 
 const vuetify = createVuetify({
+  icons: {
+    defaultSet: "mdi",
+    aliases,
+    sets: {
+      mdi,
+    },
+  },
   components,
   directives,
-})
+});
 
 const app = createApp(App)
 
 app.use(createPinia()) //use pinia
 app.use(router) //use router
+app.use(vuetify)
 app.mount('#app')

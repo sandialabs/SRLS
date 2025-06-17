@@ -21,8 +21,8 @@ async function handleFileOpen() {
 function createWindow() {
     // Create the browser window.
     const mainWindow = new BrowserWindow({
-        width: 800,
-        height: 600,
+        width: 1200,
+        height: 800,
         webPreferences: {
             preload: join(__dirname, '../preload/preload.js'),
             nodeIntegration: true, // This is required for @electron/remote
@@ -34,7 +34,7 @@ function createWindow() {
 
     // and load the index.html of the app.
     if (isDev) {
-        mainWindow.loadURL('http://localhost:3000');// Open the DevTools.
+        mainWindow.loadURL('http://localhost:5173');// Open the DevTools.
         mainWindow.webContents.openDevTools();
     } else {
         mainWindow.loadFile(join(__dirname, '../../index.html'));
