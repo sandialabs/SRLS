@@ -1,5 +1,5 @@
 
-<template>
+<!-- <template>
     <v-app>
         <v-toolbar app dark color="primary">
 
@@ -13,13 +13,13 @@
 
             <router-link to="/settings" class="router-link">
                 <v-icon title="Settings">settings</v-icon>
-            </router-link>
+            </router-link> -->
 
             <!-- <router-link to="/test" class="router-link" v-if="appdata.is_dev">
                 <v-icon title="Test">insert_chart</v-icon>
             </router-link> -->
 
-            <router-link to="/about" class="router-link">
+            <!-- <router-link to="/about" class="router-link">
                 <v-icon title="About">info</v-icon>
             </router-link>
 
@@ -28,12 +28,57 @@
                 <v-icon title="Help">help</v-icon>
             </router-link>
         </v-toolbar>
-        <v-content fluid>
+        <v-main fluid>
             <router-view style="font-size: smaller;"></router-view>
             <v-icon icon="mdiTruck"></v-icon>
-        </v-content>
+        </v-main>
         <v-icon icon="$vuetify"></v-icon>
-  <!-- <HelloWorld msg="Vite + Vue 3 + Electron + TypeScript" /> -->
+  </v-app>
+</template> -->
+<template>
+  <v-app>
+    <v-app-bar color="primary">
+      <v-app-bar-title class="text-white">
+        {{ appdata.apptitle }}
+      </v-app-bar-title>
+
+      <v-spacer></v-spacer>
+
+      <router-link to="/">
+        <v-icon title="Lane Simulators">local_shipping</v-icon>
+        <span class="material-icons">local_shipping</span>
+         <!-- <v-icon icon="mdi-truck" /> -->
+         <!-- <v-icon title="Lane Simulators3" icon="mdi-help"></v-icon> -->
+      </router-link>
+
+      <router-link to="/settings" class="router-link">
+        <v-icon title="Settings">settings</v-icon>
+        <span class="material-icons">settings</span>
+      </router-link>
+
+      
+      <router-link to="/test" class="router-link" v-if="appdata.is_dev">
+        <v-icon title="Test">insert_chart</v-icon>
+        <span class="material-icons">insert_chart</span>
+      </router-link>
+     
+
+      <router-link to="/about" class="router-link">
+        <v-icon title="About">info</v-icon>
+        <span class="material-icons">info</span>
+      </router-link>
+
+      <router-link to="/help" class="router-link">
+        <v-icon title="Help">help</v-icon>
+        <span class="material-icons">help</span>
+        <!-- <v-icon icon="mdi-truck" /> -->
+      </router-link>
+    </v-app-bar>
+
+    <v-main>
+      <router-view style="font-size: smaller;"></router-view>
+      <!-- <v-icon icon="mdi-truck" /> -->
+    </v-main>
   </v-app>
 </template>
 

@@ -7,277 +7,299 @@
             persistent
             transition="dialog-bottom-transition"
         >
-            <v-card>
-                <v-card-title style="margin-top: 60px; margin-bottom: 0;">
-                    <v-spacer></v-spacer>
-                    <span class="headline">{{title}}</span>
-                    <v-spacer></v-spacer>
-                </v-card-title>
-                <v-card-text>
-                    <v-container grid-list-md>
-                        <v-layout wrap class="mt-0">
-                            <v-flex xs12 sm6 m6>
-                                <v-text-field label="Lane Name" v-model="settings.LaneName"></v-text-field>
-                            </v-flex>
-                            <v-flex xs12 sm4 m4>
-                                <v-text-field label="RPM IP" v-model="settings.RPM.IPAddr"></v-text-field>
-                            </v-flex>
-                            <v-flex xs12 sm2 m2>
-                                <v-text-field label="RPM Port" v-model="settings.RPM.Port"></v-text-field>
-                            </v-flex>
-                        </v-layout>
-                        <v-tabs v-model="activetab" color="blue" dark>
-                            <v-tab>RPM</v-tab>
-                            <v-tab>Cameras</v-tab>
-                            <v-tab-item
-                                class="tab-body"
-                                :transition="false"
-                                :reverse-transition="false"
-                            >
-                                <v-layout center>
-                                    <v-flex xs12 sm3 md3>
-                                        <v-text-field
-                                            label="GB"
-                                            v-model="settings.RPM.GammaBG"
-                                            hint="Single detector gamma background level"
-                                            persistent-hint
-                                        ></v-text-field>
-                                    </v-flex>
-                                    <v-flex xs12 sm3 md3>
-                                        <v-text-field
-                                            label="NB"
-                                            v-model="settings.RPM.NeutronBG"
-                                            hint="Single detector neutron background level"
-                                            persistent-hint
-                                        ></v-text-field>
-                                    </v-flex>
-                                    <v-flex xs12 sm3 md3>
-                                        <v-text-field
-                                            label="N-Sigma"
-                                            v-model="settings.RPM.GammaNSigma"
-                                            hint="Max n-sigma for gamma alarms"
-                                            persistent-hint
-                                        ></v-text-field>
-                                    </v-flex>
-                                    <v-flex xs12 sm3 md3>
-                                        <v-text-field
-                                            label="NA"
-                                            v-model="settings.RPM.NeutronThreshold"
-                                            hint="Single detector neutron alarm threshold"
-                                            persistent-hint
-                                        ></v-text-field>
-                                    </v-flex>
-                                </v-layout>
-                                <v-layout center>
-                                    <v-flex xs12 sm3 md3>
-                                        <v-text-field
-                                            label="GH"
-                                            v-model="settings.RPM.GHThreshold"
-                                            hint="Single detector gamma background high threshold"
-                                            persistent-hint
-                                        ></v-text-field>
-                                    </v-flex>
-                                    <v-flex xs12 sm3 md3>
-                                        <v-text-field
-                                            label="GL"
-                                            v-model="settings.RPM.GLThreshold"
-                                            hint="Single detector gamma background low threshold"
-                                            persistent-hint
-                                        ></v-text-field>
-                                    </v-flex>
-                                    <v-flex xs12 sm3 md3>
-                                        <v-text-field
-                                            label="NH"
-                                            v-model="settings.RPM.NHThreshold"
-                                            hint="Single detector neutron background high threshold"
-                                            persistent-hint
-                                        ></v-text-field>
-                                    </v-flex>
-                                    <v-flex xs12 sm3 md3>
-                                        <v-select
-                                            label="RPM Algorithm"
-                                            :items="rpm_algorithms"
-                                            v-model="settings.RPMAlgorithm"
-                                        ></v-select>
-                                    </v-flex>
-                                </v-layout>
-                                <v-layout wrap>
-                                    <v-flex xs12 sm3 md3>
-                                        <v-text-field
-                                            label="GA %"
-                                            v-model="settings.AutoGammaProbability"
-                                            hint="Percentage of occupancies that will have a gamma alarm"
-                                            persistent-hint
-                                        ></v-text-field>
-                                    </v-flex>
-                                    <v-flex xs12 sm3 md3>
-                                        <v-text-field
-                                            label="NA %"
-                                            v-model="settings.AutoNeutronProbability"
-                                            hint="Percentage of occupancies that will have a gamma alarm"
-                                            persistent-hint
-                                        ></v-text-field>
-                                    </v-flex>
-                                    <v-flex xs12 sm3 md3>
-                                        <v-text-field
-                                            label="Interval"
-                                            v-model="settings.AutoInterval"
-                                            hint="Number of seconds between occupancies"
-                                            persistent-hint
-                                        ></v-text-field>
-                                    </v-flex>
-                                </v-layout>
-                            </v-tab-item>
-                            <v-tab-item
-                                class="tab-body"
-                                :transition="false"
-                                :reverse-transition="false"
-                            >
-                                <v-layout align-space-between justify-center column fill-height>
-                                    <v-flex sm12>
-                                        <v-layout fill-width>
-                                            <v-flex sm6>
-                                                <h3 style="margin-bottom: 1rem;">Camera 1</h3>
-                                                <v-text-field
-                                                    label="Name"
-                                                    v-model="settings.Cameras[0].Name"
-                                                ></v-text-field>
-                                                <table style="width:100%;">
-                                                    <tbody>
-                                                    <tr>
-                                                        <td>
-                                                            <v-select
-                                                                class="mr-4"
-                                                                @change="on_camera_selected(0)"
-                                                                :items="camera_definitions"
-                                                                item-text="name"
-                                                                item-value="id"
-                                                                v-model="selected_camdef[0]"
-                                                                label="Manufacturer"
-                                                            ></v-select>
-                                                        </td>
-                                                        <td>
-                                                            <v-select
-                                                                @change="on_camera_model_selected(0)"
-                                                                :items="camera_models[0]"
-                                                                v-model="settings.Cameras[0].Model"
-                                                                label="Model"
-                                                            ></v-select>
-                                                        </td>
-                                                    </tr>
-                                                    </tbody>
-                                                </table>
-                                                <table style="width: 100%;">
-                                                    <tbody>
-                                                    <tr>
-                                                        <td>
-                                                            <v-text-field
-                                                                class="mr-4"
-                                                                label="IP"
-                                                                v-model="settings.Cameras[0].IPAddr"
-                                                            ></v-text-field>
-                                                        </td>
-                                                        <td>
-                                                            <v-text-field
-                                                                label="Port"
-                                                                v-model="settings.Cameras[0].Port"
-                                                            ></v-text-field>
-                                                        </td>
-                                                    </tr>
-                                                    </tbody>
-                                                </table>
-                                                <v-text-field
-                                                    label="URL"
-                                                    v-model="settings.Cameras[0].URL"
-                                                ></v-text-field>
-                                                <v-select
-                                                    :items="camtypes"
-                                                    label="Simulation Type"
-                                                    v-model="settings.Cameras[0].CameraSimulatorType"
-                                                ></v-select>
-                                                <v-checkbox
-                                                    label="Enabled"
-                                                    v-model="settings.Cameras[0].Enabled"
-                                                ></v-checkbox>
-                                            </v-flex>
-                                            <v-flex sm16>
-                                                <h3 style="margin-bottom: 1rem;">Camera 2</h3>
-                                                <v-text-field
-                                                    label="Name"
-                                                    v-model="settings.Cameras[1].Name"
-                                                ></v-text-field>
-                                                <table style="width: 100%">
-                                                    <tbody>
-                                                    <tr>
-                                                        <td>
-                                                            <v-select
-                                                                class="mr-4"
-                                                                @change="on_camera_selected(1)"
-                                                                :items="camera_definitions"
-                                                                item-text="name"
-                                                                item-value="id"
-                                                                v-model="selected_camdef[1]"
-                                                                label="Manufacturer"
-                                                            ></v-select>
-                                                        </td>
-                                                        <td>
-                                                            <v-select
-                                                                @change="on_camera_model_selected(1)"
-                                                                :items="camera_models[1]"
-                                                                v-model="settings.Cameras[1].Model"
-                                                                label="Model"
-                                                            ></v-select>
-                                                        </td>
-                                                    </tr>
-                                                    </tbody>
-                                                </table>
-                                                <table style="width: 100%;">
-                                                    <tbody>
-                                                    <tr>
-                                                        <td>
-                                                            <v-text-field
-                                                                class="mr-4"
-                                                                label="IP"
-                                                                v-model="settings.Cameras[1].IPAddr"
-                                                            ></v-text-field>
-                                                        </td>
-                                                        <td>
-                                                            <v-text-field
-                                                                label="Port"
-                                                                v-model="settings.Cameras[1].Port"
-                                                            ></v-text-field>
-                                                        </td>
-                                                    </tr>
-                                                    </tbody>
-                                                </table>
-                                                <v-text-field
-                                                    label="URL"
-                                                    v-model="settings.Cameras[1].URL"
-                                                ></v-text-field>
-                                                <v-select
-                                                    :items="camtypes"
-                                                    label="Simulation Type"
-                                                    v-model="settings.Cameras[1].CameraSimulatorType"
-                                                ></v-select>
-                                                <v-checkbox
-                                                    label="Enabled"
-                                                    v-model="settings.Cameras[1].Enabled"
-                                                ></v-checkbox>
-                                            </v-flex>
-                                        </v-layout>
-                                    </v-flex>
-                                </v-layout>
-                            </v-tab-item>
-                        </v-tabs>
-                    </v-container>
-                </v-card-text>
-                <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="green darken-1" @click="save()">Save</v-btn>
-                    <v-btn color="red darken-1" @click="dialog = false">Cancel</v-btn>
-                    <v-spacer></v-spacer>
-                </v-card-actions>
-            </v-card>
+  <v-card>
+    <v-card-title style="margin-top: 60px; margin-bottom: 0;">
+      <v-spacer />
+      <span class="headline">{{ title }}</span>
+      <v-spacer />
+    </v-card-title>
+
+    <v-card-text>
+      <v-container>
+        <!-- First row of fields -->
+        <v-row class="mt-0">
+          <v-col cols="12" sm="6" md="6">
+            <v-text-field
+              label="Lane Name"
+              v-model="settings.LaneName"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12" sm="4" md="4">
+            <v-text-field
+              label="RPM IP"
+              v-model="settings.RPM.IPAddr"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12" sm="2" md="2">
+            <v-text-field
+              label="RPM Port"
+              v-model="settings.RPM.Port"
+            ></v-text-field>
+          </v-col>
+        </v-row>
+
+        <!-- Tabs navigation -->
+        <v-tabs v-model="activetab" color="blue" variant="dark">
+          <v-tab value="RPM">RPM</v-tab>
+          <v-tab value="Cameras">Cameras</v-tab>
+        </v-tabs>
+
+        <!-- Tabs content -->
+         
+            <v-tabs-window v-model="tab">
+          <!-- RPM Tab Content -->
+          <v-tabs-window-item value="RPM">
+            <!-- First row: four text fields -->
+            <v-row justify="center">
+              <v-col cols="12" sm="3" md="3">
+                <v-text-field
+                  label="GB"
+                  v-model="settings.RPM.GammaBG"
+                  hint="Single detector gamma background level"
+                  persistent-hint
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="3" md="3">
+                <v-text-field
+                  label="NB"
+                  v-model="settings.RPM.NeutronBG"
+                  hint="Single detector neutron background level"
+                  persistent-hint
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="3" md="3">
+                <v-text-field
+                  label="N-Sigma"
+                  v-model="settings.RPM.GammaNSigma"
+                  hint="Max n-sigma for gamma alarms"
+                  persistent-hint
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="3" md="3">
+                <v-text-field
+                  label="NA"
+                  v-model="settings.RPM.NeutronThreshold"
+                  hint="Single detector neutron alarm threshold"
+                  persistent-hint
+                ></v-text-field>
+              </v-col>
+            </v-row>
+
+            <!-- Second row: four fields -->
+            <v-row justify="center">
+              <v-col cols="12" sm="3" md="3">
+                <v-text-field
+                  label="GH"
+                  v-model="settings.RPM.GHThreshold"
+                  hint="Single detector gamma background high threshold"
+                  persistent-hint
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="3" md="3">
+                <v-text-field
+                  label="GL"
+                  v-model="settings.RPM.GLThreshold"
+                  hint="Single detector gamma background low threshold"
+                  persistent-hint
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="3" md="3">
+                <v-text-field
+                  label="NH"
+                  v-model="settings.RPM.NHThreshold"
+                  hint="Single detector neutron background high threshold"
+                  persistent-hint
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="3" md="3">
+                <v-select
+                  label="RPM Algorithm"
+                  :items="rpm_algorithms"
+                  v-model="settings.RPMAlgorithm"
+                ></v-select>
+              </v-col>
+            </v-row>
+
+            <!-- Third row: three text fields -->
+            <v-row>
+              <v-col cols="12" sm="3" md="3">
+                <v-text-field
+                  label="GA %"
+                  v-model="settings.AutoGammaProbability"
+                  hint="Percentage of occupancies that will have a gamma alarm"
+                  persistent-hint
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="3" md="3">
+                <v-text-field
+                  label="NA %"
+                  v-model="settings.AutoNeutronProbability"
+                  hint="Percentage of occupancies that will have a gamma alarm"
+                  persistent-hint
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="3" md="3">
+                <v-text-field
+                  label="Interval"
+                  v-model="settings.AutoInterval"
+                  hint="Number of seconds between occupancies"
+                  persistent-hint
+                ></v-text-field>
+              </v-col>
+            </v-row>
+          </v-tabs-window-item>
+
+          <!-- Cameras Tab Content -->
+          <v-tabs-window-item value="Cameras">
+            <v-row align="center" justify="center" class="fill-height" direction="column">
+              <v-col cols="12">
+                <v-row>
+                  <!-- Camera 1 -->
+                  <v-col cols="12" sm="6">
+                    <h3 style="margin-bottom: 1rem;">Camera 1</h3>
+                    <v-text-field
+                      label="Name"
+                      v-model="settings.Cameras[0].Name"
+                    ></v-text-field>
+                    <table style="width: 100%;">
+                      <tbody>
+                        <tr>
+                          <td>
+                            <v-select
+                              class="mr-4"
+                              @change="on_camera_selected(0)"
+                              :items="camera_definitions"
+                              item-text="name"
+                              item-value="id"
+                              v-model="selected_camdef[0]"
+                              label="Manufacturer"
+                            ></v-select>
+                          </td>
+                          <td>
+                            <v-select
+                              @change="on_camera_model_selected(0)"
+                              :items="camera_models[0]"
+                              v-model="settings.Cameras[0].Model"
+                              label="Model"
+                            ></v-select>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <table style="width: 100%;">
+                      <tbody>
+                        <tr>
+                          <td>
+                            <v-text-field
+                              class="mr-4"
+                              label="IP"
+                              v-model="settings.Cameras[0].IPAddr"
+                            ></v-text-field>
+                          </td>
+                          <td>
+                            <v-text-field
+                              label="Port"
+                              v-model="settings.Cameras[0].Port"
+                            ></v-text-field>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <v-text-field
+                      label="URL"
+                      v-model="settings.Cameras[0].URL"
+                    ></v-text-field>
+                    <v-select
+                      :items="camtypes"
+                      label="Simulation Type"
+                      v-model="settings.Cameras[0].CameraSimulatorType"
+                    ></v-select>
+                    <v-checkbox
+                      label="Enabled"
+                      v-model="settings.Cameras[0].Enabled"
+                    ></v-checkbox>
+                  </v-col>
+
+                  <!-- Camera 2 -->
+                  <v-col cols="12" sm="6">
+                    <h3 style="margin-bottom: 1rem;">Camera 2</h3>
+                    <v-text-field
+                      label="Name"
+                      v-model="settings.Cameras[1].Name"
+                    ></v-text-field>
+                    <table style="width: 100%;">
+                      <tbody>
+                        <tr>
+                          <td>
+                            <v-select
+                              class="mr-4"
+                              @change="on_camera_selected(1)"
+                              :items="camera_definitions"
+                              item-text="name"
+                              item-value="id"
+                              v-model="selected_camdef[1]"
+                              label="Manufacturer"
+                            ></v-select>
+                          </td>
+                          <td>
+                            <v-select
+                              @change="on_camera_model_selected(1)"
+                              :items="camera_models[1]"
+                              v-model="settings.Cameras[1].Model"
+                              label="Model"
+                            ></v-select>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <table style="width: 100%;">
+                      <tbody>
+                        <tr>
+                          <td>
+                            <v-text-field
+                              class="mr-4"
+                              label="IP"
+                              v-model="settings.Cameras[1].IPAddr"
+                            ></v-text-field>
+                          </td>
+                          <td>
+                            <v-text-field
+                              label="Port"
+                              v-model="settings.Cameras[1].Port"
+                            ></v-text-field>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <v-text-field
+                      label="URL"
+                      v-model="settings.Cameras[1].URL"
+                    ></v-text-field>
+                    <v-select
+                      :items="camtypes"
+                      label="Simulation Type"
+                      v-model="settings.Cameras[1].CameraSimulatorType"
+                    ></v-select>
+                    <v-checkbox
+                      label="Enabled"
+                      v-model="settings.Cameras[1].Enabled"
+                    ></v-checkbox>
+                  </v-col>
+                </v-row>
+              </v-col>
+            </v-row>
+          </v-tabs-window-item>
+         </v-tabs-window>
+      </v-container>
+    </v-card-text>
+
+    <v-card-actions>
+      <v-spacer />
+      <v-btn color="green darken-1" @click="save()">Save</v-btn>
+      <v-btn color="red darken-1" @click="dialog = false">Cancel</v-btn>
+      <v-spacer />
+    </v-card-actions>
+  </v-card>
         </v-dialog>
     </v-layout>
 </template>

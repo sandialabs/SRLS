@@ -27,14 +27,15 @@
                     <i>Unoccupied/Occupied</i> radio buttons
                     to toggle the RPM's occupancy sensor.
                 </p>
-                <v-flex xs12>
-                    <v-slider
-                        v-model="gamma_sum"
-                        label="Gamma Sum"
-                        thumb-label
-                        min="0"
-                        max="2000"
-                        style="height: 30px;"
+                <v-row>
+                    <v-col cols="12">
+                        <v-slider
+                            v-model="gamma_sum"
+                            label="Gamma Sum"
+                            thumb-label
+                            min="0"
+                            max="2000"
+                            style="height: 30px;"
                         v-on:input="on_gamma_sum_change()"
                     ></v-slider>
                     <v-slider
@@ -87,12 +88,12 @@
                         style="height: 30px; margin-top: 30px;"
                         v-on:input="on_neutron_sum_change()"
                     ></v-slider>
-                </v-flex>
+                    </v-col>
+                </v-row>
                 <v-radio-group v-model="is_occupied" row v-on:change="on_occupancy_change()">
                     <v-radio label="Unoccupied" :value="false"></v-radio>
                     <v-radio label="Occupied" :value="true"></v-radio>
                 </v-radio-group>
-                <v-layout row></v-layout>
             </v-card-text>
 
             <v-divider></v-divider>

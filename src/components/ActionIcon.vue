@@ -1,25 +1,41 @@
 <template>
-    <span>
-        <v-tooltip v-if="tooltip" top v-bind:open-delay="delay">
-            <template v-slot:activator="{ on }">
-                <v-btn icon v-on="on" v-bind:disabled="disabled" style="margin: 0; padding: 0;">
-                    <v-icon
-                        v-bind:style="{ fontSize: size, margin: 0, padding: 0 }"
-                        v-on:click="$emit('icon-clicked')"
-                        :color="color"
-                    >{{icon}}</v-icon>
-                </v-btn>
-            </template>
-            <span>{{tooltip}}</span>
-        </v-tooltip>
-        <v-btn icon v-if="!tooltip" v-bind:style="{ fontSize: size, margin: 0, padding: 0 }">
-            <v-icon
-                v-on:click="$emit('icon-clicked')"
-                :color="color"
-                v-bind:style="{ fontSize: size, margin: 0, padding: 0 }"
-            >{{icon}}</v-icon>
+  <span>
+    <v-tooltip v-if="tooltip" location="top" :openDelay="delay">
+      <template #activator="{ props }">
+        <v-btn
+          icon
+          v-bind="props"
+          :disabled="disabled"
+          style="margin: 0; padding: 0;"
+          @click="$emit('icon-clicked')"
+        >
+          <v-icon
+            :color="color"
+            :style="{ fontSize: size, margin: 0, padding: 0 }"
+          >
+            {{ icon }}
+          </v-icon>
+          <span :style="{ color: color, fontSize: size, margin: 0, padding: 0 }" class="material-icons">{{ icon }}</span>
         </v-btn>
-    </span>
+      </template>
+      <span>{{ tooltip }}</span>
+    </v-tooltip>
+    <v-btn
+      icon
+      v-else
+      :disabled="disabled"
+      style="margin: 0; padding: 0;"
+      @click="$emit('icon-clicked')"
+    >
+      <v-icon
+        :color="color"
+        :style="{ fontSize: size, margin: 0, padding: 0 }"
+      >
+        {{ icon }}
+      </v-icon>
+          <span :style="{ color: color, fontSize: size, margin: 0, padding: 0 }" class="material-icons">{{ icon }}</span>
+    </v-btn>
+  </span>
 </template>
 
 <script>

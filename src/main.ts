@@ -6,12 +6,14 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 
+// import '@mdi/font/css/materialdesignicons.css'    // ← brings in mdi-*.css
 // Vuetify
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import { aliases, mdi } from 'vuetify/iconsets/mdi'
+import vuetify from '../plugins/vuetify'
 
 // Components
 import { SettingsManager } from "./lib/settings";
@@ -39,17 +41,17 @@ if (window.electronAPI && !window.electronAPI.existsSync("Replay")) {
 }
 
 
-const vuetify = createVuetify({
-  icons: {
-    defaultSet: "mdi",
-    aliases,
-    sets: {
-      mdi,
-    },
-  },
-  components,
-  directives,
-});
+// const vuetify = createVuetify({
+//   icons: {
+//     defaultSet: "mdi",
+//     aliases,
+//     sets: {
+//       mdi,
+//     },
+//   },
+//   components,
+//   directives,
+// });
 
 const app = createApp(App)
 

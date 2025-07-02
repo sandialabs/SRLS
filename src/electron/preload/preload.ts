@@ -1,9 +1,11 @@
 // All of the Node.js APIs are available in the preload process.
 // It has the same sandbox as a Chrome extension.
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, IpcMainEvent, ipcRenderer } from 'electron'
 import EventEmitter from 'events';
 import * as fs from 'fs';
 const path = require('path');
+
+// import * as net from "net";
 
 window.addEventListener('DOMContentLoaded', () => {
   const replaceText = (selector: any, text: any) => {
@@ -29,8 +31,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   writeFileSync: (file: fs.PathOrFileDescriptor, data: string) => fs.writeFileSync(file, data),
   mkdir: (path: fs.PathLike, callback: fs.NoParamCallback) => fs.mkdir(path, callback),
 
+  // createServer: (connectionListener?: (socket: net.Socket) => void) => net.createServer(connectionListener),
+  // listen: (port?: number, hostname?: string, listeningListener?: () => void) => net.Server.l .listen(port, hostname, listeningListener),
+
   // Endpoints for ipcRenderer: https://stackoverflow.com/questions/63615355/how-to-import-ipcrenderer-in-vue-js-dirname-is-not-defined
-  send: (channel: string, data: any[]) => {
+  send: (channel: string, event: IpcMainEvent, data: any[]) => {
     // let validChannels = ['nameOfClientChannel'] // <-- Array of all ipcRenderer Channels used in the client
     // if (validChannels.includes(channel)) {
     //   ipcRenderer.send(channel, data)
@@ -45,4 +50,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   //   }
     ipcRenderer.on(channel, (event, ...args) => func(...args))
   }
-})
+});
+
+contextBridge.exposeInMainWorld('net', require('net'));

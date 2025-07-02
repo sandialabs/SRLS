@@ -1,190 +1,190 @@
 <template>
-    <v-container fluid>
-        <LaneSettings ref="settingsdialog"></LaneSettings>
-        <Confirm ref="confirmdialog"></Confirm>
-        <Notify ref="notifydialog"></Notify>
-        <RPMControl ref="rpmcontrol"></RPMControl>
+  <v-container fluid>
+    <LaneSettings ref="settingsdialog" />
+    <Confirm ref="confirmdialog" />
+    <Notify ref="notifydialog" />
+    <RPMControl ref="rpmcontrol" />
 
-        <!-- this hidden canvas is used for rendering animated trucks -->
-        <canvas id="render-canvas" width="640" height="480" style="display:none;"></canvas>
+    <!-- this hidden canvas is used for rendering animated trucks -->
+    <canvas id="render-canvas" width="640" height="480" style="display: none;"></canvas>
 
-        <v-layout row justify-space-between style="margin-top: -1rem; margin-bottom: 1rem;">
-            <v-flex xs12>
-                <v-card>
-                    <v-card-title>
-                        <span class="page-title" style="margin-right: 20px;">{{labeltext}}</span>
-                        <v-flex style="margin-top: 10px;">
-                            <ActionIcon
-                                icon="repeat"
-                                color="red darken-2"
-                                tooltip="Toggle automatic mode"
-                                size="32px"
-                                style="margin-right: 20px;"
-                                v-on:icon-clicked="on_trigger_all('automode')"
-                            ></ActionIcon>
-                            <ActionIcon
-                                icon="local_shipping"
-                                color="red"
-                                tooltip="Gamma Alarm"
-                                size="32px"
-                                style="margin-right: 20px;"
-                                v-on:icon-clicked="on_trigger_all('GA')"
-                            ></ActionIcon>
-                            <ActionIcon
-                                icon="local_shipping"
-                                color="blue darken-2"
-                                tooltip="Neutron Alarm"
-                                size="32px"
-                                style="margin-right: 20px;"
-                                v-on:icon-clicked="on_trigger_all('NA')"
-                            ></ActionIcon>
-                            <ActionIcon
-                                icon="local_shipping"
-                                color="cyan lighten-2"
-                                tooltip="Neutron/Gamma Alarm"
-                                size="32px"
-                                style="margin-right: 20px;"
-                                v-on:icon-clicked="on_trigger_all('NG')"
-                            ></ActionIcon>
-                            <ActionIcon
-                                icon="local_shipping"
-                                color="green darken-1"
-                                tooltip="Innocent Alarm"
-                                size="32px"
-                                style="margin-right: 20px;"
-                                v-on:icon-clicked="on_trigger_all('OC')"
-                            ></ActionIcon>
-                            <ActionIcon
-                                icon="lock_open"
-                                color="red"
-                                tooltip="Toggle case tamper"
-                                size="32px"
-                                style="margin-right: 20px;"
-                                v-on:icon-clicked="on_trigger_all('TT')"
-                            ></ActionIcon>
-                        </v-flex>
-                        <ActionIcon
-                            icon="add_circle"
-                            size="32px"
-                            v-on:icon-clicked="on_add_lane()"
-                            style="margin-top: 10px;"
-                        ></ActionIcon>
-                    </v-card-title>
-                    <v-card-text>
-                        <table style="width: 100%;">
-                            <thead class="white--text">
-                                <tr>
-                                    <th>&nbsp;</th>
-                                    <th>Name</th>
-                                    <th style="text-align: center">
-                                        <v-icon class="white--text">wifi</v-icon>
-                                    </th>
-                                    <th style="text-align: center">
-                                        <v-icon class="white--text">people</v-icon>
-                                    </th>
-                                    <th>RPM</th>
-                                    <th>Camera 1</th>
-                                    <th>Camera 2</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="lane in lanedata" :key="lane.LaneID">
-                                    <td>
-                                        <ActionIcon
-                                            icon="create"
-                                            color="primary"
-                                            v-on:icon-clicked="on_trigger_lane(lane, 'editlane')"
-                                        ></ActionIcon>
-                                        <ActionIcon
-                                            icon="content_copy"
-                                            color="primary"
-                                            v-on:icon-clicked="on_trigger_lane(lane, 'clone')"
-                                        ></ActionIcon>
-                                        <ActionIcon
-                                            icon="tune"
-                                            color="primary"
-                                            v-on:icon-clicked="on_trigger_lane(lane, 'adjust')"
-                                        ></ActionIcon>
-                                        <ActionIcon
-                                            icon="delete"
-                                            color="red"
-                                            v-on:icon-clicked="on_trigger_lane(lane, 'delete')"
-                                        ></ActionIcon>
-                                    </td>
-                                    <td
-                                        v-bind:class="lane.OccupancyState"
-                                    >{{lane.LaneName}} {{lane.OccupancyState}}</td>
-                                    <td style="text-align: center;">
-                                        <ActionIcon
-                                            v-if="lane.Enabled"
-                                            color="green"
-                                            icon="wifi"
-                                            v-on:icon-clicked="on_toggle_lane(lane)"
-                                        />
-                                        <ActionIcon
-                                            color="red"
-                                            v-if="!lane.Enabled"
-                                            icon="do_not_disturb_alt"
-                                            v-on:icon-clicked="on_toggle_lane(lane)"
-                                        />
-                                    </td>
-                                    <td style="text-align:center;">{{lane.ClientCount}}</td>
-                                    <td>{{lane.RPM.IPAddr}}:{{lane.RPM.Port}}</td>
-                                    <td>{{camera_info(lane.Cameras[0])}}</td>
-                                    <td>{{camera_info(lane.Cameras[1])}}</td>
-                                    <td>
-                                        <ActionIcon
-                                            icon="repeat"
-                                            color="red darken-2"
-                                            tooltip="Toggle automatic mode"
-                                            :disabled="!lane.Enabled"
-                                            v-on:icon-clicked="on_trigger_lane(lane, 'automode')"
-                                        ></ActionIcon>
-                                        <ActionIcon
-                                            icon="local_shipping"
-                                            color="red"
-                                            tooltip="Gamma Alarm"
-                                            :disabled="!lane.Enabled"
-                                            v-on:icon-clicked="on_trigger_lane(lane, 'GA')"
-                                        ></ActionIcon>
-                                        <ActionIcon
-                                            icon="local_shipping"
-                                            color="blue darken-2"
-                                            tooltip="Neutron Alarm"
-                                            :disabled="!lane.Enabled"
-                                            v-on:icon-clicked="on_trigger_lane(lane, 'NA')"
-                                        ></ActionIcon>
-                                        <ActionIcon
-                                            icon="local_shipping"
-                                            color="cyan lighten-2"
-                                            tooltip="Neutron/Gamma Alarm"
-                                            :disabled="!lane.Enabled"
-                                            v-on:icon-clicked="on_trigger_lane(lane, 'NG')"
-                                        ></ActionIcon>
-                                        <ActionIcon
-                                            icon="local_shipping"
-                                            color="green darken-1"
-                                            tooltip="Innocent Alarm"
-                                            :disabled="!lane.Enabled"
-                                            v-on:icon-clicked="on_trigger_lane(lane, 'OC')"
-                                        ></ActionIcon>
-                                        <ActionIcon
-                                            icon="lock_open"
-                                            color="red"
-                                            tooltip="Toggle case tamper"
-                                            :disabled="!lane.Enabled"
-                                            v-on:icon-clicked="on_trigger_lane(lane, 'TT')"
-                                        ></ActionIcon>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </v-card-text>
-                </v-card>
-            </v-flex>
-        </v-layout>
-    </v-container>
+    <v-row justify="space-between" style="margin-top: -1rem; margin-bottom: 1rem;">
+      <v-col cols="12">
+        <v-card>
+          <v-card-title>
+            <span class="page-title" style="margin-right: 20px;">{{ labeltext }}</span>
+            <div style="margin-top: 10px;">
+              <ActionIcon
+                icon="repeat"
+                color="red darken-2"
+                tooltip="Toggle automatic mode"
+                size="32px"
+                style="margin-right: 20px;"
+                @icon-clicked="on_trigger_all('automode')"
+              />
+              <ActionIcon
+                icon="local_shipping"
+                color="red"
+                tooltip="Gamma Alarm"
+                size="32px"
+                style="margin-right: 20px;"
+                @icon-clicked="on_trigger_all('GA')"
+              />
+              <ActionIcon
+                icon="local_shipping"
+                color="blue"
+                tooltip="Neutron Alarm"
+                size="32px"
+                style="margin-right: 20px;"
+                @icon-clicked="on_trigger_all('NA')"
+              />
+              <ActionIcon
+                icon="local_shipping"
+                color="cyan"
+                tooltip="Neutron/Gamma Alarm"
+                size="32px"
+                style="margin-right: 20px;"
+                @icon-clicked="on_trigger_all('NG')"
+              />
+              <ActionIcon
+                icon="local_shipping"
+                color="green"
+                tooltip="Innocent Alarm"
+                size="32px"
+                style="margin-right: 20px;"
+                @icon-clicked="on_trigger_all('OC')"
+              />
+              <ActionIcon
+                icon="lock_open"
+                color="red"
+                tooltip="Toggle case tamper"
+                size="32px"
+                style="margin-right: 20px;"
+                @icon-clicked="on_trigger_all('TT')"
+              />
+            </div>
+            <ActionIcon
+              icon="add_circle"
+              size="32px"
+              @icon-clicked="on_add_lane()"
+              style="margin-top: 10px;"
+            />
+          </v-card-title>
+          <v-card-text>
+            <table style="width: 100%;">
+              <thead class="white--text">
+                <tr>
+                  <th>&nbsp;</th>
+                  <th>Name</th>
+                  <th style="text-align: center">
+                    <v-icon class="white--text">wifi</v-icon>
+                  </th>
+                  <th style="text-align: center">
+                    <v-icon class="white--text">people</v-icon>
+                  </th>
+                  <th>RPM</th>
+                  <th>Camera 1</th>
+                  <th>Camera 2</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="lane in lanedata" :key="lane.LaneID">
+                  <td>
+                    <ActionIcon
+                      icon="create"
+                      color="primary"
+                      @icon-clicked="on_trigger_lane(lane, 'editlane')"
+                    />
+                    <ActionIcon
+                      icon="content_copy"
+                      color="primary"
+                      @icon-clicked="on_trigger_lane(lane, 'clone')"
+                    />
+                    <ActionIcon
+                      icon="tune"
+                      color="primary"
+                      @icon-clicked="on_trigger_lane(lane, 'adjust')"
+                    />
+                    <ActionIcon
+                      icon="delete"
+                      color="red"
+                      @icon-clicked="on_trigger_lane(lane, 'delete')"
+                    />
+                  </td>
+                  <td :class="lane.OccupancyState">
+                    {{ lane.LaneName }} {{ lane.OccupancyState }}
+                  </td>
+                  <td style="text-align: center;">
+                    <ActionIcon
+                      v-if="lane.Enabled"
+                      color="green"
+                      icon="wifi"
+                      @icon-clicked="on_toggle_lane(lane)"
+                    />
+                    <ActionIcon
+                      v-else
+                      color="red"
+                      icon="do_not_disturb_alt"
+                      @icon-clicked="on_toggle_lane(lane)"
+                    />
+                  </td>
+                  <td style="text-align:center;">{{ lane.ClientCount }}</td>
+                  <td>{{ lane.RPM.IPAddr }}:{{ lane.RPM.Port }}</td>
+                  <td>{{ camera_info(lane.Cameras[0]) }}</td>
+                  <td>{{ camera_info(lane.Cameras[1]) }}</td>
+                  <td>
+                    <ActionIcon
+                      icon="repeat"
+                      color="red darken-2"
+                      tooltip="Toggle automatic mode"
+                      :disabled="!lane.Enabled"
+                      @icon-clicked="on_trigger_lane(lane, 'automode')"
+                    />
+                    <ActionIcon
+                      icon="local_shipping"
+                      color="red"
+                      tooltip="Gamma Alarm"
+                      :disabled="!lane.Enabled"
+                      @icon-clicked="on_trigger_lane(lane, 'GA')"
+                    />
+                    <ActionIcon
+                      icon="local_shipping"
+                      color="blue"
+                      tooltip="Neutron Alarm"
+                      :disabled="!lane.Enabled"
+                      @icon-clicked="on_trigger_lane(lane, 'NA')"
+                    />
+                    <ActionIcon
+                      icon="local_shipping"
+                      color="cyan"
+                      tooltip="Neutron/Gamma Alarm"
+                      :disabled="!lane.Enabled"
+                      @icon-clicked="on_trigger_lane(lane, 'NG')"
+                    />
+                    <ActionIcon
+                      icon="local_shipping"
+                      color="green darken-1"
+                      tooltip="Innocent Alarm"
+                      :disabled="!lane.Enabled"
+                      @icon-clicked="on_trigger_lane(lane, 'OC')"
+                    />
+                    <ActionIcon
+                      icon="lock_open"
+                      color="red"
+                      tooltip="Toggle case tamper"
+                      :disabled="!lane.Enabled"
+                      @icon-clicked="on_trigger_lane(lane, 'TT')"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
@@ -354,7 +354,7 @@ export default {
 
         poll: function() {
             this.lanedata.forEach(lane => {
-                lane.simulator.Poll();
+                lane.simulator?.Poll();
             });
             this.$forceUpdate();
         },

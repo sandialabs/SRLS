@@ -1,7 +1,7 @@
 {
     "Version": "1.0.0",
     "DefaultGammaBG": 256,
-    "DefaultNeutronBG": 3,
+    "DefaultNeutronBG": "4",
     "DefaultGammaDistribution": [
         0.25,
         0.25,
@@ -14,7 +14,7 @@
         0.25,
         0.25
     ],
-    "DefaultGammaNSigma": 7,
+    "DefaultGammaNSigma": "8",
     "DefaultNeutronThreshold": 7,
     "DefaultGHThreshold": 300,
     "DefaultGLThreshold": 100,
@@ -31,7 +31,7 @@
             "Enabled": false,
             "ClientCount": "0",
             "Status": "",
-            "OccupancyState": "",
+            "OccupancyState": "unoccupied",
             "RPMAlgorithm": "simulated",
             "AutoGammaProbability": 0.05,
             "AutoNeutronProbability": 0.05,
@@ -54,6 +54,120 @@
                     0.25
                 ],
                 "GammaNSigma": 7,
+                "NeutronThreshold": 7,
+                "GHThreshold": 300,
+                "GLThreshold": 100,
+                "NHThreshold": 7
+            },
+            "Cameras": [
+                {
+                    "Name": "Camera One",
+                    "Enabled": false,
+                    "Manufacturer": "unknown",
+                    "Model": "unknown",
+                    "IPAddr": "127.0.0.1",
+                    "Port": 10101,
+                    "URL": "",
+                    "CameraSimulatorType": "canned"
+                },
+                {
+                    "Name": "Camera Two",
+                    "Enabled": false,
+                    "Manufacturer": "unknown",
+                    "Model": "unknown",
+                    "IPAddr": "127.0.0.1",
+                    "Port": 10102,
+                    "URL": "",
+                    "CameraSimulatorType": "canned"
+                }
+            ]
+        },
+        {
+            "LaneID": 1751468339981,
+            "LaneName": "New Lane",
+            "Enabled": false,
+            "ClientCount": "0",
+            "Status": "",
+            "OccupancyState": "unoccupied",
+            "RPMAlgorithm": "simulated",
+            "AutoGammaProbability": 0.05,
+            "AutoNeutronProbability": 0.05,
+            "AutoInterval": 30,
+            "RPM": {
+                "IPAddr": "127.0.0.1",
+                "Port": 1600,
+                "GammaBG": 256,
+                "NeutronBG": 3,
+                "GammaDistribution": [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                ],
+                "NeutronDistribution": [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                ],
+                "GammaNSigma": 7,
+                "NeutronThreshold": 7,
+                "GHThreshold": 300,
+                "GLThreshold": 100,
+                "NHThreshold": 7
+            },
+            "Cameras": [
+                {
+                    "Name": "Camera One",
+                    "Enabled": false,
+                    "Manufacturer": "unknown",
+                    "Model": "unknown",
+                    "IPAddr": "127.0.0.1",
+                    "Port": 10101,
+                    "URL": "",
+                    "CameraSimulatorType": "canned"
+                },
+                {
+                    "Name": "Camera Two",
+                    "Enabled": false,
+                    "Manufacturer": "unknown",
+                    "Model": "unknown",
+                    "IPAddr": "127.0.0.1",
+                    "Port": 10102,
+                    "URL": "",
+                    "CameraSimulatorType": "canned"
+                }
+            ]
+        },
+        {
+            "LaneID": 1751490388466,
+            "LaneName": "New Lane 2",
+            "Enabled": false,
+            "ClientCount": "0",
+            "Status": "",
+            "OccupancyState": "unoccupied",
+            "RPMAlgorithm": "simulated",
+            "AutoGammaProbability": 0.05,
+            "AutoNeutronProbability": 0.05,
+            "AutoInterval": 30,
+            "RPM": {
+                "IPAddr": "127.0.0.3",
+                "Port": "1601",
+                "GammaBG": 256,
+                "NeutronBG": "4",
+                "GammaDistribution": [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                ],
+                "NeutronDistribution": [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                ],
+                "GammaNSigma": "8",
                 "NeutronThreshold": 7,
                 "GHThreshold": 300,
                 "GLThreshold": 100,

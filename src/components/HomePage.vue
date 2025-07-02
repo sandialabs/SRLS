@@ -1,10 +1,10 @@
 <template>
     <v-container fluid>
-        <v-layout>
-            <v-flex>
+        <v-row>
+            <v-col>
                 <Lanes labeltext="Lanes" :settingsmgr="appdata.settings"/>
-            </v-flex>
-        </v-layout>
+            </v-col>
+        </v-row>
     </v-container>
 </template>
 

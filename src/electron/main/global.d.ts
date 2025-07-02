@@ -1,3 +1,5 @@
+import { IpcMainEvent } from 'electron';
+
 // global.d.ts
 export {};
 
@@ -14,8 +16,13 @@ declare global {
       // writeFile: (path: string, data: string) => Promise<void>;
 
       // Endpoints for ipcRenderer
-      send: (channel: string, data: any[]) => void;
+      send: (channel: string, port: number, ipaddr: string) => void;
       receive: (channel: string, func: any) => void;
+
+      // createServer: (connectionListener?: (socket: Socket) => void) => Server;
+      // listen: (port?: number, hostname?: string, listeningListener?: () => void) => Server;
+      // net: typeof import('net');
+      net: typeof import('node:net');
     };
   }
 }

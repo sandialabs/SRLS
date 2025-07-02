@@ -7,6 +7,10 @@ import {
 } from 'electron';
 const electron = require("electron");
 import * as remoteMain from '@electron/remote/main';
+
+
+import * as net from "net";
+
   remoteMain.initialize();
 
 const isDev = process.env.npm_lifecycle_event === "app:dev" ? true : false;
@@ -31,6 +35,33 @@ function createWindow() {
     });
 
     remoteMain.enable(mainWindow.webContents);
+
+
+// import { Server } from 'node:net';
+
+let server: any;
+
+ipcMain.on('start-server', (event, port, ipaddr) => {
+
+  server = net.createServer((socket) => {
+    // Handle socket connection
+    // You can also send the socket object's properties, like this:
+    // event.sender.send('new-connection', {
+    //   remoteAddress: socket.remoteAddress,
+    //   remotePort: socket.remotePort,
+    // });
+
+  });
+  server.listen(port, ipaddr);
+});
+
+ipcMain.on('stop-server', () => {
+//   if (server) {
+//     server.close();
+//   }
+});
+
+
 
     // and load the index.html of the app.
     if (isDev) {
