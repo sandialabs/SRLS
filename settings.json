@@ -95,7 +95,7 @@
             "AutoInterval": 30,
             "RPM": {
                 "IPAddr": "127.0.0.1",
-                "Port": 1600,
+                "Port": "1609",
                 "GammaBG": 256,
                 "NeutronBG": 3,
                 "GammaDistribution": [

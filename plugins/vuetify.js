@@ -20,9 +20,9 @@ export default createVuetify({
     defaultSet: 'mdi',
     aliases,
     // sets: { mdi },
-    md: {
-        component: (props) => h(VLigatureIcon, { ...props, class: 'material-icons' })
-      }
+    // md: {
+    //     component: (props) => h(VLigatureIcon, { ...props, class: 'material-icons' })
+    //   }
   },
   // theme: {
   //   themes: {
