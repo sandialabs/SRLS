@@ -3,7 +3,8 @@ import {
     app,
     BrowserWindow,
     ipcMain,
-    dialog
+    dialog,
+    IpcMainEvent
 } from 'electron';
 const electron = require("electron");
 import * as remoteMain from '@electron/remote/main';
@@ -39,26 +40,30 @@ function createWindow() {
 
 // import { Server } from 'node:net';
 
-let server: any;
+let server: net.Server;
 
-ipcMain.on('start-server', (event, port, ipaddr) => {
-
-  server = net.createServer((socket) => {
-    // Handle socket connection
-    // You can also send the socket object's properties, like this:
-    // event.sender.send('new-connection', {
-    //   remoteAddress: socket.remoteAddress,
-    //   remotePort: socket.remotePort,
+ipcMain.on('start-server', (event: IpcMainEvent, port: number, ipaddr: string): any => {
+    // server = net.createServer((socket) => {
+    //     console.log(socket);
+        
+    //     event.sender.send('start-server-response', 'Server started successfully');
     // });
-
+    server = net.createServer((c) => {
+  // 'connection' listener.
+  console.log('client connected');
+  c.on('end', () => {
+    console.log('client disconnected');
   });
-  server.listen(port, ipaddr);
+  c.write('hello\r\n');
+  c.pipe(c);
+});
+    server.listen(port, ipaddr);
 });
 
 ipcMain.on('stop-server', () => {
-//   if (server) {
-//     server.close();
-//   }
+  if (server) {
+    server.close();
+  }
 });
 
 

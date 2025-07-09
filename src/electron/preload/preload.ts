@@ -35,12 +35,22 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // listen: (port?: number, hostname?: string, listeningListener?: () => void) => net.Server.l .listen(port, hostname, listeningListener),
 
   // Endpoints for ipcRenderer: https://stackoverflow.com/questions/63615355/how-to-import-ipcrenderer-in-vue-js-dirname-is-not-defined
-  send: (channel: string, event: IpcMainEvent, data: any[]) => {
-    // let validChannels = ['nameOfClientChannel'] // <-- Array of all ipcRenderer Channels used in the client
+  send: (channel: string, port: number, ipaddr: string): any => {
     // if (validChannels.includes(channel)) {
     //   ipcRenderer.send(channel, data)
     // }
-    ipcRenderer.send(channel, data)
+    // return new Promise<any>((resolveCallback) => {
+    //   ipcRenderer.send(channel, port, ipaddr);
+    //   // ipcRenderer.once(`${channel}-response`, (event, response) => {
+    //   ipcRenderer.once('start-server-response', (event, response) => {
+    //     console.log("Returned response", response);
+    //     resolveCallback(response);
+    //   });
+    // });
+
+    ipcRenderer.send(channel, port, ipaddr);
+      // ipcRenderer.once(`${channel}-response`, (event, response) => {
+      return "Return something";
   },
   receive: (channel: string, func: any) => {
   //   let validChannels = ['nameOfElectronChannel'] // <-- Array of all ipcMain Channels used in the electron

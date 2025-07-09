@@ -83,11 +83,17 @@ export class LaneSimulator {
                 ", Status = " +
                 this.Status
         );
+        try{
         this.RPM.Start();
         for (let cam of this.Cameras) {
             if (cam.m_is_enabled) cam.Start();
         }
         this.Settings.Status = "running";
+        }
+        catch (err) {
+            console.log("Error starting lane simulator " +  err);
+        }
+
     }
 
     public Stop(): void {

@@ -168,6 +168,7 @@ export class SettingsManager {
     save(): void {
         if (this.m_file_path) {
             console.log("Saving Settings to " + this.m_file_path);
+            console.trace(this.m_file_path);
             this.serialize(this.m_file_path);
         } else {
             console.log("Unable to save Settings - no file path");

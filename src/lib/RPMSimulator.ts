@@ -153,9 +153,29 @@ export class RPMSimulator extends Component {
         if (this.m_listener == null) {
             this.LogDebug("Starting listener on " + this.m_ipaddr + ":" + this.m_rpm_port);
             let self = this; // "this" will be something different in callback
+console.log("Starting listener on " + this.m_ipaddr + ":" + this.m_rpm_port);
 
 
-            window.electronAPI.send('start-server', this.m_rpm_port, this.m_ipaddr);
+            window.electronAPI.send('start-server', this.m_rpm_port, this.m_ipaddr).then((response) => {
+              console.log("Server response: ", response.ToString()); // Output: "Server started successfully"
+            });
+
+    // try {
+    //     const response = await window.electronAPI.send('start-server', this.m_rpm_port, this.m_ipaddr);
+    //     console.log(response.ToString());
+    // } catch (error) {
+    //     console.error(error);
+    // }
+    console.log("After Start");
+    
+
+            // ipcRenderer.on('socket-created', (event, socket) => {
+            // // Handle the socket object here
+            // console.log("SOcket Created: ", socket);
+            // });
+
+            
+
             // window.electronAPI.on('new-connection', (event, socket) => {
             //    console.log(`New connection from ${socket.remoteAddress}:${socket.remotePort}`);
             
@@ -212,7 +232,7 @@ export class RPMSimulator extends Component {
             clearInterval(this.m_timer);
             // this.m_timer = undefined; // Original code which is no longer valid typescript
         }
-        window.electronAPI.send('stop-server', []);
+        window.electronAPI.send('stop-server', 0, '');
     }
 
     //------------------------------------------------------------

@@ -28,7 +28,7 @@
         {
             "LaneID": 1749230744907,
             "LaneName": "Lane 1",
-            "Enabled": false,
+            "Enabled": true,
             "ClientCount": "0",
             "Status": "",
             "OccupancyState": "unoccupied",
@@ -152,7 +152,7 @@
             "AutoInterval": 30,
             "RPM": {
                 "IPAddr": "127.0.0.3",
-                "Port": "1601",
+                "Port": "1602",
                 "GammaBG": 256,
                 "NeutronBG": "4",
                 "GammaDistribution": [
