@@ -6,15 +6,16 @@ import {
     dialog,
     IpcMainEvent
 } from 'electron';
-const electron = require("electron");
+//const electron = require("electron");
 import * as remoteMain from '@electron/remote/main';
 
 
 import * as net from "net";
 
-  remoteMain.initialize();
+remoteMain.initialize();
 
 const isDev = process.env.npm_lifecycle_event === "app:dev" ? true : false;
+
 
 async function handleFileOpen() {
     const { canceled, filePaths } = await dialog.showOpenDialog({ title: "Open File" })
@@ -40,7 +41,7 @@ function createWindow() {
 
 // import { Server } from 'node:net';
 
-let server: net.Server;
+let server: net.Server | null = null;
 
 ipcMain.on('start-server', (event: IpcMainEvent, port: number, ipaddr: string): any => {
     // server = net.createServer((socket) => {
@@ -48,6 +49,10 @@ ipcMain.on('start-server', (event: IpcMainEvent, port: number, ipaddr: string): 
         
     //     event.sender.send('start-server-response', 'Server started successfully');
     // });
+      if (server) {
+        event.sender.send('start-server-response', 'Server is already running');
+        return;
+    }
     server = net.createServer((c) => {
   // 'connection' listener.
   console.log('client connected');
@@ -58,6 +63,8 @@ ipcMain.on('start-server', (event: IpcMainEvent, port: number, ipaddr: string): 
   c.pipe(c);
 });
     server.listen(port, ipaddr);
+    console.log('Server started on ${ipaddr}:${port}');
+    event.sender.send('start-server-response', 'Server started successfully');
 });
 
 ipcMain.on('stop-server', () => {
