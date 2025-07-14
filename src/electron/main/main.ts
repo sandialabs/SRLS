@@ -8,8 +8,6 @@ import {
 } from 'electron';
 //const electron = require("electron");
 import * as remoteMain from '@electron/remote/main';
-
-
 import * as net from "net";
 
 remoteMain.initialize();
@@ -42,29 +40,61 @@ function createWindow() {
 // import { Server } from 'node:net';
 
 let server: net.Server | null = null;
+const sockets: { [id: string]: net.Socket } = {};
 
-ipcMain.on('start-server', (event: IpcMainEvent, port: number, ipaddr: string): any => {
-    // server = net.createServer((socket) => {
-    //     console.log(socket);
-        
-    //     event.sender.send('start-server-response', 'Server started successfully');
-    // });
-      if (server) {
-        event.sender.send('start-server-response', 'Server is already running');
-        return;
-    }
-    server = net.createServer((c) => {
+ipcMain.handle('start-server', async (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string): Promise<any> => {
+    let id: string = 'undefined';
+
+    server = await net.createServer((c) => {
   // 'connection' listener.
   console.log('client connected');
+          // When creating a new socket
+        
+        id = ipaddr + ':' + port.toString();
+        sockets[id] = c;
+
+
   c.on('end', () => {
     console.log('client disconnected');
+    delete sockets[id]; // Remove the socket object when the connection is closed
   });
   c.write('hello\r\n');
+
+//   setTimeout(() => {
+//     c.write('hello\r\n');
+//   }, 5000); // 5000 milliseconds = 5 seconds
+
   c.pipe(c);
+  
 });
-    server.listen(port, ipaddr);
-    console.log('Server started on ${ipaddr}:${port}');
-    event.sender.send('start-server-response', 'Server started successfully');
+    let response = "Old Response";
+
+    // server.listen(port, ipaddr, () => {
+    //     console.log(`Also listening on ${JSON.stringify(server?.address())}`);
+    //     response = JSON.stringify(server?.address());
+    // });
+    return new Promise((resolve, reject) => {
+        server?.listen(port, ipaddr, () => {
+            console.log(`Also listening on ${JSON.stringify(server?.address())}`);
+            const response = JSON.stringify(server?.address());
+            let firstSocket = Object.values(sockets)[0] || null;
+            console.log("Socket: ", JSON.stringify(firstSocket));
+            console.log("Sockets 2: ", JSON.stringify(sockets));
+            console.log("Internal ID:" + id);
+            
+            
+            resolve(response);
+        });
+    });
+
+    // console.log(`Server started on ${ipaddr}:${port}`);
+    // event.sender.send('start-server-response', 'Server started successfully');
+    // // return "Response from main process";
+    // console.log("Address:", server.address()?.toString());
+    // console.log("Address 2:", response);
+    // console.log("ID:", id);
+    // console.log("Sockets:", JSON.stringify(sockets));
+    // return id;
 });
 
 ipcMain.on('stop-server', () => {
@@ -110,3 +140,4 @@ app.on('window-all-closed', () => {
         app.quit();
     }
 });
+

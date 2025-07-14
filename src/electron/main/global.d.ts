@@ -16,7 +16,7 @@ declare global {
       // writeFile: (path: string, data: string) => Promise<void>;
 
       // Endpoints for ipcRenderer
-      send: (channel: string, port: number, ipaddr: string) => any;
+      send: (channel: string, port: number, ipaddr: string) => Promise<any>;
       receive: (channel: string, func: any) => void;
 
       // createServer: (connectionListener?: (socket: Socket) => void) => Server;

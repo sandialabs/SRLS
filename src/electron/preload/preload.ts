@@ -1,6 +1,6 @@
 // All of the Node.js APIs are available in the preload process.
 // It has the same sandbox as a Chrome extension.
-import { contextBridge, IpcMainEvent, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import EventEmitter from 'events';
 import * as fs from 'fs';
 const path = require('path');
@@ -35,7 +35,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // listen: (port?: number, hostname?: string, listeningListener?: () => void) => net.Server.l .listen(port, hostname, listeningListener),
 
   // Endpoints for ipcRenderer: https://stackoverflow.com/questions/63615355/how-to-import-ipcrenderer-in-vue-js-dirname-is-not-defined
-  send: (channel: string, port: number, ipaddr: string): any => {
+  send: async (channel: string, port: number, ipaddr: string): Promise<any> => {
     // if (validChannels.includes(channel)) {
     //   ipcRenderer.send(channel, data)
     // }
@@ -48,9 +48,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
     //   });
     // });
 
-    ipcRenderer.send(channel, port, ipaddr);
+let response: any = await ipcRenderer.invoke(channel, port, ipaddr);
+console.log("Returned response", JSON.stringify(response));
+    
+    return response;
       // ipcRenderer.once(`${channel}-response`, (event, response) => {
-      return "Return something";
+      // return "Return something";
+
   },
   receive: (channel: string, func: any) => {
   //   let validChannels = ['nameOfElectronChannel'] // <-- Array of all ipcMain Channels used in the electron

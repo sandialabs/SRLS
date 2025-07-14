@@ -156,13 +156,14 @@ export class RPMSimulator extends Component {
 console.log("Starting listener on " + this.m_ipaddr + ":" + this.m_rpm_port);
 
 
-            window.electronAPI.send('start-server', this.m_rpm_port, this.m_ipaddr).then((response) => {
-              console.log("Server response: ", response.ToString()); // Output: "Server started successfully"
+            const response = window.electronAPI.send('start-server', this.m_rpm_port, this.m_ipaddr).then((response) => {
+              console.log("Server response: ", JSON.stringify(response)); // Output: "Server started successfully"
             });
+            console.log(JSON.stringify(response));
 
     // try {
-    //     const response = await window.electronAPI.send('start-server', this.m_rpm_port, this.m_ipaddr);
-    //     console.log(response.ToString());
+    //     const response = window.electronAPI.send('start-server', this.m_rpm_port, this.m_ipaddr);
+    //     console.log(JSON.stringify(response));
     // } catch (error) {
     //     console.error(error);
     // }

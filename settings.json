@@ -28,7 +28,7 @@
         {
             "LaneID": 1749230744907,
             "LaneName": "Lane 1",
-            "Enabled": true,
+            "Enabled": false,
             "ClientCount": "0",
             "Status": "",
             "OccupancyState": "unoccupied",
@@ -199,7 +199,7 @@
         {
             "LaneID": 1752168675743,
             "LaneName": "Lane 1 Copy",
-            "Enabled": true,
+            "Enabled": false,
             "ClientCount": "0",
             "Status": "",
             "OccupancyState": "unoccupied",
