@@ -40,31 +40,33 @@ function createWindow() {
 // import { Server } from 'node:net';
 
 let server: net.Server | null = null;
-const sockets: { [id: string]: net.Socket } = {};
+// let sockets: { [id: string]: net.Socket } = {};
+let sockets: net.Socket[] = [];
 
-ipcMain.handle('start-server', async (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string): Promise<any> => {
+ipcMain.handle('start-server', (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string): Promise<any> => {
     let id: string = 'undefined';
+    let idNum: number = 0;
 
-    server = await net.createServer((c) => {
+    server = net.createServer((socket) => {
   // 'connection' listener.
   console.log('client connected');
           // When creating a new socket
         
         id = ipaddr + ':' + port.toString();
-        sockets[id] = c;
+        sockets[idNum] = socket;
 
 
-  c.on('end', () => {
+  socket.on('end', () => {
     console.log('client disconnected');
-    delete sockets[id]; // Remove the socket object when the connection is closed
+    delete sockets[idNum]; // Remove the socket object when the connection is closed
   });
-  c.write('hello\r\n');
+  socket.write('hello\r\n');
 
 //   setTimeout(() => {
 //     c.write('hello\r\n');
 //   }, 5000); // 5000 milliseconds = 5 seconds
 
-  c.pipe(c);
+  socket.pipe(socket);
   
 });
     let response = "Old Response";
@@ -75,15 +77,16 @@ ipcMain.handle('start-server', async (event: Electron.IpcMainInvokeEvent, port: 
     // });
     return new Promise((resolve, reject) => {
         server?.listen(port, ipaddr, () => {
-            console.log(`Also listening on ${JSON.stringify(server?.address())}`);
-            const response = JSON.stringify(server?.address());
+            const addressInfo = server?.address() as net.AddressInfo;
+            const response = JSON.stringify(addressInfo);
+            const id: string = addressInfo?.address + ':' + (addressInfo?.port).toString(); // Use optional chaining to access the port property
             let firstSocket = Object.values(sockets)[0] || null;
             console.log("Socket: ", JSON.stringify(firstSocket));
             console.log("Sockets 2: ", JSON.stringify(sockets));
             console.log("Internal ID:" + id);
             
             
-            resolve(response);
+            resolve(id);
         });
     });
 
@@ -97,11 +100,32 @@ ipcMain.handle('start-server', async (event: Electron.IpcMainInvokeEvent, port: 
     // return id;
 });
 
-ipcMain.on('stop-server', () => {
+ipcMain.handle('stop-server', (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string): Promise<any> => {
+    console.log("Sockets b: ", JSON.stringify(sockets));
+  // Stop the server here
   if (server) {
     server.close();
   }
+  return Promise.resolve(); // Return a resolved promise
 });
+
+ipcMain.handle("get-server", (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string): Promise<any> => {
+    console.log("Get server called with: ", ipaddr);
+    let idNum: number = 0;
+    
+    if (sockets && ipaddr) {
+      // Use the find method to locate the socket
+      if (sockets[idNum] !== undefined && sockets[idNum] !== null) {
+        console.log("Socket found: " + sockets[idNum]);
+      }
+    }
+    console.log("Socketa: ", JSON.stringify(sockets));
+    console.log("1 Socket: ", JSON.stringify(sockets[idNum]));
+    
+    return Promise.resolve("test test test"); // Return a resolved promise
+  }
+);
+
 
 
 

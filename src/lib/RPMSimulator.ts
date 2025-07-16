@@ -168,6 +168,11 @@ console.log("Starting listener on " + this.m_ipaddr + ":" + this.m_rpm_port);
     //     console.error(error);
     // }
     console.log("After Start");
+ 
+    const response2 = window.electronAPI.send('get-server', 0, '127.0.0.1:1609').then((response) => {
+              console.log("Get Server response: ", JSON.stringify(response)); // Output: "Server started successfully"
+            });
+            console.log("Get server JSON:", JSON.stringify(response2));
     
 
             // ipcRenderer.on('socket-created', (event, socket) => {
