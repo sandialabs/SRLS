@@ -1,21 +1,21 @@
 //const http = require('http')
 import * as fs from "fs";
 import * as http from "http";
-import { CameraSettings } from "./settings";
+import { ICameraSettings } from "./ICameraSettings";
 import { CameraSimulator } from "./CameraSimulator";
 import { TruckGenerator } from "./TruckGenerator";
 import { runInThisContext } from "vm";
 
 export class AnimatedTruckSimulator extends CameraSimulator {
     m_canvas: HTMLCanvasElement;
-    m_images: Uint8Array[];
-    m_image_duration_ms: number; // how long to display each occupancy image
+    m_images: Uint8Array[] = [];
+    m_image_duration_ms: number = 200; // how long to display each occupancy image
     m_image_width = 640;
     m_image_height = 480;
-    m_last_image: Buffer;
+    m_last_image: Buffer | null = null;
     m_image_generator: TruckGenerator;
 
-    public constructor(settings: CameraSettings, name: string, canvas: HTMLCanvasElement) {
+    public constructor(settings: ICameraSettings, name: string, canvas: HTMLCanvasElement) {
         super(settings, name);
         console.log("Creating AnimatedTruckSimulator - canvas", canvas);
         this.m_canvas = canvas;
@@ -37,7 +37,7 @@ export class AnimatedTruckSimulator extends CameraSimulator {
     //
     //------------------------------------------------------------
     /** Initialize prior to starting */
-    Startup(): void {}
+    Startup(): void { }
 
     //------------------------------------------------------------
     //
@@ -47,7 +47,7 @@ export class AnimatedTruckSimulator extends CameraSimulator {
     //
     //------------------------------------------------------------
     /** Cleanup after stopping */
-    Shutdown(): void {}
+    Shutdown(): void { }
 
     //------------------------------------------------------------
     //
@@ -62,7 +62,7 @@ export class AnimatedTruckSimulator extends CameraSimulator {
     GetDefaultImage(): Buffer {
         //console.log("In AnimatedTruckSimulator.GetDefaultImage");
         let image = this.m_image_generator.drawDefault(this.m_image_width, this.m_image_height);
-        return Buffer.from(image as Buffer);
+        return Buffer.from(image);
         // return this.m_last_image;
     }
 
@@ -107,7 +107,7 @@ export class AnimatedTruckSimulator extends CameraSimulator {
         let imagenum = Math.min(image_count - 1, Math.round(offset_ms / this.m_image_duration_ms));
         let image = this.m_images[imagenum];
         //this.LogDebug("    GetOccupancyImage: returning image " + (1+imagenum) + " of " + image_count);
-        let result = Buffer.from(image as Buffer);
+        let result = Buffer.from(image);
         this.m_last_image = result;
         return result;
     }

@@ -2,7 +2,7 @@
 import * as fs from 'fs';
 import * as http from "http"
 import { Component } from './Component';
-import { CameraSettings } from './settings';
+import { ICameraSettings } from "./ICameraSettings";
 //import * as mjpegserver from "mjpeg-server";
 //import { TruckGenerator } from '../RPMLib/TruckGenerator';
 import { runInThisContext } from 'vm';
@@ -40,10 +40,10 @@ import { Server } from 'net';
 //
 //############################################################
 export class CameraSimulator extends Component {
-    m_settings: CameraSettings;
+    m_settings: ICameraSettings;
     m_is_enabled = false;
     m_name: string;
-    m_server: http.Server;
+    m_server: http.Server | null = null;
     //m_canvas: HTMLCanvasElement;
     m_occupancy_start_time = 0;
     //m_image_duration_ms = 0;
@@ -57,7 +57,7 @@ export class CameraSimulator extends Component {
     m_oneshot_request_urls = ['oneshotimage.jpg', 'now.jpg'];
 
 
-    constructor(settings: CameraSettings, name: string) {
+    constructor(settings: ICameraSettings, name: string) {
         super('CameraSimulator');
         this.m_logger.Level = ELogLevel.LOG_DEBUG;
         this.m_settings = settings;

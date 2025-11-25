@@ -4,7 +4,10 @@ import { RPMSimulator } from "./RPMSimulator";
 import { CameraSimulator } from "./CameraSimulator";
 import { CannedImageSimulator } from "./CannedImageSimulator";
 import { AnimatedTruckSimulator } from "./AnimatedTruckSimulator";
-import { Settings, LaneSettings, RPMSettings, CameraSettings } from "./settings";
+import { ISettings } from "./ISettings";
+import { ILaneSettings } from "./ILaneSettings";
+import { IRPMSettings } from "./IRPMSettings";
+import { ICameraSettings } from "./ICameraSettings";
 import { Logger, ELogLevel } from "./Logger";
 
 var NextLaneID = 1;
@@ -12,13 +15,13 @@ var NextLaneID = 1;
 export class LaneSimulator {
     m_is_paused: boolean = false;
 
-    Settings: LaneSettings;
+    Settings: ILaneSettings;
     Name: string;
     IsEnabled: boolean = false;
     IsRunning: boolean = false;
     OccupancyState: string = "normal";
     IsInAutoMode: boolean = false;
-    RPM: RPMSimulator;
+    RPM: RPMSimulator | null;
     Cameras: CameraSimulator[];
     LaneID: number = 0;
     Status: string = "new";
@@ -31,10 +34,11 @@ export class LaneSimulator {
     set IsPaused(val: boolean) {
         console.log("Setting paused state of " + this.Name + " to " + val);
         this.m_is_paused = val;
-        this.RPM.m_is_paused = val;
+        if (this.RPM)
+            this.RPM.m_is_paused = val;
     }
 
-    constructor(settings: LaneSettings, canvas: HTMLCanvasElement) {
+    constructor(settings: ILaneSettings, canvas: HTMLCanvasElement) {
         this.Log = new Logger(settings.LaneName, ELogLevel.LOG_INFO);
         console.log("Creating LaneSimulator", settings);
         this.Settings = settings;
@@ -44,15 +48,16 @@ export class LaneSimulator {
         this.Name = settings.LaneName;
         this.IsEnabled = settings.Enabled;
         this.create_rpm(settings);
+        this.RPM = null;
         this.Cameras = [];
         let imagedir = "Front";
         let camnum = 1;
-        for (let cam of settings.Cameras) {
+        settings.Cameras.forEach(cam => {
             let camsim = this.create_camera(cam, this.Name + " Camera " + camnum, imagedir);
             this.Cameras.push(camsim);
             imagedir = "Rear";
             camnum += 1;
-        }
+        });
     }
 
     public Clone() {
@@ -60,7 +65,7 @@ export class LaneSimulator {
         return result;
     }
 
-    public static CreateLanes(settings: Settings, canvas: HTMLCanvasElement): LaneSimulator[] {
+    public static CreateLanes(settings: ISettings, canvas: HTMLCanvasElement): LaneSimulator[] {
         let result: LaneSimulator[] = [];
         for (let lanedef of settings.Lanes) {
             let lane = new LaneSimulator(lanedef, canvas);
@@ -77,28 +82,28 @@ export class LaneSimulator {
     public Start(): void {
         console.log(
             "Starting lane simulator " +
-                this.Name +
-                ": IsEnabled = " +
-                this.IsEnabled +
-                ", Status = " +
-                this.Status
+            this.Name +
+            ": IsEnabled = " +
+            this.IsEnabled +
+            ", Status = " +
+            this.Status
         );
-        try{
-        this.RPM.Start();
-        for (let cam of this.Cameras) {
-            if (cam.m_is_enabled) cam.Start();
-        }
-        this.Settings.Status = "running";
+        try {
+            this.RPM?.Start();
+            for (let cam of this.Cameras) {
+                if (cam.m_is_enabled) cam.Start();
+            }
+            this.Settings.Status = "running";
         }
         catch (err) {
-            console.log("Error starting lane simulator " +  err);
+            console.log("Error starting lane simulator " + err);
         }
 
     }
 
     public Stop(): void {
         console.log("Stopping " + this.Name);
-        this.RPM.Stop();
+        this.RPM?.Stop();
         for (let cam of this.Cameras) {
             cam.Stop();
         }
@@ -164,12 +169,12 @@ export class LaneSimulator {
 
     public Poll(): void {
         let result = false;
-        this.OccupancyState = this.RPM.OccupancyState();
+        this.OccupancyState = this.RPM ? this.RPM.OccupancyState() : "";
         this.Settings.OccupancyState = this.OccupancyState;
-        if (this.RPM.m_clients.length > 0) {
-            this.Settings.ClientCount = this.RPM.m_clients.length.toString();
+        if (this.RPM && this.RPM.m_clients.length > 0) {
+            this.Settings.ClientCount = this.RPM.m_clients.length;
         } else {
-            this.Settings.ClientCount = "";
+            this.Settings.ClientCount = 0;
         }
     }
 
@@ -178,10 +183,10 @@ export class LaneSimulator {
             this.IsInAutoMode = val;
             if (val) {
                 this.Log.Debug("Starting auto mode");
-                this.RPM.StartAutoMode();
+                this.RPM?.StartAutoMode();
             } else {
                 this.Log.Debug("Stopping auto mode");
-                this.RPM.StopAutoMode();
+                this.RPM?.StopAutoMode();
             }
         }
     }
@@ -193,7 +198,7 @@ export class LaneSimulator {
     }
 
     private create_camera(
-        settings: CameraSettings,
+        settings: ICameraSettings,
         camera_name: string,
         imagedir: string
     ): CameraSimulator {
@@ -213,7 +218,7 @@ export class LaneSimulator {
         return result;
     }
 
-    private create_rpm(settings: LaneSettings): void {
+    private create_rpm(settings: ILaneSettings): void {
         if (this.RPM != null) {
             this.RPM.Stop();
             // this.RPM = null;

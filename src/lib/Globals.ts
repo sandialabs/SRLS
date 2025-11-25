@@ -6,7 +6,14 @@
 
 export const AppVersion = "1.0.0";
 
-export const CameraDefinitions = [
+export interface ICameraDefinitions {
+    manufacturer: string;
+    access: "jpg";
+    models: string[];
+    url: string;
+}
+
+export const CameraDefinitions: ICameraDefinitions[] = [
     {
         manufacturer: "Sony",
         access: "jpg",

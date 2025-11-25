@@ -4,13 +4,13 @@ import { Component } from "./Component";
 import { RPMProfile, DetectorValues } from "./RPMProfile";
 // import * as net from "net";
 import { ipcRenderer } from 'electron';
-const net = window.net;
 import * as fs from "fs";
 import * as path from "path";
 //import { ProfileGenerator1 } from "./ProfileGenerator1";
 import { ProfileGenerator2 } from "./ProfileGenerator2";
-import { LaneSettings } from "./settings";
+import { ILaneSettings } from "./ILaneSettings";
 import { ELogLevel, Logger } from "./Logger";
+import { LaneSimulator } from "./LaneSim";
 
 const ONE_YEAR = 60 * 60 * 24 * 365 * 1000;
 
@@ -28,7 +28,7 @@ export class RPMSimulator extends Component {
     static na_files: string[] = [];
     static ng_files: string[] = [];
 
-    m_owner: any; // the LaneSimulator that created us
+    m_owner?: LaneSimulator; // the LaneSimulator that created us
 
     m_ga_file_cursor = 0;
     m_na_file_cursor = 0;
@@ -60,8 +60,8 @@ export class RPMSimulator extends Component {
     // distribution of counts: ML, MU, SL, SU
     m_gamma_distribution = [0.25, 0.25, 0.25, 0.25]; // ml, mu, sl, su
     m_neutron_distribution = [0.25, 0.25, 0.25, 0.25]; // mu, ml, su, sl
-    m_current_gamma_counts: number[];
-    m_current_neutron_counts: number[];
+    m_current_gamma_counts: number[] = [];
+    m_current_neutron_counts: number[] = [];
     m_gamma_count_randomization = 0.1;
     m_neutron_count_randomization = 1.0;
     m_next_background_time: number;
@@ -69,16 +69,16 @@ export class RPMSimulator extends Component {
     m_is_occupied = false;
     m_next_gs_time = new Date().getTime() + ONE_YEAR; // used when m_is_occupied is on
     m_next_ns_time = new Date().getTime() + ONE_YEAR; // used when m_is_occupied is on
-    m_timer: NodeJS.Timer;
+    m_timer: NodeJS.Timeout | undefined;
 
     // Automatic profile generation
     m_auto_mode_active = false;
     m_auto_mode_gamma_probability = 0.044;
     m_auto_mode_neutron_probability = 0.044;
     m_auto_mode_interval_seconds = 30.44;
-    m_auto_mode_next_occupancy_time: number;
+    m_auto_mode_next_occupancy_time: number = new Date().getTime() + 1000 * 60 * 60 * 24 * 365;
 
-    m_is_paused = false;
+    private m_is_paused = false;
     m_debug = false;
 
     get Name(): string {
@@ -86,6 +86,14 @@ export class RPMSimulator extends Component {
     }
     set Name(val: string) {
         this.m_name = val;
+    }
+
+    get IsPaused(): boolean {
+        return this.m_is_paused;
+    }
+    set IsPaused(value: boolean) {
+        console.log(`RPMSimulator ${this.Name} IsPaused: ${value}`);
+        this.m_is_paused = value;
     }
 
     //------------------------------------------------------------
@@ -122,7 +130,7 @@ export class RPMSimulator extends Component {
         this.m_neutron_threshold = 7;
     }
 
-    public SetOwner(owner: any) {
+    public SetOwner(owner: LaneSimulator) {
         this.m_owner = owner;
     }
 
@@ -138,13 +146,13 @@ export class RPMSimulator extends Component {
         this.m_neutron_threshold = neutron_threshold;
         this.LogInfo(
             "Have new settings: GammaGB=" +
-                gamma_bg +
-                ", NeutronBG=" +
-                neutron_bg +
-                ", GammaNSigma=" +
-                gamma_nsigma +
-                ", NeutronThreshold=" +
-                neutron_threshold
+            gamma_bg +
+            ", NeutronBG=" +
+            neutron_bg +
+            ", GammaNSigma=" +
+            gamma_nsigma +
+            ", NeutronThreshold=" +
+            neutron_threshold
         );
     }
 
@@ -153,38 +161,38 @@ export class RPMSimulator extends Component {
         if (this.m_listener == null) {
             this.LogDebug("Starting listener on " + this.m_ipaddr + ":" + this.m_rpm_port);
             let self = this; // "this" will be something different in callback
-console.log("Starting listener on " + this.m_ipaddr + ":" + this.m_rpm_port);
+            console.log("Starting listener on " + this.m_ipaddr + ":" + this.m_rpm_port);
 
 
             const response = window.electronAPI.send('start-server', this.m_rpm_port, this.m_ipaddr).then((response) => {
-              console.log("Server response: ", JSON.stringify(response)); // Output: "Server started successfully"
+                console.log("Server response: ", JSON.stringify(response)); // Output: "Server started successfully"
             });
             console.log(JSON.stringify(response));
 
-    // try {
-    //     const response = window.electronAPI.send('start-server', this.m_rpm_port, this.m_ipaddr);
-    //     console.log(JSON.stringify(response));
-    // } catch (error) {
-    //     console.error(error);
-    // }
-    console.log("After Start");
- 
-    const response2 = window.electronAPI.send('get-server', 0, '127.0.0.1:1609').then((response) => {
-              console.log("Get Server response: ", JSON.stringify(response)); // Output: "Server started successfully"
+            // try {
+            //     const response = window.electronAPI.send('start-server', this.m_rpm_port, this.m_ipaddr);
+            //     console.log(JSON.stringify(response));
+            // } catch (error) {
+            //     console.error(error);
+            // }
+            console.log("After Start");
+
+            const response2 = window.electronAPI.send('get-server', 0, '127.0.0.1:1609').then((response) => {
+                console.log("Get Server response: ", JSON.stringify(response)); // Output: "Server started successfully"
             });
             console.log("Get server JSON:", JSON.stringify(response2));
-    
+
 
             // ipcRenderer.on('socket-created', (event, socket) => {
             // // Handle the socket object here
             // console.log("SOcket Created: ", socket);
             // });
 
-            
+
 
             // window.electronAPI.on('new-connection', (event, socket) => {
             //    console.log(`New connection from ${socket.remoteAddress}:${socket.remotePort}`);
-            
+
             // this.m_listener = net
             //     .createServer(socket => {
             //         // this is called every time a client connects
@@ -212,10 +220,10 @@ console.log("Starting listener on " + this.m_ipaddr + ":" + this.m_rpm_port);
             //         });
             //     })
             //     .listen(this.m_rpm_port, this.m_ipaddr);
-//   });
+            //   });
 
             this.LogDebug("RPM server created.");
-            this.m_timer = setInterval(() => {
+            this.m_timer = setTimeout(() => {
                 self.on_timer();
             }, 10);
         }
@@ -236,6 +244,7 @@ console.log("Starting listener on " + this.m_ipaddr + ":" + this.m_rpm_port);
             this.m_listener.close(() => this.LogDebug("    CLOSED"));
             this.m_listener = null;
             clearInterval(this.m_timer);
+            this.m_timer = undefined;
             // this.m_timer = undefined; // Original code which is no longer valid typescript
         }
         window.electronAPI.send('stop-server', 0, '');
@@ -283,7 +292,7 @@ console.log("Starting listener on " + this.m_ipaddr + ":" + this.m_rpm_port);
         this.m_is_paused = false;
     }
 
-    public UpdateFromSettings(settings: LaneSettings): void {
+    public UpdateFromSettings(settings: ILaneSettings): void {
         this.LogDebug("RPMSimulator.UpdateFromSettings:");
         this.m_gamma_background = settings.RPM.GammaBG;
         this.m_neutron_background = settings.RPM.NeutronBG;
@@ -622,12 +631,12 @@ console.log("Starting listener on " + this.m_ipaddr + ":" + this.m_rpm_port);
                     }
                     console.log(
                         "Read " +
-                            RPMSimulator.ga_files.length +
-                            " gamma alarms, " +
-                            RPMSimulator.na_files.length +
-                            " neutron alarm, and " +
-                            RPMSimulator.ng_files.length +
-                            " neutron/gamma alarms"
+                        RPMSimulator.ga_files.length +
+                        " gamma alarms, " +
+                        RPMSimulator.na_files.length +
+                        " neutron alarm, and " +
+                        RPMSimulator.ng_files.length +
+                        " neutron/gamma alarms"
                     );
                 }
             });
@@ -665,7 +674,7 @@ console.log("Starting listener on " + this.m_ipaddr + ":" + this.m_rpm_port);
             this.LogDebug("Selecting next queued profile");
             // if an occupancy has been triggered manually, stop it now
             this.SetOccupancy(false);
-            if(this.m_current_profile != null) {
+            if (this.m_current_profile != null) {
                 this.m_current_profile = new RPMProfile();
             }
             this.m_current_profile = this.m_queued_profiles.shift() ?? null;
@@ -760,9 +769,9 @@ console.log("Starting listener on " + this.m_ipaddr + ":" + this.m_rpm_port);
                     this.m_auto_mode_next_occupancy_time = now + delay;
                     console.log(
                         this.m_name +
-                            ": next alarm in " +
-                            this.m_auto_mode_interval_seconds +
-                            " seconds"
+                        ": next alarm in " +
+                        this.m_auto_mode_interval_seconds +
+                        " seconds"
                     );
                 }
             }
@@ -876,12 +885,12 @@ console.log("Starting listener on " + this.m_ipaddr + ":" + this.m_rpm_port);
 
         if (this.m_clients.length > 0) {
             //console.log("Sending to " + this.m_clients.length + " clients.");
-            let doomed: any[]= [];
+            let doomed: any[] = [];
             for (let client of this.m_clients) {
                 try {
                     client.write(text);
                 } catch (e) {
-                    console.error("Error writing to client: ", e.message);
+                    console.error("Error writing to client: ", String(e));
                     doomed.push(client);
                 }
             }

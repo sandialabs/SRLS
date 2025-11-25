@@ -1,7 +1,7 @@
 //const http = require('http')
 import * as fs from "fs";
 import * as http from "http";
-import { CameraSettings } from "./settings";
+import { ICameraSettings } from "./ICameraSettings";
 import { CameraSimulator } from "./CameraSimulator";
 //import { TruckGenerator } from '../RPMLib/TruckGenerator';
 import { runInThisContext } from "vm";
@@ -49,13 +49,13 @@ function data_url_to_buffer(dataurl: any) {
 export class CannedImageSimulator extends CameraSimulator {
     m_imagedir: string;
     m_container_files: string[];
-    m_empty: string;
-    m_empty_image: Buffer = null;
-    m_occupancy_images: HTMLImageElement[];
+    m_empty: string = "";
+    m_empty_image: Buffer | null = null;
+    m_occupancy_images: HTMLImageElement[] = [];
     m_occupancy_cursor: number = 0;
-    m_image_duration_ms: number; // how long to display each occupancy image
+    m_image_duration_ms: number = 200; // how long to display each occupancy image
 
-    constructor(settings: CameraSettings, name: string, imagedir: string) {
+    constructor(settings: ICameraSettings, name: string, imagedir: string) {
         super(settings, name);
         this.LogAs("CannedImageSimulator");
         this.LogInfo("Creating CannedImageSimulator for " + name);
@@ -90,7 +90,7 @@ export class CannedImageSimulator extends CameraSimulator {
     //
     //------------------------------------------------------------
     /** Cleanup after stopping */
-    Shutdown(): void {}
+    Shutdown(): void { }
 
     //------------------------------------------------------------
     //
@@ -102,7 +102,7 @@ export class CannedImageSimulator extends CameraSimulator {
     //
     //------------------------------------------------------------
     /** Get an image of an empty lane */
-    GetDefaultImage(): Buffer {
+    GetDefaultImage(): Buffer | null {
         //this.LogDebug("In CannedImageSimulator.GetDefaultImage");
         return this.m_empty_image;
     }
@@ -135,7 +135,7 @@ export class CannedImageSimulator extends CameraSimulator {
     //
     //------------------------------------------------------------
     /** Generate the next image from this camera */
-    GetOccupancyImage(offset_ms: number): Buffer {
+    GetOccupancyImage(offset_ms: number): Buffer | null {
         //this.LogDebug("CannedImageSimulator.GetOccupancyImage");
         let filecount = this.m_container_files.length;
         if (filecount == 0) {
@@ -152,7 +152,7 @@ export class CannedImageSimulator extends CameraSimulator {
         }
     }
 
-    public GetNextImage(): Buffer {
+    public GetNextImage(): Buffer | null {
         return super.GetNextImage();
     }
 
@@ -193,14 +193,14 @@ export class CannedImageSimulator extends CameraSimulator {
                             );
                         this.LogDebug(
                             "    CannedImageSimulator - read " +
-                                this.m_container_files.length +
-                                " images from " +
-                                this.m_imagedir
+                            this.m_container_files.length +
+                            " images from " +
+                            this.m_imagedir
                         );
                     }
                 });
             } catch (err) {
-                this.LogError(err.message);
+                this.LogError(String(err));
             }
         }
     }

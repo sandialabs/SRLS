@@ -3,80 +3,16 @@
 
 import * as fs from "fs";
 import { AppVersion } from "./Globals";
-
-export interface RPMSettings {
-    IPAddr: string;
-    Port: number;
-    GammaBG: number;
-    NeutronBG: number;
-    GammaDistribution: number[];
-    NeutronDistribution: number[];
-    GammaNSigma: number;
-    NeutronThreshold: number;
-    GHThreshold: number;
-    GLThreshold: number;
-    NHThreshold: number;
-}
-
-export interface CameraSettings {
-    Name: string;
-    Enabled: boolean;
-    Manufacturer: string;
-    Model: string;
-    IPAddr: string;
-    Port: number;
-    URL: string;
-    CameraSimulatorType: string;
-}
-
-export interface LaneSettings {
-    LaneID: number; // a unique identifier
-    LaneName: string;
-    Enabled: boolean;
-    RPMAlgorithm: string;
-
-    AutoGammaProbability: number;
-    AutoNeutronProbability: number;
-    AutoInterval: number;
-
-    RPM: RPMSettings;
-    //Camera1: CameraSettings;
-    //Camera2: CameraSettings;
-    Cameras: CameraSettings[];
-
-    // these will not be saved to the settings file
-    ClientCount: string;
-    Status: string;
-    OccupancyState: string;
-}
-
-export interface Settings {
-    Version: string; // version of app that created this file
-    DefaultGammaBG: number;
-    DefaultNeutronBG: number;
-    DefaultGammaDistribution: number[];
-    DefaultNeutronDistribution: number[];
-
-    DefaultGammaNSigma: number;
-    DefaultNeutronThreshold: number;
-    DefaultGHThreshold: number;
-    DefaultGLThreshold: number;
-    DefaultNHThreshold: number;
-
-    DefaultAutoGammaProbability: number;
-    DefaultAutoNeutronProbability: number;
-    DefaultAutoInterval: number;
-
-    LogLevel: string;
-    LogFilename: string;
-
-    Lanes: LaneSettings[];
-}
+import { RPMSimulator } from "./RPMSimulator";
+import { ICameraSettings } from "./ICameraSettings";
+import { IRPMSettings } from "./IRPMSettings";
+import { ILaneSettings } from "./ILaneSettings";
+import { ISettings } from "./ISettings";
 
 export class SettingsManager {
-    m_file_path: string;
-    Data: Settings;
-    static s_rpm_template: RPMSettings = {
+    m_file_path: string = "";
+    Data: ISettings;
+    static s_rpm_template: IRPMSettings = {
         IPAddr: "",
         Port: 0,
         GammaBG: 0,
@@ -89,7 +25,7 @@ export class SettingsManager {
         GLThreshold: 0,
         NHThreshold: 0,
     };
-    static s_camera_template: CameraSettings = {
+    static s_camera_template: ICameraSettings = {
         Name: "",
         Enabled: false,
         Manufacturer: "",
@@ -123,8 +59,8 @@ export class SettingsManager {
         //console.log("Utility test:", clone_object(this.Data, true));
     }
 
-    default_settings(): Settings {
-        let result: Settings = {
+    default_settings(): ISettings {
+        let result: ISettings = {
             Version: AppVersion,
             DefaultGammaBG: 256,
             DefaultNeutronBG: 3,
@@ -158,10 +94,11 @@ export class SettingsManager {
     }
 
     serialize(to_path: string = "settings.json"): void {
-        if(window.electronAPI) {
+        if (window.electronAPI) {
             window.electronAPI.writeFileSync(to_path, this.to_string() + "\n");
         }
-        else {console.log("Cannot access Electron file functions from browser.");
+        else {
+            console.log("Cannot access Electron file functions from browser.");
         }
     }
 
@@ -183,7 +120,7 @@ export class SettingsManager {
         }
     }
 
-    static clone_rpm(settings: RPMSettings): RPMSettings {
+    static clone_rpm(settings: IRPMSettings): IRPMSettings {
         let result = {
             IPAddr: "",
             Port: 0,
@@ -201,7 +138,7 @@ export class SettingsManager {
         return result;
     }
 
-    static clone_camera(settings: CameraSettings): CameraSettings {
+    static clone_camera(settings: ICameraSettings): ICameraSettings {
         let result = {
             Name: "Camera One",
             Enabled: false,
@@ -216,7 +153,7 @@ export class SettingsManager {
         return result;
     }
 
-    static clone_lane(settings: LaneSettings): LaneSettings {
+    static clone_lane(settings: ILaneSettings): ILaneSettings {
         let result = {
             LaneID: 0,
             LaneName: "",
@@ -244,8 +181,8 @@ export class SettingsManager {
         return result;
     }
 
-    static clone_settings(settings: Settings) {
-        let result: Settings = {
+    static clone_settings(settings: ISettings) {
+        let result: ISettings = {
             Version: AppVersion,
             DefaultGammaBG: 0,
             DefaultNeutronBG: 0,
@@ -268,7 +205,7 @@ export class SettingsManager {
             Lanes: [],
         };
         SettingsManager.copy_properties(settings, result, ["Lanes"]);
-        settings.Lanes.forEach((x: LaneSettings) => {
+        settings.Lanes.forEach((x: ILaneSettings) => {
             result.Lanes.push(SettingsManager.clone_lane(x));
         });
         return result;
@@ -278,13 +215,13 @@ export class SettingsManager {
         return JSON.stringify(this.Data) == JSON.stringify(other.Data);
     }
 
-    default_lane_settings(name: string, ipaddr: string, port: number): LaneSettings {
-        let lane = {
+    default_lane_settings(name: string, ipaddr: string, port: number): ILaneSettings {
+        let lane: ILaneSettings = {
             LaneID: new Date().getTime(),
             LaneName: name,
             Enabled: false,
             RPMAlgorithm: "simulated",
-            ClientCount: "0",
+            ClientCount: 0,
             Status: "",
             OccupancyState: "",
             AutoGammaProbability: this.Data.DefaultAutoGammaProbability,
@@ -325,11 +262,12 @@ export class SettingsManager {
                     CameraSimulatorType: "canned",
                 },
             ],
+            Simulator: undefined,
         };
         return lane;
     }
 
-    add_lane(name: string, ipaddr: string, port: number): LaneSettings | null {
+    add_lane(name: string, ipaddr: string, port: number): ILaneSettings | null {
         // don't allow duplicate lane names
         let existing = this.Data.Lanes.filter(x => {
             return x.LaneName == name;
@@ -337,46 +275,34 @@ export class SettingsManager {
         if (existing.length > 0) return null;
 
         let lane = this.default_lane_settings(name, ipaddr, port);
-        const result = lane as LaneSettings;
+        const result = lane as ILaneSettings;
         this.Data.Lanes.push(result);
         return result;
     }
 
-    add_new_lane(settings: LaneSettings): any {
+    add_new_lane(settings: ILaneSettings): [boolean, string] {
         // don't allow duplicate lane names
         let existing = this.Data.Lanes.filter(x => {
             return x.LaneName == settings.LaneName;
         });
 
         if (existing.length > 0) {
-            return {
-                success: false,
-                message: 'A lane named "' + settings.LaneName + ": already exists",
-            };
+            return [false, `A lane named "${settings.LaneName}": already exists`];
         }
 
         let lane_settings = SettingsManager.clone_lane(settings); // make sure reactive stuff is removed
         lane_settings.LaneID = new Date().getTime();
         this.Data.Lanes.push(lane_settings);
-        return {
-            success: true,
-            message: "Successfully added " + lane_settings.LaneName,
-        };
+        return [true, `Successfully added ${lane_settings.LaneName}`];
     }
 
-    update_lane(settings: LaneSettings): any {
+    update_lane(settings: ILaneSettings): [boolean, string]  {
         let lane_index = this.find_lane(settings.LaneID);
         if (lane_index >= 0) {
             this.Data.Lanes[lane_index] = SettingsManager.clone_lane(settings);
-            return {
-                success: true,
-                message: "Successfully updated " + settings.LaneName,
-            };
+            return [true, `Successfully updated ${settings.LaneName}`];
         } else {
-            return {
-                success: false,
-                message: "Error updating " + settings.LaneName + ": invalid lane index",
-            };
+            return [false, `Error updating ${settings.LaneName}: invalid lane index`];
         }
     }
 
@@ -395,7 +321,7 @@ export class SettingsManager {
         return -1;
     }
 
-    get_lane(lane_id: number): LaneSettings {
+    get_lane(lane_id: number): ILaneSettings {
         return this.Data.Lanes.filter(x => {
             return x.LaneID == lane_id;
         })[0];

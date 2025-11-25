@@ -3,10 +3,10 @@
         <v-container>
             <v-layout>
                 <v-flex style="font-size: 20px;">
-                    <div class="text-md-center display-1 mb-4">Sandia RPM Lane Simulator</div>
+                    <div class="text-md-center display-1 mb-4">SRLS - Sandia RPM Lane Simulator</div>
                     <hr />
                     <p class="mt-4 text-md-center">
-                        Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+                        Copyright 2025 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
                         Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
                         certain rights in this software.
                     </p>
@@ -16,48 +16,46 @@
                             <tbody>
                                 <tr>
                                     <td>Version:</td>
-                                    <td>1.0.1</td>
+                                    <td>1.2.0</td>
                                 </tr>
                                 <tr>
                                     <td>Build date:</td>
-                                    <td>August 19, 2019</td>
+                                    <td>November 24, 2025</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                    <div class="text-lg-center">
-                        <v-btn
-                            block
-                            small
-                            class="primary rounded"
-                            @click="toggle_software()"
-                        >{{software_button_text}}</v-btn>
-                    </div>
-                    <div v-if="show_software">
-                        <p
-                            class="mt-4"
-                        >The following software libraries are used by the Sandia RPM Lane Simulator.</p>
-                        <div class="mt-4">
-                            <table class="about-table">
-                                <thead>
-                                    <tr>
-                                        <th>Package</th>
-                                        <th>Version</th>
-                                        <th>Type</th>
-                                        <th>URL</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="p in software" v-bind:key="p.name">
-                                        <td>{{p.name}}</td>
-                                        <td>{{p.version}}</td>
-                                        <td>{{p.license}}</td>
-                                        <td>{{p.url}}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                    <v-expansion-panels>
+                        <v-expansion-panel>
+                            <v-expansion-panel-title>
+                                {{ software_button_text }}
+                            </v-expansion-panel-title>
+                            <v-expansion-panel-text>
+                                <p class="mt-4">The following software libraries are used by the Sandia RPM Lane Simulator.
+                                </p>
+                                <div class="mt-4">
+                                    <table class="about-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Package</th>
+                                                <th>Version</th>
+                                                <th>Type</th>
+                                                <th>URL</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="p in software" v-bind:key="p.name">
+                                                <td>{{ p.name }}</td>
+                                                <td>{{ p.version }}</td>
+                                                <td>{{ p.license }}</td>
+                                                <td>{{ p.url }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </v-expansion-panel-text>
+                        </v-expansion-panel>
+                    </v-expansion-panels>
                 </v-flex>
             </v-layout>
         </v-container>
@@ -91,16 +89,8 @@ import { Attributions } from "../lib/Attributions";
 export default {
     name: "about",
     data: () => ({
-        show_software: false,
         software_button_text: "Show Software Attribution",
-        software: new Attributions().direct,
-    }),
-    methods: {
-        toggle_software() {
-            this.show_software = !this.show_software;
-            if (this.show_software) this.software_button_text = "Hide Software Attribution";
-            else this.software_button_text = "Show Software Attribution";
-        },
-    },
+        software: new Attributions().attributions,
+    })
 };
 </script>

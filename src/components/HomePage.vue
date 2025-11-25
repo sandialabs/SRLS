@@ -2,7 +2,7 @@
     <v-container fluid>
         <v-row>
             <v-col>
-                <Lanes labeltext="Lanes" :settingsmgr="appdata.settings"/>
+                <Lanes labeltext="Lanes" :settingsmgr="appdata.settings" />
             </v-col>
         </v-row>
     </v-container>
@@ -28,5 +28,4 @@ export default {
 };
 </script>
 
-<style>
-</style>
+<style></style>

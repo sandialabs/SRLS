@@ -10,7 +10,7 @@ import moment from "moment";
  * aspect ratio of 4:3.
  **********************************************************************************/
 export class TruckGenerator {
-    private readonly ctx: CanvasRenderingContext2D;
+    private readonly ctx: CanvasRenderingContext2D | null;
     private c: HTMLCanvasElement;
     private m_bg_color = 255; // used to generate background, e.g. 255,255,255
 
@@ -43,6 +43,8 @@ export class TruckGenerator {
         canvasWidth: number,
         canvasHeight: number
     ): Uint8Array[] {
+        if(!this.ctx)
+            return [];
         this.c.width = canvasWidth; //Canvas width
         this.c.height = canvasHeight; //Canvas height
         var num; //Text size in pixels
@@ -152,6 +154,9 @@ export class TruckGenerator {
      *
      *******************************************************************************/
     public drawDefault(canvasWidth: number, canvasHeight: number): Uint8Array {
+        if(!this.ctx)
+            return new Uint8Array();
+        
         this.c.width = canvasWidth; //Canvas width
         this.c.height = canvasHeight; //Canvas height
         var num; //Text size in pixels

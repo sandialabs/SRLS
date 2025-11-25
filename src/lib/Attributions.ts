@@ -1,5 +1,12 @@
+export interface Attribution {
+    name: string;
+    license: string;
+    version: string;
+    url: string;
+}
+
 export class Attributions {
-    public direct = [
+    public attributions: Attribution[] = [
         {
             name: "chart.js",
             license: "MIT",

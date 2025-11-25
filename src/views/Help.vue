@@ -3,7 +3,7 @@
         <v-container>
             <v-layout>
                 <v-flex>
-                    <div class="text-md-center display-1 mb-4">Sandia RPM Lane Simulator</div>
+                    <div class="text-md-center display-1 mb-4">SRLS - Sandia RPM Lane Simulator</div>
                     <hr />
                     <v-btn
                         block

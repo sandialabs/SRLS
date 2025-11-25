@@ -1,15 +1,47 @@
 {
     "version": "0.2.0",
-    "configurations": [{
-        "name": "Debug Main Process",
-        "type": "node",
-        "request": "launch", 
-        "cwd": "${workspaceFolder}",
-        "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
-        "windows": {
-            "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
+    "configurations": [
+        {
+            "name": "Debug Main Process",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+            "windows": {
+                "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
+            },
+            "args": [
+                "."
+            ],
+            "outputCapture": "std"
         },
-        "args": ["."],
-        "outputCapture": "std"
-    }]
+        {
+            "name": "Electron: Main",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+            "program": "${workspaceFolder}/dist/electron/main/main.js", // Adjust path based on your build output
+            "cwd": "${workspaceFolder}",
+            "outFiles": [
+                "${workspaceFolder}/dist/**/*.js"
+            ],
+            "sourceMaps": true
+        },
+        {
+            "name": "Electron: Renderer",
+            "type": "chrome",
+            "request": "attach",
+            "port": 9222, // Default Chrome DevTools port
+            "urlFilter": "http://localhost:*", // Adjust if your renderer serves on a different URL
+            "webRoot": "${workspaceFolder}/dist_electron/renderer", // Adjust path based on your build output
+            "sourceMaps": true
+        },
+        {
+            "name": "Electron: All",
+            "configurations": [
+                "Electron: Main",
+                "Electron: Renderer"
+            ]
+        }
+    ]
 }

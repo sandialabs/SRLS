@@ -1,206 +1,131 @@
 <template>
-  <v-container fluid>
-    <LaneSettings ref="settingsdialog" />
-    <Confirm ref="confirmdialog" />
-    <Notify ref="notifydialog" />
-    <RPMControl ref="rpmcontrol" />
+    <v-container fluid>
+        <LaneSettings ref="settingsdialog" />
+        <Confirm ref="confirmdialog" />
+        <Notify ref="notifydialog" />
+        <RPMControl ref="rpmcontrol" />
 
-    <!-- this hidden canvas is used for rendering animated trucks -->
-    <canvas id="render-canvas" width="640" height="480" style="display: none;"></canvas>
+        <!-- this hidden canvas is used for rendering animated trucks -->
+        <canvas id="render-canvas" width="640" height="480" style="display: none;"></canvas>
 
-    <v-row justify="space-between" style="margin-top: -1rem; margin-bottom: 1rem;">
-      <v-col cols="12">
-        <v-card>
-          <v-card-title>
-            <span class="page-title" style="margin-right: 20px;">{{ labeltext }}</span>
-            <div style="margin-top: 10px;">
-              <ActionIcon
-                icon="repeat"
-                color="red darken-2"
-                tooltip="Toggle automatic mode"
-                size="32px"
-                style="margin-right: 20px;"
-                @icon-clicked="on_trigger_all('automode')"
-              />
-              <ActionIcon
-                icon="local_shipping"
-                color="red"
-                tooltip="Gamma Alarm"
-                size="32px"
-                style="margin-right: 20px;"
-                @icon-clicked="on_trigger_all('GA')"
-              />
-              <ActionIcon
-                icon="local_shipping"
-                color="blue"
-                tooltip="Neutron Alarm"
-                size="32px"
-                style="margin-right: 20px;"
-                @icon-clicked="on_trigger_all('NA')"
-              />
-              <ActionIcon
-                icon="local_shipping"
-                color="cyan"
-                tooltip="Neutron/Gamma Alarm"
-                size="32px"
-                style="margin-right: 20px;"
-                @icon-clicked="on_trigger_all('NG')"
-              />
-              <ActionIcon
-                icon="local_shipping"
-                color="green"
-                tooltip="Innocent Alarm"
-                size="32px"
-                style="margin-right: 20px;"
-                @icon-clicked="on_trigger_all('OC')"
-              />
-              <ActionIcon
-                icon="lock_open"
-                color="red"
-                tooltip="Toggle case tamper"
-                size="32px"
-                style="margin-right: 20px;"
-                @icon-clicked="on_trigger_all('TT')"
-              />
-            </div>
-            <ActionIcon
-              icon="add_circle"
-              size="32px"
-              @icon-clicked="on_add_lane()"
-              style="margin-top: 10px;"
-            />
-          </v-card-title>
-          <v-card-text>
-            <table style="width: 100%;">
-              <thead class="white--text">
-                <tr>
-                  <th>&nbsp;</th>
-                  <th>Name</th>
-                  <th style="text-align: center">
-                    <v-icon class="white--text">wifi</v-icon>
-                  </th>
-                  <th style="text-align: center">
-                    <v-icon class="white--text">people</v-icon>
-                  </th>
-                  <th>RPM</th>
-                  <th>Camera 1</th>
-                  <th>Camera 2</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="lane in lanedata" :key="lane.LaneID">
-                  <td>
-                    <ActionIcon
-                      icon="create"
-                      color="primary"
-                      @icon-clicked="on_trigger_lane(lane, 'editlane')"
-                    />
-                    <ActionIcon
-                      icon="content_copy"
-                      color="primary"
-                      @icon-clicked="on_trigger_lane(lane, 'clone')"
-                    />
-                    <ActionIcon
-                      icon="tune"
-                      color="primary"
-                      @icon-clicked="on_trigger_lane(lane, 'adjust')"
-                    />
-                    <ActionIcon
-                      icon="delete"
-                      color="red"
-                      @icon-clicked="on_trigger_lane(lane, 'delete')"
-                    />
-                  </td>
-                  <td :class="lane.OccupancyState">
-                    {{ lane.LaneName }} {{ lane.OccupancyState }}
-                  </td>
-                  <td style="text-align: center;">
-                    <ActionIcon
-                      v-if="lane.Enabled"
-                      color="green"
-                      icon="wifi"
-                      @icon-clicked="on_toggle_lane(lane)"
-                    />
-                    <ActionIcon
-                      v-else
-                      color="red"
-                      icon="do_not_disturb_alt"
-                      @icon-clicked="on_toggle_lane(lane)"
-                    />
-                  </td>
-                  <td style="text-align:center;">{{ lane.ClientCount }}</td>
-                  <td>{{ lane.RPM.IPAddr }}:{{ lane.RPM.Port }}</td>
-                  <td>{{ camera_info(lane.Cameras[0]) }}</td>
-                  <td>{{ camera_info(lane.Cameras[1]) }}</td>
-                  <td>
-                    <ActionIcon
-                      icon="repeat"
-                      color="red darken-2"
-                      tooltip="Toggle automatic mode"
-                      :disabled="!lane.Enabled"
-                      @icon-clicked="on_trigger_lane(lane, 'automode')"
-                    />
-                    <ActionIcon
-                      icon="local_shipping"
-                      color="red"
-                      tooltip="Gamma Alarm"
-                      :disabled="!lane.Enabled"
-                      @icon-clicked="on_trigger_lane(lane, 'GA')"
-                    />
-                    <ActionIcon
-                      icon="local_shipping"
-                      color="blue"
-                      tooltip="Neutron Alarm"
-                      :disabled="!lane.Enabled"
-                      @icon-clicked="on_trigger_lane(lane, 'NA')"
-                    />
-                    <ActionIcon
-                      icon="local_shipping"
-                      color="cyan"
-                      tooltip="Neutron/Gamma Alarm"
-                      :disabled="!lane.Enabled"
-                      @icon-clicked="on_trigger_lane(lane, 'NG')"
-                    />
-                    <ActionIcon
-                      icon="local_shipping"
-                      color="green darken-1"
-                      tooltip="Innocent Alarm"
-                      :disabled="!lane.Enabled"
-                      @icon-clicked="on_trigger_lane(lane, 'OC')"
-                    />
-                    <ActionIcon
-                      icon="lock_open"
-                      color="red"
-                      tooltip="Toggle case tamper"
-                      :disabled="!lane.Enabled"
-                      @icon-clicked="on_trigger_lane(lane, 'TT')"
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+        <v-row justify="space-between" style="margin-top: -1rem; margin-bottom: 1rem;">
+            <v-col cols="12">
+                <v-card>
+                    <v-card-title>
+                        <span class="page-title" style="margin-right: 20px;">{{ labeltext }}</span>
+                        <div style="margin-top: 10px;">
+                            <ActionIcon icon="repeat" color="red darken-2" tooltip="Toggle automatic mode" size="32px"
+                                style="margin-right: 20px;" @icon-clicked="on_trigger_all('automode')" />
+                            <ActionIcon icon="local_shipping" color="red" tooltip="Gamma Alarm" size="32px"
+                                style="margin-right: 20px;" @icon-clicked="on_trigger_all('GA')" />
+                            <ActionIcon icon="local_shipping" color="blue" tooltip="Neutron Alarm" size="32px"
+                                style="margin-right: 20px;" @icon-clicked="on_trigger_all('NA')" />
+                            <ActionIcon icon="local_shipping" color="cyan" tooltip="Neutron/Gamma Alarm" size="32px"
+                                style="margin-right: 20px;" @icon-clicked="on_trigger_all('NG')" />
+                            <ActionIcon icon="local_shipping" color="green" tooltip="Innocent Alarm" size="32px"
+                                style="margin-right: 20px;" @icon-clicked="on_trigger_all('OC')" />
+                            <ActionIcon icon="lock_open" color="red" tooltip="Toggle case tamper" size="32px"
+                                style="margin-right: 20px;" @icon-clicked="on_trigger_all('TT')" />
+                        </div>
+                        <ActionIcon icon="add_circle" size="32px" @icon-clicked="on_add_lane()"
+                            style="margin-top: 10px;" />
+                    </v-card-title>
+                    <v-card-text>
+                        <table style="width: 100%;">
+                            <thead class="white--text">
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Name</th>
+                                    <th style="text-align: center">
+                                        <v-icon class="white--text">wifi</v-icon>
+                                    </th>
+                                    <th style="text-align: center">
+                                        <v-icon class="white--text">people</v-icon>
+                                    </th>
+                                    <th>RPM</th>
+                                    <th>Camera 1</th>
+                                    <th>Camera 2</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="lane in lanedata" :key="lane.LaneID">
+                                    <td>
+                                        <ActionIcon icon="create" color="primary" tooltip="Edit lane"
+                                            @icon-clicked="on_trigger_lane(lane, 'editlane')" />
+                                        <ActionIcon icon="content_copy" color="primary" tooltip="Clone lane"
+                                            @icon-clicked="on_trigger_lane(lane, 'clone')" />
+                                        <ActionIcon icon="tune" color="primary" tooltip="Adjust RPM setting"
+                                            @icon-clicked="on_trigger_lane(lane, 'adjust')" />
+                                        <ActionIcon icon="delete" color="red" tooltip="Delete lane"
+                                            @icon-clicked="on_trigger_lane(lane, 'delete')" />
+                                    </td>
+                                    <td :class="lane.OccupancyState">
+                                        {{ lane.LaneName }} {{ lane.OccupancyState }}
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <ActionIcon v-if="lane.Enabled" color="green" icon="wifi"
+                                            @icon-clicked="on_toggle_lane(lane)" tooltip="Disable lane" />
+                                        <ActionIcon v-else color="red" icon="do_not_disturb_alt"
+                                            @icon-clicked="on_toggle_lane(lane)" tooltip="Enable lane" />
+                                    </td>
+                                    <td style="text-align:center;">{{ lane.ClientCount }}</td>
+                                    <td>{{ lane.RPM.IPAddr }}:{{ lane.RPM.Port }}</td>
+                                    <td>{{ camera_info(lane.Cameras[0]) }}</td>
+                                    <td>{{ camera_info(lane.Cameras[1]) }}</td>
+                                    <td>
+                                        <ActionIcon icon="repeat" color="red darken-2" tooltip="Toggle automatic mode"
+                                            :disabled="!lane.Enabled"
+                                            @icon-clicked="on_trigger_lane(lane, 'automode')" />
+                                        <ActionIcon icon="local_shipping" color="red" tooltip="Gamma Alarm"
+                                            :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'GA')" />
+                                        <ActionIcon icon="local_shipping" color="blue" tooltip="Neutron Alarm"
+                                            :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'NA')" />
+                                        <ActionIcon icon="local_shipping" color="cyan" tooltip="Neutron/Gamma Alarm"
+                                            :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'NG')" />
+                                        <ActionIcon icon="local_shipping" color="green darken-1"
+                                            tooltip="Innocent Alarm" :disabled="!lane.Enabled"
+                                            @icon-clicked="on_trigger_lane(lane, 'OC')" />
+                                        <ActionIcon icon="lock_open" color="red" tooltip="Toggle case tamper"
+                                            :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'TT')" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </v-card-text>
+                </v-card>
+            </v-col>
+        </v-row>
+    </v-container>
 </template>
 
-<script>
+<script lang="ts">
+
 import ActionIcon from "./ActionIcon.vue";
 import LaneSettings from "./LaneSettings.vue";
 import Confirm from "./Confirm.vue";
 import Notify from "./Notify.vue";
 import RPMControl from "./RPMControl.vue";
-import { SettingsManager } from "../lib/settings";
+import { SettingsManager } from "../lib/SettingsManager";
+import { ILaneSettings } from "../lib/ILaneSettings";
 import { LaneSimulator } from "../lib/LaneSim";
 import { banner } from "../lib/Utility";
+import { CameraSimulator } from "../lib/CameraSimulator";
+import { ICameraSettings } from "../lib/ICameraSettings";
+import { reactive } from "vue";
 
 console.log("Lanes.vue loaded");
 
+interface Headers {
+    text: string;
+    value: string;
+}
+
 export default {
-    props: ["labeltext", "settingsmgr"],
+    props: {
+        labeltext: String,
+        settingsmgr: SettingsManager,
+    },
     components: {
         ActionIcon: ActionIcon,
         LaneSettings: LaneSettings,
@@ -208,31 +133,49 @@ export default {
         Notify: Notify,
         RPMControl: RPMControl,
     },
-    computed: {},
-    data: () => ({
-        lanedata: undefined,
-        headers: [{ text: "Name", value: "LaneName" }, { text: "Enabled", value: "Enabled" }],
-    }),
-    created: function() {
-        this.lanedata = this.settingsmgr.Data.Lanes;
-        console.log("Lanes.vue created", this.lanedata);
+    computed: {
+
+    },
+    setup: () => {
+        let lanedata: ILaneSettings[] = reactive([]);
+        let headers: Headers[] = reactive([
+            { text: "Name", value: "LaneName" },
+            { text: "Enabled", value: "Enabled" }            
+        ]);
+
+        return { lanedata, headers };
+    },
+
+    // data: () => ({
+    //     lanedata: [] as ILaneSettings[],
+    //     headers: [
+    //         { text: "Name", value: "LaneName" },
+    //         { text: "Enabled", value: "Enabled" }            
+    //     ],
+    // }),
+
+    created: function () {
+        if (this.settingsmgr?.Data.Lanes) {
+            this.lanedata = this.settingsmgr?.Data.Lanes;
+            console.log("Lanes.vue created", this.lanedata);
+        }
         setInterval(() => {
             this.poll();
         }, 500);
     },
-    mounted: function() {
+    mounted: function () {
         console.log("Lanes.vue mounted", this.lanedata);
         // create a LaneSimulator for each lane and save it in the
         // lanes LaneSettings.  If the lane is enabled, start the simulator.
         this.lanedata.forEach(lane => {
-            if (lane["simulator"]) {
+            if (lane.Simulator) {
                 console.log("    simulator already exists");
             } else {
                 console.log("    creating new simulator");
-                lane["simulator"] = new LaneSimulator(
-                    lane,
-                    document.getElementById("render-canvas")
+                let ls = new LaneSimulator(lane,
+                    <HTMLCanvasElement>document.getElementById("render-canvas")
                 );
+                lane.Simulator = ls;
                 lane["ClientCount"] = 0;
                 if (lane.Enabled) {
                     this.start_simulator(lane);
@@ -241,7 +184,7 @@ export default {
         });
     },
     watch: {
-        lanedata: function(newval, oldval) {
+        lanedata: function (newval, oldval) {
             console.log("Lanes.vue - lanedate changed");
         },
     },
@@ -249,50 +192,60 @@ export default {
         //-------------------------------------------------------
         // EVENT HANDLING
         //-------------------------------------------------------
-        on_add_lane: function() {
+        on_add_lane: function () {
             console.log("In on_add_lane");
-            let settings = this.settingsmgr.default_lane_settings("New Lane", "127.0.0.1", 1600);
-            settings.LaneName = "New Lane";
-            console.log("Lane Settings", settings);
+
+            if (!this.settingsmgr) {
+                console.error("on_add_lane: missing settingsmgr");
+                return;
+            }
+
             let self = this;
-            this.$refs["settingsdialog"].open("Add New Lane", settings, function(updated_settings) {
+            let settings = self.settingsmgr?.default_lane_settings("New Lane", "127.0.0.1", 1600);
+            console.log("Lane Settings", settings);
+            (<typeof LaneSettings>this.$refs["settingsdialog"]).open("Add New Lane", settings, function (updated_settings: ILaneSettings) {
                 updated_settings.Enabled = false;
-                let rc = self.settingsmgr.add_new_lane(updated_settings);
-                console.log("on_add_lane result: " + rc.message);
-                if (rc.success) self.settingsmgr.save();
+                let rc = self.settingsmgr?.add_new_lane(updated_settings);
+                if(rc) {
+                    console.log("on_add_lane result: " + rc[1]);
+                    if (rc[0])
+                        self.settingsmgr?.save();
+                }
             });
         },
 
-        on_trigger_all: function(event_name) {
+        on_trigger_all: function (event_name: "GA" | "NA" | "NG" | "OC" | "TT" | "automode") {
             console.log("In on_trigger_all: " + event_name);
 
-            this.lanedata.forEach(lane => {
+            this.lanedata?.forEach(lane => {
                 if (lane.Enabled) {
                     if (
-                        event_name == "GA" ||
-                        event_name == "NA" ||
-                        event_name == "NG" ||
-                        event_name == "OC"
+                        event_name === "GA" ||
+                        event_name === "NA" ||
+                        event_name === "NG" ||
+                        event_name === "OC"
                     ) {
                         console.log("Generating " + event_name + " on " + lane.LaneName);
-                        lane.simulator.GenerateAlarm(event_name);
+                        lane.Simulator?.GenerateAlarm(event_name);
                     }
-                    if (event_name == "TT") {
+                    if (event_name === "TT") {
                         console.log("Toggling case tamper on " + lane.LaneName);
-                        lane.simulator.RPM.ToggleTamper();
+                        lane.Simulator?.RPM?.ToggleTamper();
                     }
-                    if (event_name == "automode") {
+                    if (event_name === "automode") {
                         console.log("Toggling auto mode on " + lane.LaneName);
-                        lane.simulator.ToggleAutoMode();
+                        lane.Simulator?.ToggleAutoMode();
                     }
                 }
             });
         },
 
-        on_trigger_lane: function(lane, event_name) {
+        on_trigger_lane: function (
+            lane: ILaneSettings,
+            event_name: "editlane" | "clone" | "adjust" | "delete" | "automode" | "GA" | "NA" | "NG" | "OC" | "TT") {
             //console.log("Lane Trigger " + event_name, lane);
-            if (lane.Enabled) {
-            }
+            // if (lane.Enabled) {
+            // }
             switch (event_name) {
                 case "editlane":
                     this.edit_lane(lane);
@@ -302,38 +255,39 @@ export default {
                     break;
                 case "adjust":
                     console.log("adjust", this.$refs);
-                    this.$refs["rpmcontrol"].show(lane);
+                    console.log("adjustlane", lane);
+                    (<typeof RPMControl>this.$refs["rpmcontrol"]).show(lane);
                     break;
                 case "delete":
                     this.delete_lane(lane);
                     break;
                 case "automode":
                     console.log("Toggling simulator");
-                    lane.simulator.ToggleAutoMode();
+                    lane.Simulator?.ToggleAutoMode();
                     break;
                 case "GA":
                     console.log("Generating " + event_name);
-                    lane.simulator.GenerateAlarm(event_name);
+                    lane.Simulator?.GenerateAlarm(event_name);
                     break;
                 case "NA":
                     console.log("Generating " + event_name);
-                    lane.simulator.GenerateAlarm(event_name);
+                    lane.Simulator?.GenerateAlarm(event_name);
                     break;
                 case "NG":
                     console.log("Generating " + event_name);
-                    lane.simulator.GenerateAlarm(event_name);
+                    lane.Simulator?.GenerateAlarm(event_name);
                     break;
                 case "OC":
                     console.log("Generating innocent occupancy");
-                    lane.simulator.GenerateAlarm(event_name);
+                    lane.Simulator?.GenerateAlarm(event_name);
                     break;
                 case "TT":
                     console.log("Toggling case tamper");
-                    lane.simulator.RPM.ToggleTamper();
+                    lane.Simulator?.RPM?.ToggleTamper();
                     break;
             }
         },
-        on_toggle_lane: function(lane) {
+        on_toggle_lane: function (lane: ILaneSettings) {
             console.log("on_toggle_lane");
             lane.Enabled = !lane.Enabled;
             if (lane.Enabled) {
@@ -341,25 +295,25 @@ export default {
             } else {
                 this.stop_simulator(lane);
             }
-            this.settingsmgr.save();
+            this.settingsmgr?.save();
         },
 
         //-------------------------------------------------------
         // HELPER METHODS
         //-------------------------------------------------------
 
-        notify: function(title, text) {
-            this.$refs["notifydialog"].show(title, text);
+        notify: function (title: string, text: string) {
+            (<typeof Notify>this.$refs["notifydialog"]).show(title, text);
         },
 
-        poll: function() {
+        poll: function () {
             this.lanedata.forEach(lane => {
-                lane.simulator?.Poll();
+                lane.Simulator?.Poll();
             });
             this.$forceUpdate();
         },
 
-        camera_info: function(cam) {
+        camera_info: function (cam: ICameraSettings) {
             if (cam.Enabled) {
                 return (
                     cam.Manufacturer + " " + cam.Model + " (" + cam.IPAddr + ":" + cam.Port + ")"
@@ -369,19 +323,19 @@ export default {
             }
         },
 
-        rpm_client_count: function(lane) {
+        rpm_client_count: function (lane: ILaneSettings) {
             let result = "";
             if (lane) {
                 console.log("In rpm_client_count", lane);
-                if (lane.simulator) {
-                    console.log("Simulator", lane.simulator);
+                if (lane.Simulator) {
+                    console.log("Simulator", lane.Simulator);
                     result = String(lane.ClientCount);
                 }
             }
             return result;
         },
 
-        show_lane: function(lane) {
+        show_lane: function (lane: ILaneSettings) {
             let rpm = lane.RPM;
             let lines = [];
             lines.push(`Lane ${lane.LaneName}`);
@@ -390,14 +344,11 @@ export default {
             banner(lines);
         },
 
-        start_simulator: function(lane) {
-            let sim = lane["simulator"];
-            console.log(
-                "In start_simulator.  IsEnabled = " +
-                    sim.IsEnabled +
-                    "  Is Running = " +
-                    sim.IsRunning
-            );
+        start_simulator: function (lane: ILaneSettings) {
+            let sim: LaneSimulator | undefined = lane.Simulator;
+            if(!sim)
+                return;
+            console.log(`In start_simulator. IsEnabled = ${sim.IsEnabled}, IsRunning = ${sim.IsRunning}"`);
             console.log("Lane data: ", lane);
             if (lane.Status == "running") {
                 console.log("    Simulator is already enabled.");
@@ -409,64 +360,82 @@ export default {
             }
         },
 
-        stop_simulator: function(lane) {
+        stop_simulator: function (lane: ILaneSettings) {
             console.log("Stopping simulator on " + lane.LaneName, lane);
-            let sim = lane["simulator"];
+            let sim = lane.Simulator;
             if (sim) {
                 sim.Stop();
                 sim.IsEnabled = false;
             }
         },
 
-        clone_lane: function(lane) {
+        clone_lane: function (lane: ILaneSettings) {
+            if(!this.settingsmgr)
+                return;
+
             console.log("In clone_lane", lane);
             let new_lane = SettingsManager.clone_lane(lane);
             new_lane.LaneName = lane.LaneName + " Copy";
             console.log("    New lane:", new_lane);
-            let rc = this.settingsmgr.add_new_lane(new_lane);
-            if (rc.success) this.settingsmgr.save();
-            else this.notify("Duplicate Lane", rc.message);
+            let rc = this.settingsmgr?.add_new_lane(new_lane);
+            if (rc[0])
+                this.settingsmgr.save();
+            else
+                this.notify("Duplicate Lane", rc[1]);
         },
 
-        delete_lane: function(lane) {
+        delete_lane: function (lane: ILaneSettings) {
+            let settingsmgr = this.settingsmgr;
+
+            if (!settingsmgr)
+                return;
+
             console.log("delete_lane", lane);
             this.stop_simulator(lane);
-            let dlg = this.$refs["confirmdialog"];
+            let dlg = (<typeof Confirm>this.$refs["confirmdialog"]);
             console.log("Refs", this.$refs, dlg);
             dlg.show("Delete", "Delete " + lane.LaneName + "?", () => {
                 console.log("In callback");
-                this.settingsmgr.remove_lane_by_id(lane.LaneID);
+                settingsmgr.remove_lane_by_id(lane.LaneID);
             });
         },
 
-        edit_lane: function(lane) {
+        edit_lane: function (lane: ILaneSettings) {
+            let self = this;
+            let settingsmgr = this.settingsmgr;
+
+            if(!settingsmgr)
+                return;
+
             //console.log("In edit_lane", lane);
             let lane_index = -1;
             for (let ix = 0; ix < this.lanedata.length; ix++) {
                 if (this.lanedata[ix].LaneID == lane.LaneID) lane_index = ix;
             }
             if (lane_index >= 0) {
-                let self = this;
-                this.$refs["settingsdialog"].open("Edit Lane", lane, function(updated_settings) {
+                let settingsdlg = <typeof LaneSettings>this.$refs["settingsdialog"];
+                settingsdlg.open("Edit Lane", lane, function (updated_settings: ILaneSettings) {
                     updated_settings.Enabled = false;
-                    let rc = self.settingsmgr.update_lane(updated_settings);
-                    console.log("edit_lane result: " + rc.message);
-                    if (rc.success) {
-                        self.settingsmgr.save();
-                        // stop and delete simulator on existing lane object
-                        self.stop_simulator(lane);
-                        lane.simulator = undefined;
-                        lane.Enabled = false;
-                        updated_settings["simulator"] = new LaneSimulator(
-                            updated_settings,
-                            document.getElementById("render-canvas")
-                        );
-                        if (updated_settings.Enabled) {
-                            self.start_simulator(updated_settings);
-                        }
-                        self.lanedata[lane_index] = updated_settings;
-                        console.log("Updated lanedata:", self.lanedata);
-                        self.$forceUpdate();
+                    let rc = settingsmgr.update_lane(updated_settings);
+                    if(rc) {
+                        console.log("edit_lane result: " + rc[1]);
+                        if (rc[0]) {
+                            settingsmgr.save();
+                            // stop and delete simulator on existing lane object
+                            self.stop_simulator(lane);
+                            lane.Simulator = undefined;
+                            lane.Enabled = false;
+                            updated_settings.Simulator = new LaneSimulator(
+                                updated_settings,
+                                <HTMLCanvasElement>document.getElementById("render-canvas")
+                            );
+                            if (updated_settings.Enabled) {
+                                self.start_simulator(updated_settings);
+                            }
+                            self.lanedata[lane_index] = updated_settings;
+                            console.log("Updated lanedata:", self.lanedata);
+                            self.$forceUpdate();
+                        }                        
                     }
                 });
             }

@@ -5,34 +5,35 @@
         </v-card-title>
         <v-card-text>
             <v-row>
-                <v-col cols="12" sm="3" md="1">
+                <v-col cols="12" sm="1" lg="3">
                     <v-text-field label="Gamma Background" v-model="settings.DefaultGammaBG"></v-text-field>
                 </v-col>
-                <v-col cols="12" sm="3" md="1">
+                <v-col cols="12" sm="1" lg="3">
                     <v-text-field label="Neutron Background" v-model="settings.DefaultNeutronBG"></v-text-field>
                 </v-col>
-                <v-col cols="12" sm="3" md="1">
+                <v-col cols="12" sm="1" lg="3">
                     <v-text-field label="GH Threshold" v-model="settings.DefaultGHThreshold"></v-text-field>
                 </v-col>
-                <v-col cols="12" sm="3" md="1">
+                <v-col cols="12" sm="1" lg="3">
                     <v-text-field label="GL Threshold" v-model="settings.DefaultGLThreshold"></v-text-field>
                 </v-col>
-                <v-col cols="12" sm="3" md="1">
+                <v-col cols="12" sm="1" lg="3">
                     <v-text-field label="NH Threshold" v-model="settings.DefaultNHThreshold"></v-text-field>
                 </v-col>
-                <v-col cols="12" sm="3" md="1">
+                <v-col cols="12" sm="1" lg="3">
                     <v-text-field label="Gamma N-Sigma" v-model="settings.DefaultGammaNSigma"></v-text-field>
                 </v-col>
-                <v-col cols="12" sm="3" md="1">
+                <v-col cols="12" sm="1" lg="3">
                     <v-text-field label="Neutron Threshold" v-model="settings.DefaultNeutronThreshold"></v-text-field>
                 </v-col>
-                <v-col cols="12" sm="3" md="1">
+                <v-col cols="12" sm="1" lg="3">
                     <v-text-field label="GA Probability" v-model="settings.DefaultAutoGammaProbability"></v-text-field>
                 </v-col>
-                <v-col cols="12" sm="3" md="1">
-                    <v-text-field label="NA Probability" v-model="settings.DefaultAutoNeutronProbability"></v-text-field>
+                <v-col cols="12" sm="1" lg="3">
+                    <v-text-field label="NA Probability"
+                        v-model="settings.DefaultAutoNeutronProbability"></v-text-field>
                 </v-col>
-                <v-col cols="12" sm="3" md="1">
+                <v-col cols="12" sm="1" lg="3">
                     <v-text-field label="Auto Interval" v-model="settings.DefaultAutoInterval"></v-text-field>
                 </v-col>
             </v-row>

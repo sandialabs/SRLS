@@ -9,19 +9,15 @@ import router from './router'
 // import '@mdi/font/css/materialdesignicons.css'    // ← brings in mdi-*.css
 // Vuetify
 import 'vuetify/styles'
-import { createVuetify } from 'vuetify'
-import * as components from 'vuetify/components'
-import * as directives from 'vuetify/directives'
-import { aliases, mdi } from 'vuetify/iconsets/mdi'
 import vuetify from '../plugins/vuetify'
 
 // Components
-import { SettingsManager } from "./lib/settings";
+import { SettingsManager } from "./lib/SettingsManager";
 import { RPMSimulator } from './lib/RPMSimulator'
 import { ProfileGenerator2 } from './lib/ProfileGenerator2'
 
 export let AppData = {
-    apptitle: "RPM Lane Simulator",
+    apptitle: "SRLS - Sandia RPM Lane Simulator",
     settings: new SettingsManager("settings.json"),
     testsim: new RPMSimulator("127.0.0.1", 1600, "Test Simulator", new ProfileGenerator2()),
     is_dev: process.env.NODE_ENV !== "production",
@@ -35,7 +31,9 @@ if (AppData.settings.Data.Lanes.length == 0) {
 
 // make a directory for replay data if one doesn't exist
 if (window.electronAPI && !window.electronAPI.existsSync("Replay")) {
-    window.electronAPI.mkdir("Replay", err => {
+    window.electronAPI.mkdir("Replay", (err: any) => {
+        if (err)
+            console.error(String(err));
         return;
     });
 }
