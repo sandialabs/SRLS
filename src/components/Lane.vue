@@ -10,22 +10,36 @@
     </v-container>
 </template>
 
-<script lang>
-import { Component, Vue } from "vue-property-decorator";
+<script lang="ts">
+
+import { PropType } from 'vue';
+import { ILaneSettings } from '../lib/ILaneSettings';
+import { ICameraSettings } from '../lib/ICameraSettings';
 
 console.log("Lane.vue loaded");
+
 export default {
-    props: ["settings"],
+    props: {
+        settings: {
+            type: Object as PropType<ILaneSettings>,
+            required: true
+        }
+    },
     computed: {
-        cam1: function () {
-            let cam = this.settings.Camera1;
+        cam1: function (): string {
+            return this.format(this.settings.Cameras[0]);
+        },
+        cam2: function (): string {
+            return this.format(this.settings.Cameras[1]);
+        }
+    },
+    methods: {
+        format: function (cam?: ICameraSettings): string {
+            if(!cam)
+                return "No camera";
             return `${cam.Manufacturer} ${cam.Model} @ ${cam.IPAddr}:${cam.Port}`;
         },
-        cam2: function () {
-            let cam = this.settings.Camera2;
-            return `${cam.Manufacturer} ${cam.Model} @ ${cam.IPAddr}:${cam.Port}`;
-        }
-    }
+    },
 };
 </script>
 

@@ -114,28 +114,26 @@ export default {
     created: function () {
     },
     methods: {
-        show: function (lane: ILaneSettings) {
+        show: function (lane: ILaneSettings, sim: RPMSimulator) {
             console.log("RPMControl", lane);
 
             this.lane = lane;
-            this.rpmsim = lane.Simulator.RPM;
+            this.rpmsim = sim;
             this.title = lane.LaneName;
             this.is_visible = true;
 
-            if (this.rpmsim) {
-                this.current_gamma_distribution = this.rpmsim.GammaDistribution.slice(0);    // duplicate
-                this.set_gamma_sum(this.rpmsim.GammaBG * 4);
-            }
+            this.current_gamma_distribution = this.lane.RPM.GammaDistribution.slice(0);    // duplicate
+            this.set_gamma_sum(this.lane.RPM.GammaBG * 4);
         },
 
         gamma_thumb_color(ix: number): string {
             let color = "green";
 
-            if (this.rpmsim) {
+            if (this.lane) {
                 let val = this.gamma_vals[ix];
-                if (val < this.rpmsim.GLThreshold)
+                if (val < this.lane.RPM.GLThreshold)
                     color = "orange";
-                if (val > this.rpmsim.GHThreshold)
+                if (val > this.lane.RPM.GHThreshold)
                     color = "red";
             }
 
@@ -145,9 +143,9 @@ export default {
         neutron_thumb_color(): string {
             let color = "green";
 
-            if (this.rpmsim) {
+            if (this.lane) {
                 let val = this.neutron_sum / 4;
-                if (val > this.rpmsim.NHThreshold)
+                if (val > this.lane.RPM.NHThreshold)
                     color = "red";
             }
 

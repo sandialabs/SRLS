@@ -154,11 +154,11 @@ export class SettingsManager {
     }
 
     static clone_lane(settings: ILaneSettings): ILaneSettings {
-        let result = {
+        let result: ILaneSettings = {
             LaneID: 0,
             LaneName: "",
             Enabled: false,
-            ClientCount: "0",
+            ClientCount: 0,
             Status: "",
             OccupancyState: "",
             RPMAlgorithm: settings.RPMAlgorithm,
@@ -181,7 +181,7 @@ export class SettingsManager {
         return result;
     }
 
-    static clone_settings(settings: ISettings) {
+    static clone_settings(settings: ISettings): ISettings {
         let result: ISettings = {
             Version: AppVersion,
             DefaultGammaBG: 0,
@@ -262,7 +262,6 @@ export class SettingsManager {
                     CameraSimulatorType: "canned",
                 },
             ],
-            Simulator: undefined,
         };
         return lane;
     }

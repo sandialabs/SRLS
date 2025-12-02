@@ -16,22 +16,40 @@
     </v-dialog>
 </template>
 
-<script>
+<script lang="ts">
+import { Ref, ref } from 'vue';
+
 export default {
     props: [],
-    data: function () {
+    setup: () => {
+        const title = ref("Confirm");
+        const is_visible = ref(false);
+        const text = ref("Confirm?");
+        const callback: Ref<Function | null> = ref(null);
+
         return {
-            is_visible: false,
-            title: "Confirm",
-            text: "Confirm?"
+            title,
+            is_visible,
+            text,
+            callback,
         };
     },
+
+    // data: function () {
+    //     return {
+    //         is_visible: false,
+    //         title: "Confirm",
+    //         text: "Confirm?"
+    //     };
+    // },
+
     created: function () {
         console.log("confirm modal created");
-        this.callback = null;
+        // this.callback = null;
     },
+
     methods: {
-        show: function (title, text, callback) {
+        show: function (title: string, text: string, callback: Function) {
             console.log("In confirm.show");
             this.title = title;
             this.text = text;
@@ -41,7 +59,8 @@ export default {
         confirm: function () {
             console.log("CONFIRMED");
             this.is_visible = false;
-            this.callback();
+            if(this.callback)
+                this.callback();
         }
     }
 };

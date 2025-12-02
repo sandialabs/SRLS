@@ -45,58 +45,50 @@
     </v-card>
 </template>
 
-<script>
+<script lang="ts">
+import { Ref, ref } from "vue";
 import { AppData } from "../main";
+import { ISettings } from "../lib/ISettings";
+import { AppVersion } from "../lib/Globals";
+import { Settings } from "../lib/settings";
 
 export default {
-    data: () => ({
-        settings: {
-            DefaultGammaBG: 0,
-            DefaultNeutronBG: 3,
-            DefaultGammaDistribution: [0.25, 0.25, 0.25, 0.25],
-            DefaultNeutronDistribution: [0.25, 0.25, 0.25, 0.25],
-            DefaultGammaNSigma: 7,
-            DefaultNeutronThreshold: 7,
-            DefaultGHThreshold: 300,
-            DefaultGLThreshold: 100,
-            DefaultNHThreshold: 7,
-            DefaultAutoGammaProbability: 0.05,
-            DefaultAutoNeutronProbability: 0.05,
-            DefaultAutoInterval: 30.0,
-        },
-    }),
+    setup: () => {
+        const settings: Ref<ISettings> = ref(Settings.default());
+
+        return {
+            settings,
+        };
+    },
+    // data: () => ({
+    //     settings: {
+    //         DefaultGammaBG: 0,
+    //         DefaultNeutronBG: 3,
+    //         DefaultGammaDistribution: [0.25, 0.25, 0.25, 0.25],
+    //         DefaultNeutronDistribution: [0.25, 0.25, 0.25, 0.25],
+    //         DefaultGammaNSigma: 7,
+    //         DefaultNeutronThreshold: 7,
+    //         DefaultGHThreshold: 300,
+    //         DefaultGLThreshold: 100,
+    //         DefaultNHThreshold: 7,
+    //         DefaultAutoGammaProbability: 0.05,
+    //         DefaultAutoNeutronProbability: 0.05,
+    //         DefaultAutoInterval: 30.0,
+    //     },
+    // }),
     beforeCreate: function() {
         console.log("In beforeCreate", AppData);
     },
     created: function() {
         // trick to save untracked data - created() is called after
         // reactive hooks are in place
-        this.copy_settings(AppData.settings.Data, this.settings);
+        Settings.copy(AppData.settings.Data, this.settings);
     },
     methods: {
-        // callback function will receive LaneSettings object if saved
-        copy_settings: function(from, to) {
-            to["DefaultGammaBG"] = from["DefaultGammaBG"];
-            to["DefaultNeutronBG"] = from["DefaultNeutronBG"];
-            to["DefaultGammaDistribution"] = from["DefaultGammaDistribution"].slice(0);
-            to["DefaultNeutronDistribution"] = from["DefaultNeutronDistribution"].slice(0);
-            to["DefaultGammaNSigma"] = from["DefaultGammaNSigma"];
-            to["DefaultNeutronThreshold"] = from["DefaultNeutronThreshold"];
-            to["DefaultGHThreshold"] = from["DefaultGHThreshold"];
-            to["DefaultGLThreshold"] = from["DefaultGLThreshold"];
-            to["DefaultNHThreshold"] = from["DefaultNHThreshold"];
-            to["DefaultAutoGammaProbability"] = from["DefaultAutoGammaProbability"];
-            to["DefaultAutoNeutronProbability"] = from["DefaultAutoNeutronProbability"];
-            to["DefaultAutoInterval"] = from["DefaultAutoInterval"];
-        },
-
         save: function() {
-            this.copy_settings(this.settings, AppData.settings.Data);
+            Settings.copy(this.settings, AppData.settings.Data);
             AppData.settings.save();
         },
     },
 };
 </script>
-
-<style scoped>
-</style>

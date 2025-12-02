@@ -35,7 +35,7 @@ export class LaneSimulator {
         console.log("Setting paused state of " + this.Name + " to " + val);
         this.m_is_paused = val;
         if (this.RPM)
-            this.RPM.m_is_paused = val;
+            this.RPM.IsPaused = val;
     }
 
     constructor(settings: ILaneSettings, canvas: HTMLCanvasElement) {
@@ -227,10 +227,10 @@ export class LaneSimulator {
             settings.RPM.IPAddr,
             settings.RPM.Port,
             settings.LaneName + " RPM",
-            new ProfileGenerator2()
+            new ProfileGenerator2(),
+            this
         );
         this.RPM.UpdateFromSettings(settings);
-        this.RPM.SetOwner(this);
     }
 
     private generate_container_number(): string {

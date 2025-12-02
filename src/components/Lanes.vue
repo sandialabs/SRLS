@@ -112,7 +112,8 @@ import { LaneSimulator } from "../lib/LaneSim";
 import { banner } from "../lib/Utility";
 import { CameraSimulator } from "../lib/CameraSimulator";
 import { ICameraSettings } from "../lib/ICameraSettings";
-import { reactive } from "vue";
+import { Reactive, reactive, Ref, ref } from "vue";
+import { UnaryExpression } from "typescript";
 
 console.log("Lanes.vue loaded");
 
@@ -120,6 +121,9 @@ interface Headers {
     text: string;
     value: string;
 }
+
+export type LaneActions = "GA" | "NA" | "NG" | "OC" | "TT" | "automode";
+export type LaneEvents = "editlane" | "clone" | "adjust" | "delete" | "automode" | "GA" | "NA" | "NG" | "OC" | "TT";
 
 export default {
     props: {
@@ -142,8 +146,9 @@ export default {
             { text: "Name", value: "LaneName" },
             { text: "Enabled", value: "Enabled" }            
         ]);
+        let simMap: Reactive<Map<number, LaneSimulator>> = reactive(new Map<number, LaneSimulator>());
 
-        return { lanedata, headers };
+        return { lanedata, headers, simMap };
     },
 
     // data: () => ({
@@ -168,14 +173,15 @@ export default {
         // create a LaneSimulator for each lane and save it in the
         // lanes LaneSettings.  If the lane is enabled, start the simulator.
         this.lanedata.forEach(lane => {
-            if (lane.Simulator) {
+            let sim = this.simMap.get(lane.LaneID);
+            if (sim) {
                 console.log("    simulator already exists");
             } else {
                 console.log("    creating new simulator");
                 let ls = new LaneSimulator(lane,
                     <HTMLCanvasElement>document.getElementById("render-canvas")
                 );
-                lane.Simulator = ls;
+                this.simMap.set(ls.LaneID, ls);
                 lane["ClientCount"] = 0;
                 if (lane.Enabled) {
                     this.start_simulator(lane);
@@ -192,7 +198,7 @@ export default {
         //-------------------------------------------------------
         // EVENT HANDLING
         //-------------------------------------------------------
-        on_add_lane: function () {
+        on_add_lane: function (): void {
             console.log("In on_add_lane");
 
             if (!this.settingsmgr) {
@@ -214,35 +220,40 @@ export default {
             });
         },
 
-        on_trigger_all: function (event_name: "GA" | "NA" | "NG" | "OC" | "TT" | "automode") {
+        on_trigger_all: function (event_name: LaneActions): void {
             console.log("In on_trigger_all: " + event_name);
 
             this.lanedata?.forEach(lane => {
                 if (lane.Enabled) {
-                    if (
-                        event_name === "GA" ||
-                        event_name === "NA" ||
-                        event_name === "NG" ||
-                        event_name === "OC"
-                    ) {
-                        console.log("Generating " + event_name + " on " + lane.LaneName);
-                        lane.Simulator?.GenerateAlarm(event_name);
+                    let sim = this.simMap.get(lane.LaneID);
+                    if(sim) {
+                        if (
+                            event_name === "GA" ||
+                            event_name === "NA" ||
+                            event_name === "NG" ||
+                            event_name === "OC"
+                        ) {
+                            console.log("Generating " + event_name + " on " + lane.LaneName);
+                            sim.GenerateAlarm(event_name);
+                        }
+                        if (event_name === "TT") {
+                            console.log("Toggling case tamper on " + lane.LaneName);
+                            sim.RPM?.ToggleTamper();
+                        }
+                        if (event_name === "automode") {
+                            console.log("Toggling auto mode on " + lane.LaneName);
+                            sim.ToggleAutoMode();
+                        }
                     }
-                    if (event_name === "TT") {
-                        console.log("Toggling case tamper on " + lane.LaneName);
-                        lane.Simulator?.RPM?.ToggleTamper();
-                    }
-                    if (event_name === "automode") {
-                        console.log("Toggling auto mode on " + lane.LaneName);
-                        lane.Simulator?.ToggleAutoMode();
+                    else {
+                        console.error("on_trigger_all -- missing lane", lane);
                     }
                 }
             });
         },
 
-        on_trigger_lane: function (
-            lane: ILaneSettings,
-            event_name: "editlane" | "clone" | "adjust" | "delete" | "automode" | "GA" | "NA" | "NG" | "OC" | "TT") {
+        on_trigger_lane: function (lane: ILaneSettings, event_name: LaneEvents): void {
+            let sim = this.simMap.get(lane.LaneID);
             //console.log("Lane Trigger " + event_name, lane);
             // if (lane.Enabled) {
             // }
@@ -256,38 +267,57 @@ export default {
                 case "adjust":
                     console.log("adjust", this.$refs);
                     console.log("adjustlane", lane);
-                    (<typeof RPMControl>this.$refs["rpmcontrol"]).show(lane);
+                    
+                    (<typeof RPMControl>this.$refs["rpmcontrol"]).show(lane, sim);
                     break;
                 case "delete":
                     this.delete_lane(lane);
                     break;
                 case "automode":
                     console.log("Toggling simulator");
-                    lane.Simulator?.ToggleAutoMode();
+                    if(sim)
+                        sim.ToggleAutoMode();
+                    else
+                        console.error("on_trigger_lane-automode", lane);
                     break;
                 case "GA":
                     console.log("Generating " + event_name);
-                    lane.Simulator?.GenerateAlarm(event_name);
+                    if(sim)
+                        sim.GenerateAlarm(event_name);
+                    else
+                        console.error("on_trigger_lane-GA", lane);
                     break;
                 case "NA":
                     console.log("Generating " + event_name);
-                    lane.Simulator?.GenerateAlarm(event_name);
+                    if(sim)
+                        sim.GenerateAlarm(event_name);
+                    else
+                        console.error("on_trigger_lane-NA", lane);
                     break;
                 case "NG":
                     console.log("Generating " + event_name);
-                    lane.Simulator?.GenerateAlarm(event_name);
+                    if(sim)
+                        sim.GenerateAlarm(event_name);
+                    else
+                        console.error("on_trigger_lane-NG", lane);
                     break;
                 case "OC":
                     console.log("Generating innocent occupancy");
-                    lane.Simulator?.GenerateAlarm(event_name);
+                    if(sim)
+                        sim.GenerateAlarm(event_name);
+                    else
+                        console.error("on_trigger_lane-OC", lane);
                     break;
                 case "TT":
                     console.log("Toggling case tamper");
-                    lane.Simulator?.RPM?.ToggleTamper();
+                    if(sim)
+                        sim.RPM?.ToggleTamper();
+                    else
+                        console.error("on_trigger_lane-TT", lane);
                     break;
             }
         },
-        on_toggle_lane: function (lane: ILaneSettings) {
+        on_toggle_lane: function (lane: ILaneSettings): void {
             console.log("on_toggle_lane");
             lane.Enabled = !lane.Enabled;
             if (lane.Enabled) {
@@ -306,14 +336,15 @@ export default {
             (<typeof Notify>this.$refs["notifydialog"]).show(title, text);
         },
 
-        poll: function () {
+        poll: function (): void {
             this.lanedata.forEach(lane => {
-                lane.Simulator?.Poll();
+                let sim = this.simMap.get(lane.LaneID);
+                sim?.Poll();
             });
             this.$forceUpdate();
         },
 
-        camera_info: function (cam: ICameraSettings) {
+        camera_info: function (cam: ICameraSettings): string {
             if (cam.Enabled) {
                 return (
                     cam.Manufacturer + " " + cam.Model + " (" + cam.IPAddr + ":" + cam.Port + ")"
@@ -323,12 +354,13 @@ export default {
             }
         },
 
-        rpm_client_count: function (lane: ILaneSettings) {
+        rpm_client_count: function (lane: ILaneSettings): string {
             let result = "";
             if (lane) {
                 console.log("In rpm_client_count", lane);
-                if (lane.Simulator) {
-                    console.log("Simulator", lane.Simulator);
+                let sim = this.simMap.get(lane.LaneID);
+                if(sim) {
+                    console.log("Simulator", sim);
                     result = String(lane.ClientCount);
                 }
             }
@@ -345,7 +377,7 @@ export default {
         },
 
         start_simulator: function (lane: ILaneSettings) {
-            let sim: LaneSimulator | undefined = lane.Simulator;
+            let sim = this.simMap.get(lane.LaneID);
             if(!sim)
                 return;
             console.log(`In start_simulator. IsEnabled = ${sim.IsEnabled}, IsRunning = ${sim.IsRunning}"`);
@@ -360,16 +392,16 @@ export default {
             }
         },
 
-        stop_simulator: function (lane: ILaneSettings) {
+        stop_simulator: function (lane: ILaneSettings): void {
             console.log("Stopping simulator on " + lane.LaneName, lane);
-            let sim = lane.Simulator;
+            let sim = this.simMap.get(lane.LaneID);
             if (sim) {
                 sim.Stop();
                 sim.IsEnabled = false;
             }
         },
 
-        clone_lane: function (lane: ILaneSettings) {
+        clone_lane: function (lane: ILaneSettings): void {
             if(!this.settingsmgr)
                 return;
 
@@ -384,7 +416,7 @@ export default {
                 this.notify("Duplicate Lane", rc[1]);
         },
 
-        delete_lane: function (lane: ILaneSettings) {
+        delete_lane: function (lane: ILaneSettings): void {
             let settingsmgr = this.settingsmgr;
 
             if (!settingsmgr)
@@ -394,13 +426,16 @@ export default {
             this.stop_simulator(lane);
             let dlg = (<typeof Confirm>this.$refs["confirmdialog"]);
             console.log("Refs", this.$refs, dlg);
+
+            let self = this;
             dlg.show("Delete", "Delete " + lane.LaneName + "?", () => {
                 console.log("In callback");
                 settingsmgr.remove_lane_by_id(lane.LaneID);
+                self.simMap.delete(lane.LaneID);
             });
         },
 
-        edit_lane: function (lane: ILaneSettings) {
+        edit_lane: function (lane: ILaneSettings): void {
             let self = this;
             let settingsmgr = this.settingsmgr;
 
@@ -422,15 +457,17 @@ export default {
                         if (rc[0]) {
                             settingsmgr.save();
                             // stop and delete simulator on existing lane object
+                            self.simMap.delete(lane.LaneID);
                             self.stop_simulator(lane);
-                            lane.Simulator = undefined;
+                            // lane.Simulator = undefined;
                             lane.Enabled = false;
-                            updated_settings.Simulator = new LaneSimulator(
+                            let sim = new LaneSimulator(
                                 updated_settings,
                                 <HTMLCanvasElement>document.getElementById("render-canvas")
                             );
                             if (updated_settings.Enabled) {
                                 self.start_simulator(updated_settings);
+                                self.simMap.set(updated_settings.LaneID, sim);
                             }
                             self.lanedata[lane_index] = updated_settings;
                             console.log("Updated lanedata:", self.lanedata);

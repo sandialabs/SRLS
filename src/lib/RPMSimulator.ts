@@ -28,7 +28,7 @@ export class RPMSimulator extends Component {
     static na_files: string[] = [];
     static ng_files: string[] = [];
 
-    m_owner?: LaneSimulator; // the LaneSimulator that created us
+    m_owner: LaneSimulator; // the LaneSimulator that created us
 
     m_ga_file_cursor = 0;
     m_na_file_cursor = 0;
@@ -111,9 +111,11 @@ export class RPMSimulator extends Component {
         port: number,
         name: string,
         profile_generator: ProfileGenerator,
+        owner: LaneSimulator,
         debug: boolean = false
     ) {
         super("RPMSimulator");
+        this.m_owner = owner;
         if (debug) this.m_logger.Level = ELogLevel.LOG_DEBUG;
         this.LogDebug("    Creating RPM simulator " + name);
         this.m_ipaddr = ipaddr;
@@ -130,9 +132,9 @@ export class RPMSimulator extends Component {
         this.m_neutron_threshold = 7;
     }
 
-    public SetOwner(owner: LaneSimulator) {
-        this.m_owner = owner;
-    }
+    // public SetOwner(owner: LaneSimulator) {
+    //     this.m_owner = owner;
+    // }
 
     public UpdateGlobalSettings(
         gamma_bg: number,

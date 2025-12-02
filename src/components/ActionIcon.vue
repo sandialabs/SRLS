@@ -23,7 +23,7 @@
     </span>
 </template>
 
-<script>
+<script lane="ts">
 console.log("ActiveIcon.vue loaded");
 
 export default {
