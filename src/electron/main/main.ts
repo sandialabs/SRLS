@@ -23,6 +23,8 @@ async function handleFileOpen() {
 }
 
 function createWindow() {
+    console.log("main.ts - createWindow");
+
     // Create the browser window.
     const mainWindow = new BrowserWindow({
         width: 1200,
@@ -37,94 +39,93 @@ function createWindow() {
     remoteMain.enable(mainWindow.webContents);
 
 
-// import { Server } from 'node:net';
+    // import { Server } from 'node:net';
 
-let server: net.Server | null = null;
-// let sockets: { [id: string]: net.Socket } = {};
-let sockets: net.Socket[] = [];
+    let server: net.Server | null = null;
+    // let sockets: { [id: string]: net.Socket } = {};
+    let sockets: net.Socket[] = [];
 
-ipcMain.handle('start-server', (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string): Promise<any> => {
-    let id: string = 'undefined';
-    let idNum: number = 0;
+    ipcMain.handle('start-server', (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string): Promise<any> => {
+        let id: string = 'undefined';
+        let idNum: number = 0;
 
-    server = net.createServer((socket) => {
-  // 'connection' listener.
-  console.log('client connected');
-          // When creating a new socket
-        
-        id = ipaddr + ':' + port.toString();
-        sockets[idNum] = socket;
+        server = net.createServer((socket) => {
+            // 'connection' listener.
+            console.log('client connected');
+            // When creating a new socket
 
+            id = ipaddr + ':' + port.toString();
+            sockets[idNum] = socket;
 
-  socket.on('end', () => {
-    console.log('client disconnected');
-    delete sockets[idNum]; // Remove the socket object when the connection is closed
-  });
-  socket.write('hello\r\n');
+            socket.on('end', () => {
+                console.log('client disconnected');
+                delete sockets[idNum]; // Remove the socket object when the connection is closed
+            });
+            socket.write('hello\r\n');
 
-//   setTimeout(() => {
-//     c.write('hello\r\n');
-//   }, 5000); // 5000 milliseconds = 5 seconds
+            //   setTimeout(() => {
+            //     c.write('hello\r\n');
+            //   }, 5000); // 5000 milliseconds = 5 seconds
 
-  socket.pipe(socket);
-  
-});
-    let response = "Old Response";
+            socket.pipe(socket);
 
-    // server.listen(port, ipaddr, () => {
-    //     console.log(`Also listening on ${JSON.stringify(server?.address())}`);
-    //     response = JSON.stringify(server?.address());
-    // });
-    return new Promise((resolve, reject) => {
-        server?.listen(port, ipaddr, () => {
-            const addressInfo = server?.address() as net.AddressInfo;
-            const response = JSON.stringify(addressInfo);
-            const id: string = addressInfo?.address + ':' + (addressInfo?.port).toString(); // Use optional chaining to access the port property
-            let firstSocket = Object.values(sockets)[0] || null;
-            console.log("Socket: ", JSON.stringify(firstSocket));
-            console.log("Sockets 2: ", JSON.stringify(sockets));
-            console.log("Internal ID:" + id);
-            
-            
-            resolve(id);
         });
+        let response = "Old Response";
+
+        // server.listen(port, ipaddr, () => {
+        //     console.log(`Also listening on ${JSON.stringify(server?.address())}`);
+        //     response = JSON.stringify(server?.address());
+        // });
+        return new Promise((resolve, reject) => {
+            server?.listen(port, ipaddr, () => {
+                const addressInfo = server?.address() as net.AddressInfo;
+                const response = JSON.stringify(addressInfo);
+                const id: string = addressInfo?.address + ':' + (addressInfo?.port).toString(); // Use optional chaining to access the port property
+                let firstSocket = Object.values(sockets)[0] || null;
+                console.log("Socket: ", JSON.stringify(firstSocket));
+                console.log("Sockets 2: ", JSON.stringify(sockets));
+                console.log("Internal ID:" + id);
+
+
+                resolve(id);
+            });
+        });
+
+        // console.log(`Server started on ${ipaddr}:${port}`);
+        // event.sender.send('start-server-response', 'Server started successfully');
+        // // return "Response from main process";
+        // console.log("Address:", server.address()?.toString());
+        // console.log("Address 2:", response);
+        // console.log("ID:", id);
+        // console.log("Sockets:", JSON.stringify(sockets));
+        // return id;
     });
 
-    // console.log(`Server started on ${ipaddr}:${port}`);
-    // event.sender.send('start-server-response', 'Server started successfully');
-    // // return "Response from main process";
-    // console.log("Address:", server.address()?.toString());
-    // console.log("Address 2:", response);
-    // console.log("ID:", id);
-    // console.log("Sockets:", JSON.stringify(sockets));
-    // return id;
-});
+    ipcMain.handle('stop-server', (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string): Promise<any> => {
+        console.log("Sockets b: ", JSON.stringify(sockets));
+        // Stop the server here
+        if (server) {
+            server.close();
+        }
+        return Promise.resolve(); // Return a resolved promise
+    });
 
-ipcMain.handle('stop-server', (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string): Promise<any> => {
-    console.log("Sockets b: ", JSON.stringify(sockets));
-  // Stop the server here
-  if (server) {
-    server.close();
-  }
-  return Promise.resolve(); // Return a resolved promise
-});
+    ipcMain.handle("get-server", (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string): Promise<any> => {
+        console.log("Get server called with: ", ipaddr);
+        let idNum: number = 0;
 
-ipcMain.handle("get-server", (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string): Promise<any> => {
-    console.log("Get server called with: ", ipaddr);
-    let idNum: number = 0;
-    
-    if (sockets && ipaddr) {
-      // Use the find method to locate the socket
-      if (sockets[idNum] !== undefined && sockets[idNum] !== null) {
-        console.log("Socket found: " + sockets[idNum]);
-      }
+        if (sockets && ipaddr) {
+            // Use the find method to locate the socket
+            if (sockets[idNum] !== undefined && sockets[idNum] !== null) {
+                console.log("Socket found: " + sockets[idNum]);
+            }
+        }
+        console.log("Socketa: ", JSON.stringify(sockets));
+        console.log("1 Socket: ", JSON.stringify(sockets[idNum]));
+
+        return Promise.resolve("test test test"); // Return a resolved promise
     }
-    console.log("Socketa: ", JSON.stringify(sockets));
-    console.log("1 Socket: ", JSON.stringify(sockets[idNum]));
-    
-    return Promise.resolve("test test test"); // Return a resolved promise
-  }
-);
+    );
 
 
 

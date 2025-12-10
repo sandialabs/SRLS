@@ -49,12 +49,11 @@
 import { Ref, ref } from "vue";
 import { AppData } from "../main";
 import { ISettings } from "../lib/ISettings";
-import { AppVersion } from "../lib/Globals";
-import { Settings } from "../lib/settings";
+import { SettingsManager } from "../lib/SettingsManager";
 
 export default {
     setup: () => {
-        const settings: Ref<ISettings> = ref(Settings.default());
+        const settings: Ref<ISettings> = ref(SettingsManager.default_settings());
 
         return {
             settings,
@@ -82,11 +81,11 @@ export default {
     created: function() {
         // trick to save untracked data - created() is called after
         // reactive hooks are in place
-        Settings.copy(AppData.settings.Data, this.settings);
+        AppData.settings.copy_default_to(this.settings);
     },
     methods: {
         save: function() {
-            Settings.copy(this.settings, AppData.settings.Data);
+            AppData.settings.copy_to_default(this.settings);
             AppData.settings.save();
         },
     },

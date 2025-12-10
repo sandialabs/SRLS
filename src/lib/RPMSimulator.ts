@@ -2,8 +2,9 @@
 
 import { Component } from "./Component";
 import { RPMProfile, DetectorValues } from "./RPMProfile";
-// import * as net from "net";
-import { ipcRenderer } from 'electron';
+import * as net from "net";
+import * as http from "http";
+// import { ipcRenderer } from 'electron';
 import * as fs from "fs";
 import * as path from "path";
 //import { ProfileGenerator1 } from "./ProfileGenerator1";
@@ -159,75 +160,50 @@ export class RPMSimulator extends Component {
     }
 
     public Start(): void {
+        console.log("RPMSimulator.Start", this);
+
         this.Reset();
-        if (this.m_listener == null) {
-            this.LogDebug("Starting listener on " + this.m_ipaddr + ":" + this.m_rpm_port);
-            let self = this; // "this" will be something different in callback
+
+        if (this.m_listener) {
+            return;
+        }
+
+        try {
             console.log("Starting listener on " + this.m_ipaddr + ":" + this.m_rpm_port);
-
-
-            const response = window.electronAPI.send('start-server', this.m_rpm_port, this.m_ipaddr).then((response) => {
-                console.log("Server response: ", JSON.stringify(response)); // Output: "Server started successfully"
-            });
-            console.log(JSON.stringify(response));
-
-            // try {
-            //     const response = window.electronAPI.send('start-server', this.m_rpm_port, this.m_ipaddr);
-            //     console.log(JSON.stringify(response));
-            // } catch (error) {
-            //     console.error(error);
-            // }
-            console.log("After Start");
-
-            const response2 = window.electronAPI.send('get-server', 0, '127.0.0.1:1609').then((response) => {
-                console.log("Get Server response: ", JSON.stringify(response)); // Output: "Server started successfully"
-            });
-            console.log("Get server JSON:", JSON.stringify(response2));
-
-
-            // ipcRenderer.on('socket-created', (event, socket) => {
-            // // Handle the socket object here
-            // console.log("SOcket Created: ", socket);
-            // });
-
-
-
-            // window.electronAPI.on('new-connection', (event, socket) => {
-            //    console.log(`New connection from ${socket.remoteAddress}:${socket.remotePort}`);
-
-            // this.m_listener = net
-            //     .createServer(socket => {
-            //         // this is called every time a client connects
-            //         this.LogDebug(
-            //             "Have connection from " + socket.remoteAddress + ":" + socket.remotePort
-            //         );
-            //         if (self.m_clients.length == 0) {
-            //             let now = this.current_time();
-            //             this.m_next_background_time = now + 200;
-            //         }
-            //         self.m_clients.push(socket);
-            //         socket.on("end", () => {
-            //             // this is called when a client disconnects
-            //             this.LogDebug("Client disconnected");
-            //             self.delete_client(socket);
-            //         });
-            //         socket.on("error", err => {
-            //             // error on client connection - possible disconnect
-            //             self.delete_client(socket);
-            //             this.LogDebug("Error on client connection: " + err.message);
-            //         });
-            //         socket.on("data", data => {
-            //             // some client has sent me something
-            //             this.LogDebug("Received " + data);
-            //         });
-            //     })
-            //     .listen(this.m_rpm_port, this.m_ipaddr);
-            //   });
-
-            this.LogDebug("RPM server created.");
+            let self = this; // "this" will be something different in callback
+            this.m_listener = net
+                .createServer((socket: net.Socket) => {
+                    // this is called every time a client connects
+                    console.log(`Have connection from ${socket.remoteAddress}:${socket.remotePort}`);
+                    
+                    if (self.m_clients.length == 0) {
+                        let now = this.current_time();
+                        this.m_next_background_time = now + 200;
+                    }
+                    self.m_clients.push(socket);
+                    socket.on("end", () => {
+                        // this is called when a client disconnects
+                        this.LogDebug("Client disconnected");
+                        self.delete_client(socket);
+                    });
+                    socket.on("error", err => {
+                        // error on client connection - possible disconnect
+                        self.delete_client(socket);
+                        this.LogDebug("Error on client connection: " + err.message);
+                    });
+                    socket.on("data", data => {
+                        // some client has sent me something
+                        this.LogDebug("Received " + data);
+                    });
+                })
+                .listen(this.m_rpm_port, this.m_ipaddr);
+            console.log("RPM server created--setting timeout");
             this.m_timer = setTimeout(() => {
                 self.on_timer();
             }, 10);
+
+        } catch (error) {
+            console.error("RPMSimulator--Start error", error)
         }
     }
 
@@ -247,9 +223,7 @@ export class RPMSimulator extends Component {
             this.m_listener = null;
             clearInterval(this.m_timer);
             this.m_timer = undefined;
-            // this.m_timer = undefined; // Original code which is no longer valid typescript
         }
-        window.electronAPI.send('stop-server', 0, '');
     }
 
     //------------------------------------------------------------

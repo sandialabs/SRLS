@@ -47,8 +47,8 @@ export class LaneSimulator {
         NextLaneID += 1;
         this.Name = settings.LaneName;
         this.IsEnabled = settings.Enabled;
-        this.create_rpm(settings);
         this.RPM = null;
+        this.create_rpm(settings);
         this.Cameras = [];
         let imagedir = "Front";
         let camnum = 1;
@@ -89,6 +89,8 @@ export class LaneSimulator {
             this.Status
         );
         try {
+            console.log("LaneSim.Start", this);
+
             this.RPM?.Start();
             for (let cam of this.Cameras) {
                 if (cam.m_is_enabled) cam.Start();
@@ -219,10 +221,9 @@ export class LaneSimulator {
     }
 
     private create_rpm(settings: ILaneSettings): void {
-        if (this.RPM != null) {
-            this.RPM.Stop();
-            // this.RPM = null;
-        }
+        console.log("LaneSim--create_rpm", settings);
+
+        this.RPM?.Stop();
         this.RPM = new RPMSimulator(
             settings.RPM.IPAddr,
             settings.RPM.Port,

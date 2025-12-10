@@ -216,14 +216,17 @@
 import { SettingsManager } from "../lib/SettingsManager";
 import { CameraDefinitions, ICameraDefinitions } from "../lib/Globals";
 import { ILaneSettings } from "../lib/ILaneSettings";
+import { Ref, ref } from "vue";
+import { AppData } from "../main";
+import { ISettings } from "../lib/ISettings";
+
+type LaneSettingsCallback = (settings: ILaneSettings) => void;
 
 interface ICameraDefinitionShort {
     id: number,
     name: string,
 }
-
-export default {
-    data: () => ({
+/*
         dialog: false,
         activetab: null as number | null,
         title: "SETTINGS DIALOG",
@@ -234,11 +237,48 @@ export default {
         settings: { RPM: {}, Cameras: [{ Name: "" }, { Name: "" }] } as ILaneSettings,
         camera_definitions: [] as ICameraDefinitionShort[],
         callback: null as any | null,
-    }),
+*/
+export default {
+    setup: () => {
+        let dialog = ref(false);
+        let activetab: Ref<number | null> = ref(null);
+        let title = ref("SETTINGS DIALOG");
+        let camera_models: Ref<[string[], string[]]> = ref([[], []]);
+        let selected_camdef: Ref<[undefined | number, undefined | number]> = ref([undefined, undefined]);
+        let camtypes: Ref<string[]> = ref(["canned", "animated"]);
+        let rpm_algorithms: Ref<string[]> = ref(["simulated", "replay"]);
+        let settings: Ref<ILaneSettings> = ref(AppData.settings.default_lane_settings("", "127.0.0.1", 9999));
+        let camera_definitions: Ref<ICameraDefinitionShort[]> = ref([]);
+        let callback: Ref<LaneSettingsCallback | null> = ref(null);
+
+        return {
+            dialog,
+            activetab,
+            title,
+            camera_models,
+            selected_camdef,
+            camtypes,
+            rpm_algorithms,
+            settings,
+            camera_definitions,
+            callback
+        };
+    },
+    // data: () => ({
+    //     dialog: false,
+    //     activetab: null as number | null,
+    //     title: "SETTINGS DIALOG",
+    //     camera_models: [[], []] as [string[], string[]],
+    //     selected_camdef: [undefined, undefined] as [undefined | number, undefined | number],
+    //     camtypes: ["canned", "animated"],
+    //     rpm_algorithms: ["simulated", "replay"],
+    //     settings: { RPM: {}, Cameras: [{ Name: "" }, { Name: "" }] } as ILaneSettings,
+    //     camera_definitions: [] as ICameraDefinitionShort[],
+    //     callback: null as any | null,
+    // }),
     created: function () {
         // trick to save untracked data - created() is called after
         // reactive hooks are in place
-        this.callback = "undefined";
         this.camera_definitions = [];
         for (let i = 0; i < CameraDefinitions.length; i++) {
             let def = CameraDefinitions[i];
@@ -251,7 +291,7 @@ export default {
     },
     methods: {
         // callback function will receive LaneSettings object if saved
-        open: function (title: string, settings: ILaneSettings, callback: any) {
+        open: function (title: string, settings: ILaneSettings, callback: LaneSettingsCallback) {
             this.title = title;
             this.activetab = 0;
             this.dialog = true;
@@ -263,7 +303,8 @@ export default {
         },
         save: function () {
             this.dialog = false;
-            this.callback(this.settings);
+            if(this.callback)
+                this.callback(this.settings);
         },
         close: function () {
             this.dialog = false;

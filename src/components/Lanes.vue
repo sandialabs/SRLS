@@ -160,8 +160,9 @@ export default {
     // }),
 
     created: function () {
-        if (this.settingsmgr?.Data.Lanes) {
-            this.lanedata = this.settingsmgr?.Data.Lanes;
+        let lanes = this.settingsmgr?.lanes;
+        if (lanes) {
+            this.lanedata = lanes;
             console.log("Lanes.vue created", this.lanedata);
         }
         setInterval(() => {
@@ -169,25 +170,29 @@ export default {
         }, 500);
     },
     mounted: function () {
-        console.log("Lanes.vue mounted", this.lanedata);
+        // console.log("Lanes.vue mounted", this.lanedata);
         // create a LaneSimulator for each lane and save it in the
         // lanes LaneSettings.  If the lane is enabled, start the simulator.
         this.lanedata.forEach(lane => {
+            // console.log("Lanes.vue.mounted -- looking for", lane);
             let sim = this.simMap.get(lane.LaneID);
             if (sim) {
                 console.log("    simulator already exists");
             } else {
-                console.log("    creating new simulator");
+                // console.log("    creating new simulator", lane);
                 let ls = new LaneSimulator(lane,
                     <HTMLCanvasElement>document.getElementById("render-canvas")
                 );
-                this.simMap.set(ls.LaneID, ls);
-                lane["ClientCount"] = 0;
+
+                // console.log(`Lanes.vue.mounted -- adding to simMap ${lane.LaneID}`, ls);
+                this.simMap.set(lane.LaneID, ls);
+                lane.ClientCount = 0;
                 if (lane.Enabled) {
                     this.start_simulator(lane);
                 }
             }
         });
+        console.log("Lanes.vue mounted -- map", this.simMap);
     },
     watch: {
         lanedata: function (newval, oldval) {
@@ -254,6 +259,10 @@ export default {
 
         on_trigger_lane: function (lane: ILaneSettings, event_name: LaneEvents): void {
             let sim = this.simMap.get(lane.LaneID);
+            console.log("on_trigger_lane--simMap", this.simMap);
+            console.log("on_trigger_lane--lane", lane);
+            console.log("on_trigger_lane--sim", sim);
+
             //console.log("Lane Trigger " + event_name, lane);
             // if (lane.Enabled) {
             // }
@@ -377,11 +386,12 @@ export default {
         },
 
         start_simulator: function (lane: ILaneSettings) {
+            console.log("start_simulator", lane);
             let sim = this.simMap.get(lane.LaneID);
             if(!sim)
                 return;
             console.log(`In start_simulator. IsEnabled = ${sim.IsEnabled}, IsRunning = ${sim.IsRunning}"`);
-            console.log("Lane data: ", lane);
+            // console.log("Lane data: ", lane);
             if (lane.Status == "running") {
                 console.log("    Simulator is already enabled.");
             } else {
@@ -455,6 +465,7 @@ export default {
                     if(rc) {
                         console.log("edit_lane result: " + rc[1]);
                         if (rc[0]) {
+                            console.log("re-creating lane", lane);
                             settingsmgr.save();
                             // stop and delete simulator on existing lane object
                             self.simMap.delete(lane.LaneID);

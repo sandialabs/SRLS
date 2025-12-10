@@ -15,21 +15,35 @@
     </v-dialog>
 </template>
 
-<script>
+<script lang="ts">
+import { ref } from 'vue';
+
 export default {
     props: [],
-    data: function () {
+    setup: () => {
+        const is_visible = ref(false);
+        const title = ref("Notification");
+        const text = ref("Notification");
+
         return {
-            is_visible: false,
-            title: "Notification",
-            text: "Notification",
+            is_visible,
+            title,
+            text
         };
     },
+    
+    // data: function () {
+    //     return {
+    //         is_visible: false,
+    //         title: "Notification",
+    //         text: "Notification",
+    //     };
+    // },
     created: function () {
         console.log("confirm modal created");
     },
     methods: {
-        show: function (title, text, callback) {
+        show: function (title: string, text: string) {
             this.title = title;
             this.text = text;
             this.is_visible = true;

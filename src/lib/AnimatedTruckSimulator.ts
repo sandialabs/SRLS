@@ -7,13 +7,13 @@ import { TruckGenerator } from "./TruckGenerator";
 import { runInThisContext } from "vm";
 
 export class AnimatedTruckSimulator extends CameraSimulator {
-    m_canvas: HTMLCanvasElement;
-    m_images: Uint8Array[] = [];
-    m_image_duration_ms: number = 200; // how long to display each occupancy image
-    m_image_width = 640;
-    m_image_height = 480;
-    m_last_image: Buffer | null = null;
-    m_image_generator: TruckGenerator;
+    private m_canvas: HTMLCanvasElement;
+    private m_images: Uint8Array[] = [];
+    private m_image_duration_ms: number = 200; // how long to display each occupancy image
+    private m_image_width = 640;
+    private m_image_height = 480;
+    private m_last_image: Buffer | null = null;
+    private m_image_generator: TruckGenerator;
 
     public constructor(settings: ICameraSettings, name: string, canvas: HTMLCanvasElement) {
         super(settings, name);

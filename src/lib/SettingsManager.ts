@@ -10,9 +10,10 @@ import { ILaneSettings } from "./ILaneSettings";
 import { ISettings } from "./ISettings";
 
 export class SettingsManager {
-    m_file_path: string = "";
-    Data: ISettings;
-    static s_rpm_template: IRPMSettings = {
+    private m_file_path: string = "";
+    private Data: ISettings;
+
+    private static readonly s_rpm_template: IRPMSettings = {
         IPAddr: "",
         Port: 0,
         GammaBG: 0,
@@ -25,7 +26,7 @@ export class SettingsManager {
         GLThreshold: 0,
         NHThreshold: 0,
     };
-    static s_camera_template: ICameraSettings = {
+    private static readonly s_camera_template: ICameraSettings = {
         Name: "",
         Enabled: false,
         Manufacturer: "",
@@ -49,17 +50,29 @@ export class SettingsManager {
                 if (typeof this.Data.LogFilename == "undefined") this.Data.LogFilename = "";
                 if (typeof this.Data.Version == "undefined") this.Data.Version = AppVersion;
             } else {
-                this.Data = this.default_settings();
+                this.Data = SettingsManager.default_settings();
                 this.save();
             }
         } else {
-            this.Data = this.default_settings();
+            this.Data = SettingsManager.default_settings();
             //console.log("No file path specified");
         }
         //console.log("Utility test:", clone_object(this.Data, true));
     }
 
-    default_settings(): ISettings {
+    // get data(): ISettings {
+    //     return this.Data;
+    // }
+
+    get lanes(): ILaneSettings[] | null {
+        return this.Data?.Lanes;
+    }
+
+    get num_lanes(): number {
+        return (this.Data) ? this.Data.Lanes.length : 0;
+    }
+
+    static default_settings(): ISettings {
         let result: ISettings = {
             Version: AppVersion,
             DefaultGammaBG: 256,
@@ -182,28 +195,7 @@ export class SettingsManager {
     }
 
     static clone_settings(settings: ISettings): ISettings {
-        let result: ISettings = {
-            Version: AppVersion,
-            DefaultGammaBG: 0,
-            DefaultNeutronBG: 0,
-            DefaultGammaDistribution: [0.25, 0.25, 0.25, 0.25],
-            DefaultNeutronDistribution: [0.25, 0.25, 0.25, 0.25],
-
-            DefaultGammaNSigma: 0,
-            DefaultNeutronThreshold: 0,
-            DefaultGHThreshold: 0,
-            DefaultGLThreshold: 0,
-            DefaultNHThreshold: 0,
-
-            DefaultAutoGammaProbability: 0,
-            DefaultAutoNeutronProbability: 0,
-            DefaultAutoInterval: 0,
-
-            LogLevel: "warning",
-            LogFilename: "",
-
-            Lanes: [],
-        };
+        let result: ISettings = SettingsManager.default_settings();
         SettingsManager.copy_properties(settings, result, ["Lanes"]);
         settings.Lanes.forEach((x: ILaneSettings) => {
             result.Lanes.push(SettingsManager.clone_lane(x));
@@ -212,7 +204,7 @@ export class SettingsManager {
     }
 
     equals(other: SettingsManager): boolean {
-        return JSON.stringify(this.Data) == JSON.stringify(other.Data);
+        return JSON.stringify(this.Data) === JSON.stringify(other.Data);
     }
 
     default_lane_settings(name: string, ipaddr: string, port: number): ILaneSettings {
@@ -266,12 +258,48 @@ export class SettingsManager {
         return lane;
     }
 
+    copy_default_to(to: ISettings) {
+        this.copy_to(this.Data, to);
+    }
+
+    copy_to_default(from: ISettings) {
+        this.copy_to(from, this.Data);
+    }
+
+    private copy_to(from: ISettings, to: ISettings): void {
+        to.Version = from.Version;
+        to.DefaultGammaBG = from.DefaultGammaBG;
+        to.DefaultNeutronBG = from.DefaultNeutronBG;
+        to.DefaultGammaDistribution = from.DefaultGammaDistribution.slice(0);
+        to.DefaultNeutronDistribution = from.DefaultNeutronDistribution.slice(0);
+        to.DefaultGammaNSigma = from.DefaultGammaNSigma;
+        to.DefaultNeutronThreshold = from.DefaultNeutronThreshold;
+        to.DefaultGHThreshold = from.DefaultGHThreshold;
+        to.DefaultGLThreshold = from.DefaultGLThreshold;
+        to.DefaultNHThreshold = from.DefaultNHThreshold;
+        to.DefaultAutoGammaProbability = from.DefaultAutoGammaProbability;
+        to.DefaultAutoNeutronProbability = from.DefaultAutoNeutronProbability;
+        to.DefaultAutoInterval = from.DefaultAutoInterval;
+        to.LogLevel = from.LogLevel;
+        to.LogFilename = from.LogFilename;
+        to.Lanes = from.Lanes.slice(0);
+    }
+
+    /** Only create a lane if there are none */
+    create_default_lane() {
+        if (this.num_lanes === 0) {
+            this.add_lane("Lane 1", "127.0.0.1", 1601);
+            this.save();
+        }
+    }
+
     add_lane(name: string, ipaddr: string, port: number): ILaneSettings | null {
         // don't allow duplicate lane names
         let existing = this.Data.Lanes.filter(x => {
-            return x.LaneName == name;
+            return x.LaneName === name;
         });
-        if (existing.length > 0) return null;
+        if (existing.length > 0)
+            return null;
 
         let lane = this.default_lane_settings(name, ipaddr, port);
         const result = lane as ILaneSettings;
@@ -308,25 +336,32 @@ export class SettingsManager {
     locate_lane(name: string): number {
         for (let ix = 0; ix < this.Data.Lanes.length; ix++) {
             let lane = this.Data.Lanes[ix];
-            if (lane.LaneName == name) return ix;
+            if (lane.LaneName === name)
+                return ix;
         }
         return -1;
     }
+
     find_lane(lane_id: number): number {
         for (let ix = 0; ix < this.Data.Lanes.length; ix++) {
             let lane = this.Data.Lanes[ix];
-            if (lane.LaneID == lane_id) return ix;
+            if (lane.LaneID == lane_id)
+                return ix;
         }
         return -1;
     }
 
-    get_lane(lane_id: number): ILaneSettings {
-        return this.Data.Lanes.filter(x => {
+    get_lane(lane_id: number): ILaneSettings | null {
+        let laneSettings: ILaneSettings | null = null;
+        let lanes = this.Data.Lanes.filter(x => {
             return x.LaneID == lane_id;
-        })[0];
+        });
+        if(lanes.length > 0)
+            laneSettings = lanes[0];
+        return laneSettings;
     }
 
-    remove_lane(doomed_index: number): void {
+    private remove_lane(doomed_index: number): void {
         if (doomed_index < this.Data.Lanes.length) {
             this.Data.Lanes.splice(doomed_index, 1);
         }
@@ -345,6 +380,7 @@ export class SettingsManager {
 
     remove_lane_by_name(name: string): void {
         let ix = this.locate_lane(name);
-        if (ix >= 0) this.remove_lane(ix);
+        if (ix >= 0)
+            this.remove_lane(ix);
     }
 }
