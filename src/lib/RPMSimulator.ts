@@ -2,9 +2,9 @@
 
 import { Component } from "./Component";
 import { RPMProfile, DetectorValues } from "./RPMProfile";
-import * as net from "net";
-import * as http from "http";
-// import { ipcRenderer } from 'electron';
+// import * as net from "net";
+// import * as http from "http";
+import { ipcRenderer } from 'electron';
 import * as fs from "fs";
 import * as path from "path";
 //import { ProfileGenerator1 } from "./ProfileGenerator1";
@@ -43,8 +43,8 @@ export class RPMSimulator extends Component {
     m_current_profile: RPMProfile | null = null;
     m_ipaddr: string;
     m_rpm_port: number; // the port we are talking on
-    m_listener: any; // the TCP/IP server
-    m_clients: any[] = []; // connected clients
+    // m_listener: any; // the TCP/IP server
+    // m_clients: any[] = []; // connected clients
     m_gamma_background = 220; // mean single gamma detector background count
     m_neutron_background = 2; // mean single neutron detector background count
 
@@ -126,7 +126,7 @@ export class RPMSimulator extends Component {
             profile_generator == null ? new ProfileGenerator2() : profile_generator;
         this.m_next_background_time = this.current_time();
         this.m_current_profile = null;
-        this.m_listener = null;
+        // this.m_listener = null;
         this.m_gamma_background = 212;
         this.m_neutron_background = 5;
         this.m_gamma_nsigma = 5;
@@ -164,66 +164,32 @@ export class RPMSimulator extends Component {
 
         this.Reset();
 
-        if (this.m_listener) {
-            return;
-        }
+        console.log("Starting listener on " + this.m_ipaddr + ":" + this.m_rpm_port);
+        let self = this; // "this" will be something different in callback
 
-        try {
-            console.log("Starting listener on " + this.m_ipaddr + ":" + this.m_rpm_port);
-            let self = this; // "this" will be something different in callback
-            this.m_listener = net
-                .createServer((socket: net.Socket) => {
-                    // this is called every time a client connects
-                    console.log(`Have connection from ${socket.remoteAddress}:${socket.remotePort}`);
-                    
-                    if (self.m_clients.length == 0) {
-                        let now = this.current_time();
-                        this.m_next_background_time = now + 200;
-                    }
-                    self.m_clients.push(socket);
-                    socket.on("end", () => {
-                        // this is called when a client disconnects
-                        this.LogDebug("Client disconnected");
-                        self.delete_client(socket);
-                    });
-                    socket.on("error", err => {
-                        // error on client connection - possible disconnect
-                        self.delete_client(socket);
-                        this.LogDebug("Error on client connection: " + err.message);
-                    });
-                    socket.on("data", data => {
-                        // some client has sent me something
-                        this.LogDebug("Received " + data);
-                    });
-                })
-                .listen(this.m_rpm_port, this.m_ipaddr);
-            console.log("RPM server created--setting timeout");
-            this.m_timer = setTimeout(() => {
-                self.on_timer();
-            }, 10);
+        let promise: Promise<boolean> = ipcRenderer.invoke("network-listen", [this.m_rpm_port, this.m_ipaddr]);
 
-        } catch (error) {
-            console.error("RPMSimulator--Start error", error)
-        }
+        promise
+            .then(() => {
+                console.log("RPM listener created--setting timeout");
+                this.m_timer = setTimeout(() => {
+                    self.on_timer();
+                }, 10);
+            })
+            .catch((err) => {
+                console.error(`RPMSimulator.Start error -- ${err}`);
+            });
     }
 
     public Stop(): void {
         this.Reset();
-        if (this.m_listener) {
-            this.LogDebug("Shutting down RPM simulator on port " + this.m_rpm_port);
-            clearInterval(this.m_timer);
-            let clients = this.m_clients;
-            this.m_clients = [];
-            for (let client of clients) {
-                this.LogDebug("    Closing client connection: " + client);
-                client.destroy();
-            }
-            this.LogDebug("    Closing listener");
-            this.m_listener.close(() => this.LogDebug("    CLOSED"));
-            this.m_listener = null;
-            clearInterval(this.m_timer);
-            this.m_timer = undefined;
-        }
+
+        this.LogDebug("Shutting down RPM simulator on port " + this.m_rpm_port);
+
+        ipcRenderer.invoke("network-stop-listening", [this.m_rpm_port, this.m_ipaddr]);
+        
+        clearInterval(this.m_timer);
+        this.m_timer = undefined;
     }
 
     //------------------------------------------------------------
@@ -619,15 +585,15 @@ export class RPMSimulator extends Component {
         }
     }
 
-    private delete_client(client: any): void {
-        let clients = this.m_clients;
-        let ix = clients.indexOf(client);
-        if (ix >= 0) {
-            clients.splice(clients.indexOf(client), 1);
-            this.m_clients = clients;
-            this.LogDebug("Client removed.  " + this.m_clients.length + " remaining.");
-        } else console.error("delete_client error: client not found");
-    }
+    // private delete_client(client: any): void {
+    //     let clients = this.m_clients;
+    //     let ix = clients.indexOf(client);
+    //     if (ix >= 0) {
+    //         clients.splice(clients.indexOf(client), 1);
+    //         this.m_clients = clients;
+    //         this.LogDebug("Client removed.  " + this.m_clients.length + " remaining.");
+    //     } else console.error("delete_client error: client not found");
+    // }
 
     //------------------------------------------------------------
     //
@@ -702,7 +668,7 @@ export class RPMSimulator extends Component {
                     // send a background count if it's time
                     if (now > this.m_next_background_time) {
                         this.m_next_background_time += this.m_background_interval;
-                        if (this.m_clients.length > 0) {
+                        // if (this.m_clients.length > 0) {
                             let counts = this.generate_neutron_bg();
                             let msg = this.generate_count_msg(
                                 ["NB", "NB", "NH"],
@@ -719,7 +685,7 @@ export class RPMSimulator extends Component {
                                 this.m_gamma_high_threshold
                             );
                             this.say(msg + "\r\n");
-                        }
+                        // }
                     }
                 }
             }
@@ -859,19 +825,20 @@ export class RPMSimulator extends Component {
     say(text: string): void {
         if (this.m_is_paused) return;
 
-        if (this.m_clients.length > 0) {
-            //console.log("Sending to " + this.m_clients.length + " clients.");
-            let doomed: any[] = [];
-            for (let client of this.m_clients) {
-                try {
-                    client.write(text);
-                } catch (e) {
-                    console.error("Error writing to client: ", String(e));
-                    doomed.push(client);
-                }
-            }
-            for (let client of doomed) this.delete_client(client);
-        }
+        ipcRenderer.invoke("network-send-data", [this.m_rpm_port, this.m_ipaddr, text]);
+        // if (this.m_clients.length > 0) {
+        //     //console.log("Sending to " + this.m_clients.length + " clients.");
+        //     let doomed: any[] = [];
+        //     for (let client of this.m_clients) {
+        //         try {
+        //             client.write(text);
+        //         } catch (e) {
+        //             console.error("Error writing to client: ", String(e));
+        //             doomed.push(client);
+        //         }
+        //     }
+        //     for (let client of doomed) this.delete_client(client);
+        // }
     }
 
     private current_time(): number {
