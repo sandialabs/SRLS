@@ -9,8 +9,8 @@
                 </v-card-title>
 
                 <v-card-text>
-                    <span>Settings: {{ settings }}</span>
-                    <v-container v-if="false">
+                    <!-- <span>Settings: {{ settings }}</span> -->
+                    <v-container>
                         <!-- First row of fields -->
                         <v-row class="mt-0">
                             <v-col cols="12" sm="6" md="6">
@@ -303,12 +303,11 @@ export default {
             this.activetab = 0;
             this.dialog = true;
 
-            // @ts-ignore - some sort of weird typescript inference problem
             this.settings = new LaneSettings(newSettings);
-            console.log("LaneSettings.vue settings", this.settings, newSettings);
+            // console.log("LaneSettings.vue settings", this.settings, newSettings);
 
             this.callback = callback;
-            console.log("LaneSettings.callback", this.callback);
+            // console.log("LaneSettings.callback", this.callback);
 
             // this.find_camera_def(0);
             // this.find_camera_def(1);
@@ -363,10 +362,6 @@ export default {
         },
     },
     computed: {
-        settings: () => {
-            let settings = useSettingsStore();
-            return settings.settingsManager;
-        }
     }
 };
 </script>

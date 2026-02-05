@@ -137,9 +137,9 @@ export default defineComponent({
     },
     computed: {
     },
-    data: () => {
-        const settingsStore = useSettingsStore();
-        const settingsMgr = settingsStore.settingsManager as unknown as SettingsManager;
+    setup: () => {
+        // const settingsStore = useSettingsStore();
+        // const settingsMgr = settingsStore.settingsManager;
 
         let lanedata: ILaneSettings[] = reactive([]);
         let headers: Headers[] = reactive([
@@ -147,9 +147,9 @@ export default defineComponent({
             { text: "Enabled", value: "Enabled" }            
         ]);
         let simMap: Reactive<Map<number, LaneSimulator>> = reactive(new Map<number, LaneSimulator>());
-        let settingsmgr: SettingsManager = settingsMgr;
+        // let settingsmgr: SettingsManager = settingsMgr;
 
-        return { lanedata, headers, simMap, settingsmgr };
+        return { lanedata, headers, simMap };
     },
 
     // data: () => ({
@@ -162,7 +162,7 @@ export default defineComponent({
 
     created: function () {
         let self = this;
-        let lanes = this.settingsmgr?.lanes;
+        let lanes = useSettingsStore().settingsManager.lanes;
         if (lanes) {
             this.lanedata = lanes;
             console.log("Lanes.vue created", this.lanedata);
@@ -198,7 +198,7 @@ export default defineComponent({
     },
     watch: {
         lanedata: function (newval: any, oldval: any) {
-            console.log("Lanes.vue - lanedate changed", newval, oldval);
+            console.log("Lanes.vue - lanedata changed", newval, oldval);
         },
     },
     methods: {
@@ -208,23 +208,18 @@ export default defineComponent({
         on_add_lane: function (): void {
             console.log("In on_add_lane");
 
-            if (!this.settingsmgr) {
-                console.error("on_add_lane: missing settingsmgr");
-                return;
-            }
-
             let self = this;
-            let settings = this.settingsmgr?.default_lane_settings("New Lane", "127.0.0.1", 1600);
+            let settings = useSettingsStore().settingsManager.default_lane_settings("New Lane", "127.0.0.1", 1600);
             console.log("Lane Settings", settings);
             (<typeof LaneSettings>this.$refs["settingsdialog"]).open("Add New Lane", settings, function (updated_settings: ILaneSettings) {
                 console.log("Lanes on_add_lane callback");
 
                 updated_settings.Enabled = false;
-                let rc = self.settingsmgr?.add_new_lane(updated_settings);
+                let rc = useSettingsStore().settingsManager.add_new_lane(updated_settings);
                 if(rc) {
                     console.log("on_add_lane result: " + rc[1]);
                     if (rc[0])
-                        self.settingsmgr?.save();
+                        useSettingsStore().settingsManager.save();
                 }
             });
         },
@@ -338,7 +333,7 @@ export default defineComponent({
             } else {
                 this.stop_simulator(lane);
             }
-            this.settingsmgr?.save();
+            useSettingsStore().settingsManager.save();
         },
 
         //-------------------------------------------------------
@@ -416,26 +411,18 @@ export default defineComponent({
         },
 
         clone_lane: function (lane: ILaneSettings): void {
-            if(!this.settingsmgr)
-                return;
-
             console.log("In clone_lane", lane);
             let new_lane = SettingsManager.clone_lane(lane);
             new_lane.LaneName = lane.LaneName + " Copy";
             console.log("    New lane:", new_lane);
-            let rc = this.settingsmgr?.add_new_lane(new_lane);
+            let rc = useSettingsStore().settingsManager.add_new_lane(new_lane);
             if (rc[0])
-                this.settingsmgr.save();
+                useSettingsStore().settingsManager.save();
             else
                 this.notify("Duplicate Lane", rc[1]);
         },
 
         delete_lane: function (lane: ILaneSettings): void {
-            let settingsmgr = this.settingsmgr;
-
-            if (!settingsmgr)
-                return;
-
             console.log("delete_lane", lane);
             this.stop_simulator(lane);
             let dlg = (<typeof Confirm>this.$refs["confirmdialog"]);
@@ -444,17 +431,13 @@ export default defineComponent({
             let self = this;
             dlg.show("Delete", "Delete " + lane.LaneName + "?", () => {
                 console.log("In callback");
-                settingsmgr.remove_lane_by_id(lane.LaneID);
+                useSettingsStore().settingsManager.remove_lane_by_id(lane.LaneID);
                 self.simMap.delete(lane.LaneID);
             });
         },
 
         edit_lane: function (lane: ILaneSettings): void {
             let self = this;
-            let settingsmgr = this.settingsmgr;
-
-            if(!settingsmgr)
-                return;
 
             //console.log("In edit_lane", lane);
             let lane_index = -1;
@@ -465,12 +448,12 @@ export default defineComponent({
                 let settingsdlg = <typeof LaneSettings>this.$refs["settingsdialog"];
                 settingsdlg.open("Edit Lane", lane, function (updated_settings: ILaneSettings) {
                     updated_settings.Enabled = false;
-                    let rc = settingsmgr.update_lane(updated_settings);
+                    let rc = useSettingsStore().settingsManager.update_lane(updated_settings);
                     if(rc) {
                         console.log("edit_lane result: " + rc[1]);
                         if (rc[0]) {
                             console.log("re-creating lane", lane);
-                            settingsmgr.save();
+                            useSettingsStore().settingsManager.save();
                             // stop and delete simulator on existing lane object
                             self.simMap.delete(lane.LaneID);
                             self.stop_simulator(lane);

@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { existsSync } from 'fs';
-import { readFile } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
 
 // make a directory for replay data if one doesn't exist
 // if (window.electronAPI && !window.electronAPI.existsSync("Replay")) {
@@ -83,8 +83,8 @@ ipcMain.handle('read-file', async (event, filepath: string, encoding: BufferEnco
     try {
         return await readFile(filepath, encoding);
     }
-    catch(error: Error) {
-        cosole.error("Error in 'read-file'", error);
+    catch(error) {
+        console.error("Error in 'read-file'", error);
         throw error;
     }
 });
@@ -94,7 +94,7 @@ ipcMain.handle('write-file', async (event, filepath: string, data: string) => {
     try {
         await writeFile(filepath, data, 'utf-8');
         return { success: true };
-    } catch (error: Error) {
+    } catch (error) {
         console.error("Error in write-file", error)
         throw error;
     }

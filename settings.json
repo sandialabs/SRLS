@@ -26,12 +26,9 @@
     "LogFilename": "",
     "Lanes": [
         {
-            "LaneID": 1749230744907,
-            "LaneName": "Lane 1",
-            "Enabled": true,
-            "ClientCount": 0,
-            "Status": "",
-            "OccupancyState": "unoccupied",
+            "LaneID": 1770331780300,
+            "LaneName": "",
+            "Enabled": false,
             "RPMAlgorithm": "simulated",
             "AutoGammaProbability": 0.05,
             "AutoNeutronProbability": 0.05,
@@ -80,15 +77,15 @@
                     "URL": "",
                     "CameraSimulatorType": "canned"
                 }
-            ]
-        },
-        {
-            "LaneID": 1751468339981,
-            "LaneName": "New Lane",
-            "Enabled": false,
+            ],
             "ClientCount": 0,
             "Status": "",
-            "OccupancyState": "unoccupied",
+            "OccupancyState": ""
+        },
+        {
+            "LaneID": 1770331780300,
+            "LaneName": "",
+            "Enabled": false,
             "RPMAlgorithm": "simulated",
             "AutoGammaProbability": 0.05,
             "AutoNeutronProbability": 0.05,
@@ -137,15 +134,15 @@
                     "URL": "",
                     "CameraSimulatorType": "canned"
                 }
-            ]
-        },
-        {
-            "LaneID": 1751490388466,
-            "LaneName": "New Lane 2",
-            "Enabled": false,
+            ],
             "ClientCount": 0,
             "Status": "",
-            "OccupancyState": "unoccupied",
+            "OccupancyState": ""
+        },
+        {
+            "LaneID": 1770331780300,
+            "LaneName": "",
+            "Enabled": false,
             "RPMAlgorithm": "simulated",
             "AutoGammaProbability": 0.05,
             "AutoNeutronProbability": 0.05,
@@ -194,15 +191,15 @@
                     "URL": "",
                     "CameraSimulatorType": "canned"
                 }
-            ]
-        },
-        {
-            "LaneID": 1752168675743,
-            "LaneName": "Lane 1 Copy",
-            "Enabled": false,
+            ],
             "ClientCount": 0,
             "Status": "",
-            "OccupancyState": "unoccupied",
+            "OccupancyState": ""
+        },
+        {
+            "LaneID": 1770331780300,
+            "LaneName": "",
+            "Enabled": false,
             "RPMAlgorithm": "simulated",
             "AutoGammaProbability": 0.05,
             "AutoNeutronProbability": 0.05,
@@ -251,15 +248,15 @@
                     "URL": "",
                     "CameraSimulatorType": "canned"
                 }
-            ]
-        },
-        {
-            "LaneID": 1764016629079,
-            "LaneName": "New Lane Copy",
-            "Enabled": false,
+            ],
             "ClientCount": 0,
             "Status": "",
-            "OccupancyState": "unoccupied",
+            "OccupancyState": ""
+        },
+        {
+            "LaneID": 1770331780300,
+            "LaneName": "",
+            "Enabled": false,
             "RPMAlgorithm": "simulated",
             "AutoGammaProbability": 0.05,
             "AutoNeutronProbability": 0.05,
@@ -308,7 +305,46 @@
                     "URL": "",
                     "CameraSimulatorType": "canned"
                 }
-            ]
+            ],
+            "ClientCount": 0,
+            "Status": "",
+            "OccupancyState": ""
+        },
+        {
+            "LaneID": 1770331780300,
+            "LaneName": "",
+            "Enabled": false,
+            "RPMAlgorithm": "simulated",
+            "AutoGammaProbability": 0.05,
+            "AutoNeutronProbability": 0.05,
+            "AutoInterval": 30,
+            "RPM": {
+                "IPAddr": "127.0.0.1",
+                "Port": 1600,
+                "GammaBG": 256,
+                "NeutronBG": 3,
+                "GammaDistribution": [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                ],
+                "NeutronDistribution": [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25
+                ],
+                "GammaNSigma": 7,
+                "NeutronThreshold": 7,
+                "GHThreshold": 300,
+                "GLThreshold": 100,
+                "NHThreshold": 7
+            },
+            "Cameras": [],
+            "ClientCount": 0,
+            "Status": "",
+            "OccupancyState": ""
         }
     ]
 }
