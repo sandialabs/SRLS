@@ -9,7 +9,8 @@
                 </v-card-title>
 
                 <v-card-text>
-                    <v-container>
+                    <span>Settings: {{ settings }}</span>
+                    <v-container v-if="false">
                         <!-- First row of fields -->
                         <v-row class="mt-0">
                             <v-col cols="12" sm="6" md="6">
@@ -215,10 +216,11 @@
 <script lang="ts">
 import { SettingsManager } from "../lib/SettingsManager";
 import { CameraDefinitions, ICameraDefinitions } from "../lib/Globals";
-import { ILaneSettings } from "../lib/ILaneSettings";
+import { ILaneSettings, LaneSettings } from "../lib/ILaneSettings";
 import { Ref, ref } from "vue";
-import { AppData } from "../main";
+import { AppData } from '../lib/AppData';
 import { ISettings } from "../lib/ISettings";
+import { useSettingsStore } from "../store/settingsStore";
 
 type LaneSettingsCallback = (settings: ILaneSettings) => void;
 
@@ -240,6 +242,9 @@ interface ICameraDefinitionShort {
 */
 export default {
     setup: () => {
+        let settingsStore = useSettingsStore();
+        let laneSettings: LaneSettings = settingsStore.settingsManager.default_lane_settings("", "127.0.0.1", 9999);
+
         let dialog = ref(false);
         let activetab: Ref<number | null> = ref(null);
         let title = ref("SETTINGS DIALOG");
@@ -247,7 +252,7 @@ export default {
         let selected_camdef: Ref<[undefined | number, undefined | number]> = ref([undefined, undefined]);
         let camtypes: Ref<string[]> = ref(["canned", "animated"]);
         let rpm_algorithms: Ref<string[]> = ref(["simulated", "replay"]);
-        let settings: Ref<ILaneSettings> = ref(AppData.settings.default_lane_settings("", "127.0.0.1", 9999));
+        let settings: Ref<LaneSettings> = ref<LaneSettings>(laneSettings);
         let camera_definitions: Ref<ICameraDefinitionShort[]> = ref([]);
         let callback: Ref<LaneSettingsCallback | null> = ref(null);
 
@@ -291,23 +296,31 @@ export default {
     },
     methods: {
         // callback function will receive LaneSettings object if saved
-        open: function (title: string, settings: ILaneSettings, callback: LaneSettingsCallback) {
+        open: function (title: string, newSettings: ILaneSettings, callback: LaneSettingsCallback) {
+            console.log(`LaneSettings.open: title ${title}`, newSettings, callback);
+
             this.title = title;
             this.activetab = 0;
             this.dialog = true;
-            this.settings = SettingsManager.clone_lane(settings);
+
+            // @ts-ignore - some sort of weird typescript inference problem
+            this.settings = new LaneSettings(newSettings);
+            console.log("LaneSettings.vue settings", this.settings, newSettings);
+
             this.callback = callback;
-            console.log("LaneSettings.vue settings", settings);
-            this.find_camera_def(0);
-            this.find_camera_def(1);
+            console.log("LaneSettings.callback", this.callback);
+
+            // this.find_camera_def(0);
+            // this.find_camera_def(1);
         },
         save: function () {
             this.dialog = false;
-            if(this.callback)
+            if (this.callback)
                 this.callback(this.settings);
         },
         close: function () {
             this.dialog = false;
+            this.callback = null;
         },
         find_camera_def: function (camnum: number) {
             // see if the Manufacturer matches a predefined one and set selected_camdef
@@ -335,7 +348,7 @@ export default {
         on_camera_selected: function (camid: number) {
             console.log("on_camera_selected", camid);
             let camdefid = this.selected_camdef[camid];
-            if(!camdefid)
+            if (!camdefid)
                 return;
             let camdef = CameraDefinitions[camdefid];
             console.log("    Camera Definition: ", camdef);
@@ -349,6 +362,12 @@ export default {
             console.log("on_camera_model_selected", camnum, sel);
         },
     },
+    computed: {
+        settings: () => {
+            let settings = useSettingsStore();
+            return settings.settingsManager;
+        }
+    }
 };
 </script>
 

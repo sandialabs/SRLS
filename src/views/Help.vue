@@ -103,20 +103,20 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
 // const { ipcRenderer } = require("electron");
 // import { ipcRenderer } from 'electron';
 
 let helpview = {
-    name: "about",
+    name: "Help",
     data: () => ({}),
     mounted: function() {
         console.log("In mounted");
     },
     methods: {
-        send_ipc: function(msg, arg) {
-            console.log("SENDING IPC: " + msg, arg);
-            window.electronAPI.send(msg, arg);
+        send_ipc: function(msg: string) {
+            console.log("SENDING IPC: " + msg);
+            // window.electronAPI.sendMessage(msg);
         },
     },
 };

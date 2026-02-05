@@ -1,17 +1,14 @@
-/// <reference path="../electron/main/global.d.ts" />
+/// <reference path="../electron/types/global.d.ts" />
 
-
-import * as fs from "fs";
 import { AppVersion } from "./Globals";
-import { RPMSimulator } from "./RPMSimulator";
 import { ICameraSettings } from "./ICameraSettings";
-import { IRPMSettings } from "./IRPMSettings";
-import { ILaneSettings } from "./ILaneSettings";
-import { ISettings } from "./ISettings";
+import { IRPMSettings, RPMSettings } from "./IRPMSettings";
+import { ILaneSettings, LaneSettings } from "./ILaneSettings";
+import { ISettings, Settings } from "./ISettings";
 
 export class SettingsManager {
     private m_file_path: string = "";
-    private Data: ISettings;
+    private Data: Settings;
 
     private static readonly s_rpm_template: IRPMSettings = {
         IPAddr: "",
@@ -34,30 +31,43 @@ export class SettingsManager {
         IPAddr: "",
         Port: 0,
         URL: "",
-        CameraSimulatorType: "",
+        CameraSimulatorType: "canned",
     };
 
-    constructor(filepath: string = "") {
-        console.log('In SettingsManager constructor: "' + filepath + '"');
-        if (filepath) {
+    constructor() {
+        this.Data = Settings.default_settings();
+    }
+
+    static async create(filepath: string = "") {
+        const instance = new SettingsManager();
+        await instance.initialize(filepath);
+        return instance;
+    }
+
+    private async initialize(filepath: string) {
+        console.log('In SettingsManager.initialize: "' + filepath + '"');
+
+        if (window && filepath) {
             this.m_file_path = filepath;
-            if (window.electronAPI && window.electronAPI.existsSync(filepath)) {
+            const exists: boolean = await window.electronAPI.existsSync(filepath);
+
+            if (exists) {
                 console.log("File exists " + filepath);
-                let json: string = window.electronAPI.readFileSync(filepath, "utf8");
+                let json: string = await window.electronAPI.readFileSync(filepath, "utf8");
                 this.Data = JSON.parse(json);
                 // upgrade older versions
                 if (typeof this.Data.LogLevel == "undefined") this.Data.LogLevel = "warning";
                 if (typeof this.Data.LogFilename == "undefined") this.Data.LogFilename = "";
                 if (typeof this.Data.Version == "undefined") this.Data.Version = AppVersion;
             } else {
-                this.Data = SettingsManager.default_settings();
-                this.save();
+                console.log(`File ${filepath} doesn't exist`);
+                this.Data = Settings.default_settings();
+                await this.save();
             }
         } else {
-            this.Data = SettingsManager.default_settings();
+            this.Data = Settings.default_settings();
             //console.log("No file path specified");
         }
-        //console.log("Utility test:", clone_object(this.Data, true));
     }
 
     // get data(): ISettings {
@@ -72,28 +82,6 @@ export class SettingsManager {
         return (this.Data) ? this.Data.Lanes.length : 0;
     }
 
-    static default_settings(): ISettings {
-        let result: ISettings = {
-            Version: AppVersion,
-            DefaultGammaBG: 256,
-            DefaultNeutronBG: 3,
-            DefaultGammaDistribution: [0.25, 0.25, 0.25, 0.25],
-            DefaultNeutronDistribution: [0.25, 0.25, 0.25, 0.25],
-            DefaultGammaNSigma: 7,
-            DefaultNeutronThreshold: 7,
-            DefaultGHThreshold: 300,
-            DefaultGLThreshold: 100,
-            DefaultNHThreshold: 7,
-            DefaultAutoGammaProbability: 0.05,
-            DefaultAutoNeutronProbability: 0.05,
-            DefaultAutoInterval: 30.0,
-            LogLevel: "warning",
-            LogFilename: "",
-            Lanes: [],
-        };
-        return result;
-    }
-
     parse(json: string) {
         this.Data = JSON.parse(json);
     }
@@ -106,20 +94,16 @@ export class SettingsManager {
         return result;
     }
 
-    serialize(to_path: string = "settings.json"): void {
-        if (window.electronAPI) {
-            window.electronAPI.writeFileSync(to_path, this.to_string() + "\n");
-        }
-        else {
-            console.log("Cannot access Electron file functions from browser.");
-        }
+    async serialize(to_path: string): Promise<void> {
+        await window.electronAPI.writeFileSync(to_path, this.to_string() + "\n");
     }
 
-    save(): void {
+    async save(): Promise<void> {
         if (this.m_file_path) {
             console.log("Saving Settings to " + this.m_file_path);
             console.trace(this.m_file_path);
-            this.serialize(this.m_file_path);
+
+            await this.serialize(this.m_file_path);
         } else {
             console.log("Unable to save Settings - no file path");
         }
@@ -134,68 +118,15 @@ export class SettingsManager {
     }
 
     static clone_rpm(settings: IRPMSettings): IRPMSettings {
-        let result = {
-            IPAddr: "",
-            Port: 0,
-            GammaBG: 0,
-            NeutronBG: 0,
-            GammaDistribution: [0.25, 0.25, 0.25, 0.25],
-            NeutronDistribution: [0.25, 0.25, 0.25, 0.25],
-            GammaNSigma: 0,
-            NeutronThreshold: 0,
-            GHThreshold: 0,
-            GLThreshold: 0,
-            NHThreshold: 0,
-        };
-        SettingsManager.copy_properties(settings, result, []);
-        return result;
-    }
-
-    static clone_camera(settings: ICameraSettings): ICameraSettings {
-        let result = {
-            Name: "Camera One",
-            Enabled: false,
-            Manufacturer: "unknown",
-            Model: "unknown",
-            IPAddr: "127.0.0.1",
-            Port: 10101,
-            URL: "",
-            CameraSimulatorType: "canned",
-        };
-        SettingsManager.copy_properties(settings, result, []);
-        return result;
+        return new RPMSettings(settings);
     }
 
     static clone_lane(settings: ILaneSettings): ILaneSettings {
-        let result: ILaneSettings = {
-            LaneID: 0,
-            LaneName: "",
-            Enabled: false,
-            ClientCount: 0,
-            Status: "",
-            OccupancyState: "",
-            RPMAlgorithm: settings.RPMAlgorithm,
-            AutoGammaProbability: 0,
-            AutoNeutronProbability: 0,
-            AutoInterval: 0,
-            RPM: this.clone_rpm(settings.RPM),
-            Cameras: [
-                this.clone_camera(settings.Cameras[0]),
-                this.clone_camera(settings.Cameras[1]),
-            ],
-        };
-        SettingsManager.copy_properties(settings, result, [
-            "RPM",
-            "Cameras",
-            "ClientCount",
-            "Status",
-            "RPMAlgorithm",
-        ]);
-        return result;
+        return new LaneSettings(settings);
     }
 
     static clone_settings(settings: ISettings): ISettings {
-        let result: ISettings = SettingsManager.default_settings();
+        let result: ISettings = Settings.default_settings();
         SettingsManager.copy_properties(settings, result, ["Lanes"]);
         settings.Lanes.forEach((x: ILaneSettings) => {
             result.Lanes.push(SettingsManager.clone_lane(x));
@@ -207,54 +138,13 @@ export class SettingsManager {
         return JSON.stringify(this.Data) === JSON.stringify(other.Data);
     }
 
-    default_lane_settings(name: string, ipaddr: string, port: number): ILaneSettings {
-        let lane: ILaneSettings = {
-            LaneID: new Date().getTime(),
-            LaneName: name,
-            Enabled: false,
-            RPMAlgorithm: "simulated",
-            ClientCount: 0,
-            Status: "",
-            OccupancyState: "",
-            AutoGammaProbability: this.Data.DefaultAutoGammaProbability,
-            AutoNeutronProbability: this.Data.DefaultAutoNeutronProbability,
-            AutoInterval: this.Data.DefaultAutoInterval,
-            RPM: {
-                IPAddr: ipaddr,
-                Port: port,
-                GammaBG: this.Data.DefaultGammaBG,
-                NeutronBG: this.Data.DefaultNeutronBG,
-                GammaDistribution: this.Data.DefaultGammaDistribution,
-                NeutronDistribution: this.Data.DefaultNeutronDistribution,
-                GammaNSigma: this.Data.DefaultGammaNSigma,
-                NeutronThreshold: this.Data.DefaultNeutronThreshold,
-                GHThreshold: this.Data.DefaultGHThreshold,
-                GLThreshold: this.Data.DefaultGLThreshold,
-                NHThreshold: this.Data.DefaultNHThreshold,
-            },
-            Cameras: [
-                {
-                    Name: "Camera One",
-                    Enabled: false,
-                    Manufacturer: "unknown",
-                    Model: "unknown",
-                    IPAddr: "127.0.0.1",
-                    Port: 10101,
-                    URL: "",
-                    CameraSimulatorType: "canned",
-                },
-                {
-                    Name: "Camera Two",
-                    Enabled: false,
-                    Manufacturer: "unknown",
-                    Model: "unknown",
-                    IPAddr: "127.0.0.1",
-                    Port: 10102,
-                    URL: "",
-                    CameraSimulatorType: "canned",
-                },
-            ],
-        };
+    default_lane_settings(name: string, ipaddr: string, port: number): LaneSettings {
+        let lane: LaneSettings = LaneSettings.default_settings();
+
+        lane.LaneName = name;
+        lane.RPM.IPAddr = ipaddr;
+        lane.RPM.Port = port;
+
         return lane;
     }
 
@@ -286,7 +176,7 @@ export class SettingsManager {
     }
 
     /** Only create a lane if there are none */
-    create_default_lane() {
+    public create_default_lane() {
         if (this.num_lanes === 0) {
             this.add_lane("Lane 1", "127.0.0.1", 1601);
             this.save();
@@ -323,7 +213,7 @@ export class SettingsManager {
         return [true, `Successfully added ${lane_settings.LaneName}`];
     }
 
-    update_lane(settings: ILaneSettings): [boolean, string]  {
+    update_lane(settings: ILaneSettings): [boolean, string] {
         let lane_index = this.find_lane(settings.LaneID);
         if (lane_index >= 0) {
             this.Data.Lanes[lane_index] = SettingsManager.clone_lane(settings);
@@ -356,7 +246,7 @@ export class SettingsManager {
         let lanes = this.Data.Lanes.filter(x => {
             return x.LaneID == lane_id;
         });
-        if(lanes.length > 0)
+        if (lanes.length > 0)
             laneSettings = lanes[0];
         return laneSettings;
     }

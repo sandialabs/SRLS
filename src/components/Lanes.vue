@@ -12,7 +12,7 @@
             <v-col cols="12">
                 <v-card>
                     <v-card-title>
-                        <span class="page-title" style="margin-right: 20px;">{{ labeltext }}</span>
+                        <span v-if="labeltext" class="page-title" style="margin-right: 20px;">{{ labeltext }}</span>
                         <div style="margin-top: 10px;">
                             <ActionIcon icon="repeat" color="red darken-2" tooltip="Toggle automatic mode" size="32px"
                                 style="margin-right: 20px;" @icon-clicked="on_trigger_all('automode')" />
@@ -27,7 +27,7 @@
                             <ActionIcon icon="lock_open" color="red" tooltip="Toggle case tamper" size="32px"
                                 style="margin-right: 20px;" @icon-clicked="on_trigger_all('TT')" />
                         </div>
-                        <ActionIcon icon="add_circle" size="32px" @icon-clicked="on_add_lane()"
+                        <ActionIcon icon="add_circle" size="32px" tooltip="Add new lane" @icon-clicked="on_add_lane()"
                             style="margin-top: 10px;" />
                     </v-card-title>
                     <v-card-text>
@@ -110,10 +110,9 @@ import { SettingsManager } from "../lib/SettingsManager";
 import { ILaneSettings } from "../lib/ILaneSettings";
 import { LaneSimulator } from "../lib/LaneSim";
 import { banner } from "../lib/Utility";
-import { CameraSimulator } from "../lib/CameraSimulator";
 import { ICameraSettings } from "../lib/ICameraSettings";
-import { Reactive, reactive, Ref, ref } from "vue";
-import { UnaryExpression } from "typescript";
+import { defineComponent, Reactive, reactive, toRaw } from "vue";
+import { useSettingsStore } from "../store/settingsStore";
 
 console.log("Lanes.vue loaded");
 
@@ -125,10 +124,9 @@ interface Headers {
 export type LaneActions = "GA" | "NA" | "NG" | "OC" | "TT" | "automode";
 export type LaneEvents = "editlane" | "clone" | "adjust" | "delete" | "automode" | "GA" | "NA" | "NG" | "OC" | "TT";
 
-export default {
+export default defineComponent({
     props: {
-        labeltext: String,
-        settingsmgr: SettingsManager,
+        labeltext: { type: String, required: false },
     },
     components: {
         ActionIcon: ActionIcon,
@@ -138,17 +136,20 @@ export default {
         RPMControl: RPMControl,
     },
     computed: {
-
     },
-    setup: () => {
+    data: () => {
+        const settingsStore = useSettingsStore();
+        const settingsMgr = settingsStore.settingsManager as unknown as SettingsManager;
+
         let lanedata: ILaneSettings[] = reactive([]);
         let headers: Headers[] = reactive([
             { text: "Name", value: "LaneName" },
             { text: "Enabled", value: "Enabled" }            
         ]);
         let simMap: Reactive<Map<number, LaneSimulator>> = reactive(new Map<number, LaneSimulator>());
+        let settingsmgr: SettingsManager = settingsMgr;
 
-        return { lanedata, headers, simMap };
+        return { lanedata, headers, simMap, settingsmgr };
     },
 
     // data: () => ({
@@ -160,13 +161,14 @@ export default {
     // }),
 
     created: function () {
+        let self = this;
         let lanes = this.settingsmgr?.lanes;
         if (lanes) {
             this.lanedata = lanes;
             console.log("Lanes.vue created", this.lanedata);
         }
         setInterval(() => {
-            this.poll();
+            self.poll();
         }, 500);
     },
     mounted: function () {
@@ -195,8 +197,8 @@ export default {
         console.log("Lanes.vue mounted -- map", this.simMap);
     },
     watch: {
-        lanedata: function (newval, oldval) {
-            console.log("Lanes.vue - lanedate changed");
+        lanedata: function (newval: any, oldval: any) {
+            console.log("Lanes.vue - lanedate changed", newval, oldval);
         },
     },
     methods: {
@@ -212,9 +214,11 @@ export default {
             }
 
             let self = this;
-            let settings = self.settingsmgr?.default_lane_settings("New Lane", "127.0.0.1", 1600);
+            let settings = this.settingsmgr?.default_lane_settings("New Lane", "127.0.0.1", 1600);
             console.log("Lane Settings", settings);
             (<typeof LaneSettings>this.$refs["settingsdialog"]).open("Add New Lane", settings, function (updated_settings: ILaneSettings) {
+                console.log("Lanes on_add_lane callback");
+
                 updated_settings.Enabled = false;
                 let rc = self.settingsmgr?.add_new_lane(updated_settings);
                 if(rc) {
@@ -489,7 +493,7 @@ export default {
             }
         },
     },
-};
+});
 </script>
 
 

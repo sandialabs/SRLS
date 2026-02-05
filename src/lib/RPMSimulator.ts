@@ -1,11 +1,11 @@
-/// <reference types="node" />
+//// <reference types="node" />
 
 import { Component } from "./Component";
 import { RPMProfile, DetectorValues } from "./RPMProfile";
 // import * as net from "net";
 // import * as http from "http";
-import { ipcRenderer } from 'electron';
-import * as fs from "fs";
+// import { ipcRenderer } from 'electron';
+// import * as fs from "fs";
 import * as path from "path";
 //import { ProfileGenerator1 } from "./ProfileGenerator1";
 import { ProfileGenerator2 } from "./ProfileGenerator2";
@@ -167,18 +167,18 @@ export class RPMSimulator extends Component {
         console.log("Starting listener on " + this.m_ipaddr + ":" + this.m_rpm_port);
         let self = this; // "this" will be something different in callback
 
-        let promise: Promise<boolean> = ipcRenderer.invoke("network-listen", [this.m_rpm_port, this.m_ipaddr]);
+        // let promise: Promise<boolean> = ipcRenderer.invoke("network-listen", [this.m_rpm_port, this.m_ipaddr]);
 
-        promise
-            .then(() => {
-                console.log("RPM listener created--setting timeout");
-                this.m_timer = setTimeout(() => {
-                    self.on_timer();
-                }, 10);
-            })
-            .catch((err) => {
-                console.error(`RPMSimulator.Start error -- ${err}`);
-            });
+        // promise
+        //     .then(() => {
+        //         console.log("RPM listener created--setting timeout");
+        //         this.m_timer = setTimeout(() => {
+        //             self.on_timer();
+        //         }, 10);
+        //     })
+        //     .catch((err) => {
+        //         console.error(`RPMSimulator.Start error -- ${err}`);
+        //     });
     }
 
     public Stop(): void {
@@ -186,7 +186,7 @@ export class RPMSimulator extends Component {
 
         this.LogDebug("Shutting down RPM simulator on port " + this.m_rpm_port);
 
-        ipcRenderer.invoke("network-stop-listening", [this.m_rpm_port, this.m_ipaddr]);
+        // ipcRenderer.invoke("network-stop-listening", [this.m_rpm_port, this.m_ipaddr]);
         
         clearInterval(this.m_timer);
         this.m_timer = undefined;
@@ -561,27 +561,28 @@ export class RPMSimulator extends Component {
             RPMSimulator.na_files = [];
             RPMSimulator.ng_files = [];
 
-            fs.readdir(dir, (err, files) => {
-                if (err) console.error(err);
-                else {
-                    for (let file of files) {
-                        let full_path = path.resolve(dir + "/" + file);
-                        //console.log(file, full_path);
-                        if (file.indexOf("ga_") == 0) RPMSimulator.ga_files.push(full_path);
-                        if (file.indexOf("na_") == 0) RPMSimulator.na_files.push(full_path);
-                        if (file.indexOf("ng_") == 0) RPMSimulator.ng_files.push(full_path);
-                    }
-                    console.log(
-                        "Read " +
-                        RPMSimulator.ga_files.length +
-                        " gamma alarms, " +
-                        RPMSimulator.na_files.length +
-                        " neutron alarm, and " +
-                        RPMSimulator.ng_files.length +
-                        " neutron/gamma alarms"
-                    );
-                }
-            });
+            // window.electronAPI.readdir(dir);
+            // fs.readdir(dir, (err, files) => {
+            //     if (err) console.error(err);
+            //     else {
+            //         for (let file of files) {
+            //             let full_path = path.resolve(dir + "/" + file);
+            //             //console.log(file, full_path);
+            //             if (file.indexOf("ga_") == 0) RPMSimulator.ga_files.push(full_path);
+            //             if (file.indexOf("na_") == 0) RPMSimulator.na_files.push(full_path);
+            //             if (file.indexOf("ng_") == 0) RPMSimulator.ng_files.push(full_path);
+            //         }
+            //         console.log(
+            //             "Read " +
+            //             RPMSimulator.ga_files.length +
+            //             " gamma alarms, " +
+            //             RPMSimulator.na_files.length +
+            //             " neutron alarm, and " +
+            //             RPMSimulator.ng_files.length +
+            //             " neutron/gamma alarms"
+            //         );
+            //     }
+            // });
         }
     }
 
@@ -825,7 +826,7 @@ export class RPMSimulator extends Component {
     say(text: string): void {
         if (this.m_is_paused) return;
 
-        ipcRenderer.invoke("network-send-data", [this.m_rpm_port, this.m_ipaddr, text]);
+        // ipcRenderer.invoke("network-send-data", [this.m_rpm_port, this.m_ipaddr, text]);
         // if (this.m_clients.length > 0) {
         //     //console.log("Sending to " + this.m_clients.length + " clients.");
         //     let doomed: any[] = [];

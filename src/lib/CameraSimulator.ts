@@ -1,5 +1,5 @@
 //const http = require('http')
-import * as fs from 'fs';
+// import * as fs from 'fs';
 import * as http from "http"
 import { Component } from './Component';
 import { ICameraSettings } from "./ICameraSettings";

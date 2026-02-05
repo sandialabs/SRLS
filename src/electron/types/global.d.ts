@@ -7,9 +7,10 @@ declare global {
   interface Window {
     electronAPI: {
       // Endpoints for Node's fs file functions
-      existsSync: (filepath: string) => boolean;
-      readFileSync: (filePath: string, encoding: BufferEncoding) => string;
-      writeFileSync: (file: fs.PathOrFileDescriptor, data: string) => void;
+      existsSync: (filepath: string) => Promise<boolean>;
+      readFileSync: (filePath: string, encoding: BufferEncoding) => Promise<string>;
+      writeFileSync: (file: fs.PathOrFileDescriptor, data: string) => Promise<void>;
+      
       mkdir: (path: fs.PathLike, callback: fs.NoParamCallback) => void;
       // Add other methods as needed. For example:
       // readFile: (path: string) => Promise<string>;
@@ -23,6 +24,8 @@ declare global {
       // listen: (port?: number, hostname?: string, listeningListener?: () => void) => Server;
       // net: typeof import('net');
       net: typeof import('node:net');
+
+      sendMessage: (message: string) => void;
     };
   }
 }

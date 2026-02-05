@@ -3,8 +3,8 @@
 <!--          Single File Component: ProfileTest                            -->
 <!--                                                                        -->
 <!-- ---------------------------------------------------------------------- -->
- 
-<template>
+
+<!-- <template>
     <v-container>
         <v-layout text-xs-center wrap>
             <div id="testvue">
@@ -51,126 +51,144 @@
             </div>
         </v-layout>
     </v-container>
-</template>
- 
-<script>
+</template> -->
+
+<script lang="ts">
 // var Chart = require("chart.js");
 // import * as Chart from 'chart.js';
-import { Chart, registerables } from 'chart.js';
+import { Chart, ChartConfiguration, ChartItem, registerables } from 'chart.js';
 Chart.register(...registerables);
-import { AppData } from "../main";
+import { AppData } from '../lib/AppData';
+import { defineComponent } from 'vue';
 
-export default {
-    props: [],
-    components: {},
-    data: () => ({
-        duration: 10.0,
-        sigma: 10.0,
-        width_pct: 0.5,
-        shift: 0,
-        humps: 1,
-        chart: undefined,
+type XY = [number, number];
 
-        gamma_mu: [],
-        gamma_ml: [],
-        gamma_su: [],
-        gamma_ll: [],
-    }),
+interface DataType {
+    duration: number;
+    sigma: number;
+    width_pct: number;
+    shift: number;
+    humps: number;
+    chart: any;
 
-    mounted: function() {
-        console.log("ProfileTest mounted");
-        this.initialize_chart([]);
-    },
-
-    methods: {
-        initialize_chart: function(gamma_points) {
-            // gamma_counts is an array of [x, y]
-            console.log("In initialize_chart");
-            let counts = [];
-            gamma_points.forEach(pair => {
-                counts.push({ x: pair[0], y: pair[1] });
-            });
-            console.log("Gamma Counts", counts);
-            this.gamma_mu = counts;
-            let canvas = document.getElementById("gamma-chart").getContext("2d");
-            console.log("Canvas", canvas);
-            let config = {
-                xresponsive: true,
-                xmaintainAspectRatio: false,
-                type: "scatter",
-                data: {
-                    datasets: [
-                        {
-                            label: "gamma1",
-                            fill: false,
-                            showLine: true,
-                            lineTension: 0,
-                            borderColor: "red",
-                            borderWidth: 0.5,
-                            data: this.gamma_mu,
-                        },
-                    ],
-                },
-                options: {
-                    title: { display: true, text: "Gamma Counts" },
-                },
-            };
-            this.chart = new Chart(canvas, config);
-        },
-
-        generate_random: function() {
-            console.log("Generating random profile");
-            let points = [];
-            for (let i = 0; i < 50; i++) {
-                let x = i * 200;
-                let y = Math.trunc(200.0 + Math.random() * 200);
-                points.push([x, y]);
-            }
-            this.initialize_chart([]);
-        },
-
-        generate_test_occupancy: function() {
-            console.log("In generate_test_occupancy");
-            let duration = parseFloat(this.duration);
-            let generator_params = {
-                duration: duration,
-                stddev: parseFloat(this.width_pct) * duration,
-                time_increment: 1,
-                humps: 1,
-                shift: parseFloat(this.shift),
-                gamma_nsigma: parseFloat(this.sigma),
-                neutron_amplitude: 1,
-            };
-
-            let bg = 100;
-            let nsigma = parseFloat(this.sigma);
-            // get [ [x0, y0], [x1, y1], ... ]
-            let profile = AppData.testsim.GenerateFromModel(generator_params);
-            let smoothed = profile.Smooth();
-            let counts = smoothed.GammaCounts;
-            console.log("    profile", profile);
-            console.log("    gamma counts", counts);
-            // scale the y values by n_sigma
-            // n_sigma = (maxcount - bg) / sqrt(bg)
-            // maxcount = n_sigma * sqrt(bg) + bg
-            let sqrtbg = Math.sqrt(bg);
-            let maxcount = nsigma * sqrtbg;
-            console.log("    Max count: ", maxcount);
-            this.gamma_mu.splice(0, this.gamma_mu.length);
-            let self = this;
-            for (let i = 0; i < counts.length; i++) {
-                let dv = counts[i];
-                let x = dv.TimeOffset / 1000.0;
-                let y = dv.TotalCounts();
-                let point = { x: x, y: y };
-                self.gamma_mu.push(point);
-            }
-            this.chart.update();
-        },
-    },
-    computed: {},
+    gamma_mu: XY[];
+    gamma_ml: XY[];
+    gamma_su: XY[];
+    gamma_ll: XY[];
 };
+
+// export default defineComponent({
+//     components: {},
+//     data: () => {
+//         let data: DataType = {
+//             duration: 10.0,
+//             sigma: 10.0,
+//             width_pct: 0.5,
+//             shift: 0,
+//             humps: 1,
+//             chart: undefined,
+
+//             gamma_mu: [],
+//             gamma_ml: [],
+//             gamma_su: [],
+//             gamma_ll: [],
+//         };
+//         return data;
+//     },
+
+//     mounted: function() {
+//         console.log("ProfileTest mounted");
+//         this.initialize_chart([]);
+//     },
+
+//     methods: {
+//         initialize_chart: function(gamma_points: XY[]) {
+//             // gamma_counts is an array of [x, y]
+//             console.log("In initialize_chart");
+//             let counts: XY[] = [];
+//             gamma_points.forEach(pair => {
+//                 counts.push({ x: pair[0], y: pair[1] });
+//             });
+//             console.log("Gamma Counts", counts);
+//             this.gamma_mu = counts;
+//             let canvas: ChartItem = document.getElementById("gamma-chart")?.getContext("2d");
+//             console.log("Canvas", canvas);
+//             let config: ChartConfiguration = {
+//                 xresponsive: true,
+//                 xmaintainAspectRatio: false,
+//                 type: "scatter",
+//                 data: {
+//                     datasets: [
+//                         {
+//                             label: "gamma1",
+//                             fill: false,
+//                             showLine: true,
+//                             lineTension: 0,
+//                             borderColor: "red",
+//                             borderWidth: 0.5,
+//                             data: this.gamma_mu,
+//                         },
+//                     ],
+//                 },
+//                 options: {
+//                     title: { display: true, text: "Gamma Counts" },
+//                 },
+//             };
+//             this.chart = new Chart(canvas, config);
+//         },
+
+//         generate_random: function() {
+//             console.log("Generating random profile");
+//             let points = [];
+//             for (let i = 0; i < 50; i++) {
+//                 let x = i * 200;
+//                 let y = Math.trunc(200.0 + Math.random() * 200);
+//                 points.push([x, y]);
+//             }
+//             this.initialize_chart([]);
+//         },
+
+//         generate_test_occupancy: function() {
+//             console.log("In generate_test_occupancy");
+//             let duration = parseFloat(this.duration);
+//             let generator_params = {
+//                 duration: duration,
+//                 stddev: parseFloat(this.width_pct) * duration,
+//                 time_increment: 1,
+//                 humps: 1,
+//                 shift: parseFloat(this.shift),
+//                 gamma_nsigma: parseFloat(this.sigma),
+//                 neutron_amplitude: 1,
+//             };
+
+//             let bg = 100;
+//             let nsigma = parseFloat(this.sigma);
+//             // get [ [x0, y0], [x1, y1], ... ]
+//             let profile = AppData.testsim.GenerateFromModel(generator_params);
+//             let smoothed = profile.Smooth();
+//             let counts = smoothed.GammaCounts;
+//             console.log("    profile", profile);
+//             console.log("    gamma counts", counts);
+//             // scale the y values by n_sigma
+//             // n_sigma = (maxcount - bg) / sqrt(bg)
+//             // maxcount = n_sigma * sqrt(bg) + bg
+//             let sqrtbg = Math.sqrt(bg);
+//             let maxcount = nsigma * sqrtbg;
+//             console.log("    Max count: ", maxcount);
+//             this.gamma_mu.splice(0, this.gamma_mu.length);
+//             let self = this;
+//             for (let i = 0; i < counts.length; i++) {
+//                 let dv = counts[i];
+//                 let x = dv.TimeOffset / 1000.0;
+//                 let y = dv.TotalCounts();
+//                 let point = { x: x, y: y };
+//                 self.gamma_mu.push(point);
+//             }
+//             this.chart.update();
+//         },
+//     },
+//     computed: {},
+// };
 </script>
- 
-<style scoped>
-</style>
+
+<style scoped></style>

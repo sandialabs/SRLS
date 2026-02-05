@@ -47,13 +47,14 @@
 
 <script lang="ts">
 import { Ref, ref } from "vue";
-import { AppData } from "../main";
-import { ISettings } from "../lib/ISettings";
-import { SettingsManager } from "../lib/SettingsManager";
+import { AppData } from '../lib/AppData';
+import { ISettings, Settings } from "../lib/ISettings";
+import { useSettingsStore } from "../store/settingsStore";
 
 export default {
+    name: "GlobalSettings",
     setup: () => {
-        const settings: Ref<ISettings> = ref(SettingsManager.default_settings());
+        const settings: Ref<ISettings> = ref(Settings.default_settings());
 
         return {
             settings,
@@ -75,18 +76,21 @@ export default {
     //         DefaultAutoInterval: 30.0,
     //     },
     // }),
-    beforeCreate: function() {
+    beforeCreate: function () {
         console.log("In beforeCreate", AppData);
     },
-    created: function() {
+    created: function () {
         // trick to save untracked data - created() is called after
         // reactive hooks are in place
-        AppData.settings.copy_default_to(this.settings);
+        let settings = useSettingsStore();
+        settings.settingsManager?.copy_default_to(this.settings);
     },
     methods: {
-        save: function() {
-            AppData.settings.copy_to_default(this.settings);
-            AppData.settings.save();
+        save: function () {
+            let settings = useSettingsStore();
+
+            settings.settingsManager?.copy_to_default(this.settings);
+            settings.settingsManager?.save();
         },
     },
 };

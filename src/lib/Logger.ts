@@ -1,5 +1,5 @@
 import moment from "moment";
-import * as fs from "fs";
+// import * as fs from "fs";
 
 export enum ELogLevel {
     LOG_ALL,
@@ -41,34 +41,34 @@ export class ConsoleEmitter implements LogEmitter {
     }
 }
 
-export class FileEmitter implements LogEmitter {
-    public Emit(level: ELogLevel, text: string, ...args: any[]): void {
-        const outputstr = this.format(level, text);
-        const datestr = moment().format("YYMMDD");
-        const filename = "rpmsim-" + datestr + ".log";
-        fs.appendFile(filename, outputstr + "\r\n", function(err) {
-            return;
-        });
-    }
+// export class FileEmitter implements LogEmitter {
+//     public Emit(level: ELogLevel, text: string, ...args: any[]): void {
+//         const outputstr = this.format(level, text);
+//         const datestr = moment().format("YYMMDD");
+//         const filename = "rpmsim-" + datestr + ".log";
+//         fs.appendFile(filename, outputstr + "\r\n", function(err) {
+//             return;
+//         });
+//     }
 
-    private format(level: ELogLevel, text: string): string {
-        let levelstr = "[E]";
-        switch (level) {
-            case ELogLevel.LOG_WARNING:
-                levelstr = "[W]";
-                break;
-            case ELogLevel.LOG_INFO:
-                levelstr = "[I]";
-                break;
-            default:
-                levelstr = "[D]";
-                break;
-        }
-        const now = moment();
-        const timestamp = now.format("HH:mm:ss");
-        return `{timestamp}{levelstr}: {text}`;
-    }
-}
+//     private format(level: ELogLevel, text: string): string {
+//         let levelstr = "[E]";
+//         switch (level) {
+//             case ELogLevel.LOG_WARNING:
+//                 levelstr = "[W]";
+//                 break;
+//             case ELogLevel.LOG_INFO:
+//                 levelstr = "[I]";
+//                 break;
+//             default:
+//                 levelstr = "[D]";
+//                 break;
+//         }
+//         const now = moment();
+//         const timestamp = now.format("HH:mm:ss");
+//         return `{timestamp}{levelstr}: {text}`;
+//     }
+// }
 
 export class Logger {
     static s_emitters: LogEmitter[] = [new ConsoleEmitter()];

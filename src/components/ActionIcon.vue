@@ -23,11 +23,11 @@
     </span>
 </template>
 
-<script lane="ts">
-console.log("ActiveIcon.vue loaded");
+<script lang="ts">
+console.log("ActionIcon.vue loaded");
 
 export default {
-    name: "ActiveIcon",
+    name: "ActionIcon",
     props: {
         icon: { type: String, default: "home" },
         tooltip: { type: String },

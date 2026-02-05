@@ -2,20 +2,19 @@
     <v-container fluid>
         <v-row>
             <v-col>
-                <Lanes labeltext="Lanes" :settingsmgr="appdata.settings" />
+                <Lanes labeltext="Lanes"/>
             </v-col>
         </v-row>
     </v-container>
 </template>
 
-<script>
-import { AppData } from "../main";
+<script lang="ts">
+import { AppData } from '../lib/AppData';
 import Lanes from "./Lanes.vue";
 
 export default {
-    name: "home",
+    name: "Home",
     data: () => ({
-        appdata: AppData,
     }),
     components: {
         Lanes,

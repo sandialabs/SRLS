@@ -2,7 +2,7 @@ import { RPMProfile } from "./RPMProfile";
 import { ProfileGenerator2 } from "./ProfileGenerator2";
 import { RPMSimulator } from "./RPMSimulator";
 import { CameraSimulator } from "./CameraSimulator";
-import { CannedImageSimulator } from "./CannedImageSimulator";
+// import { CannedImageSimulator } from "./CannedImageSimulator";
 import { AnimatedTruckSimulator } from "./AnimatedTruckSimulator";
 import { ISettings } from "./ISettings";
 import { ILaneSettings } from "./ILaneSettings";
@@ -22,7 +22,7 @@ export class LaneSimulator {
     OccupancyState: string = "normal";
     IsInAutoMode: boolean = false;
     RPM: RPMSimulator | null;
-    Cameras: CameraSimulator[];
+    // Cameras: CameraSimulator[];
     LaneID: number = 0;
     Status: string = "new";
     CanvasElement: HTMLCanvasElement;
@@ -49,15 +49,15 @@ export class LaneSimulator {
         this.IsEnabled = settings.Enabled;
         this.RPM = null;
         this.create_rpm(settings);
-        this.Cameras = [];
-        let imagedir = "Front";
-        let camnum = 1;
-        settings.Cameras.forEach(cam => {
-            let camsim = this.create_camera(cam, this.Name + " Camera " + camnum, imagedir);
-            this.Cameras.push(camsim);
-            imagedir = "Rear";
-            camnum += 1;
-        });
+        // this.Cameras = [];
+        // let imagedir = "Front";
+        // let camnum = 1;
+        // settings.Cameras.forEach(cam => {
+        //     let camsim = this.create_camera(cam, this.Name + " Camera " + camnum, imagedir);
+        //     this.Cameras.push(camsim);
+        //     imagedir = "Rear";
+        //     camnum += 1;
+        // });
     }
 
     public Clone() {
@@ -92,9 +92,9 @@ export class LaneSimulator {
             console.log("LaneSim.Start", this);
 
             this.RPM?.Start();
-            for (let cam of this.Cameras) {
-                if (cam.m_is_enabled) cam.Start();
-            }
+            // for (let cam of this.Cameras) {
+            //     if (cam.m_is_enabled) cam.Start();
+            // }
             this.Settings.Status = "running";
         }
         catch (err) {
@@ -106,9 +106,9 @@ export class LaneSimulator {
     public Stop(): void {
         console.log("Stopping " + this.Name);
         this.RPM?.Stop();
-        for (let cam of this.Cameras) {
-            cam.Stop();
-        }
+        // for (let cam of this.Cameras) {
+        //     cam.Stop();
+        // }
         this.Settings.Status = "stopped";
     }
 
@@ -151,17 +151,17 @@ export class LaneSimulator {
     public GenerateAlarm(alarmtype: string, algorithm: string = "computed"): void {
         if (this.RPM) {
             let duration = 7.0 + Math.random() * 10; // 7 to 17 second duration
-            this.Log.Debug("Checking " + this.Cameras.length + " cameras");
+            // this.Log.Debug("Checking " + this.Cameras.length + " cameras");
             let container_number = this.generate_container_number();
-            for (let ix = 0; ix < this.Cameras.length; ix++) {
-                let cam = this.Cameras[ix];
-                if (cam.m_is_enabled) {
-                    this.Log.Debug(
-                        "Queuing images on " + cam.m_name + " for container " + container_number
-                    );
-                    cam.GenerateOccupancy(duration, container_number);
-                } else console.log("    " + cam.m_name + " is not enabled");
-            }
+            // for (let ix = 0; ix < this.Cameras.length; ix++) {
+            //     let cam = this.Cameras[ix];
+            //     if (cam.m_is_enabled) {
+            //         this.Log.Debug(
+            //             "Queuing images on " + cam.m_name + " for container " + container_number
+            //         );
+            //         cam.GenerateOccupancy(duration, container_number);
+            //     } else console.log("    " + cam.m_name + " is not enabled");
+            // }
             if (algorithm == "files") this.RPM.GenerateFromFile(alarmtype);
             else this.GenerateRPMData(alarmtype, duration, true, algorithm);
         } else {
@@ -173,11 +173,11 @@ export class LaneSimulator {
         let result = false;
         this.OccupancyState = this.RPM ? this.RPM.OccupancyState() : "";
         this.Settings.OccupancyState = this.OccupancyState;
-        if (this.RPM && this.RPM.m_clients.length > 0) {
-            this.Settings.ClientCount = this.RPM.m_clients.length;
-        } else {
-            this.Settings.ClientCount = 0;
-        }
+        // if (this.RPM && this.RPM.m_clients.length > 0) {
+        //     this.Settings.ClientCount = this.RPM.m_clients.length;
+        // } else {
+        //     this.Settings.ClientCount = 0;
+        // }
     }
 
     public SetAutoMode(val: boolean): void {
@@ -199,26 +199,26 @@ export class LaneSimulator {
         }
     }
 
-    private create_camera(
-        settings: ICameraSettings,
-        camera_name: string,
-        imagedir: string
-    ): CameraSimulator {
-        let result: CameraSimulator = new CameraSimulator(settings, camera_name);
-        if (settings) {
-            if (settings.CameraSimulatorType === "animated") {
-                result = new AnimatedTruckSimulator(settings, camera_name, this.CanvasElement);
-                //result = new CannedImageSimulator(settings, camera_name, "./Assets/ContainerImages/" + imagedir);
-            } else {
-                result = new CannedImageSimulator(
-                    settings,
-                    camera_name,
-                    "./Assets/ContainerImages/" + imagedir
-                );
-            }
-        }
-        return result;
-    }
+    // private create_camera(
+    //     settings: ICameraSettings,
+    //     camera_name: string,
+    //     imagedir: string
+    // ): CameraSimulator {
+    //     let result: CameraSimulator = new CameraSimulator(settings, camera_name);
+    //     if (settings) {
+    //         if (settings.CameraSimulatorType === "animated") {
+    //             result = new AnimatedTruckSimulator(settings, camera_name, this.CanvasElement);
+    //             //result = new CannedImageSimulator(settings, camera_name, "./Assets/ContainerImages/" + imagedir);
+    //         } else {
+    //             result = new CannedImageSimulator(
+    //                 settings,
+    //                 camera_name,
+    //                 "./Assets/ContainerImages/" + imagedir
+    //             );
+    //         }
+    //     }
+    //     return result;
+    // }
 
     private create_rpm(settings: ILaneSettings): void {
         console.log("LaneSim--create_rpm", settings);

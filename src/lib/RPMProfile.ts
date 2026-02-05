@@ -1,5 +1,5 @@
 // note: run tsc -w at a command prompt in the RPMSimulator directory to compile typescript files whenever they are saved
-/// <reference path="../electron/main/global.d.ts" />
+//// <reference path="../electron/types/global.d.ts" />
 import * as fs from "fs";
 
 export class DetectorValues {
@@ -174,10 +174,10 @@ export class RPMProfile {
         if (m) {
             return Math.trunc(
                 1000 *
-                    (3600 * parseInt(m[1]) +
-                        60 * parseInt(m[2]) +
-                        parseInt(m[3]) +
-                        parseFloat(m[4]) / 1000.0)
+                (3600 * parseInt(m[1]) +
+                    60 * parseInt(m[2]) +
+                    parseInt(m[3]) +
+                    parseFloat(m[4]) / 1000.0)
             );
         } else {
             console.error("Can't parse RPM message timestamp: " + timestamp);

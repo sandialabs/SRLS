@@ -83,11 +83,11 @@ td {
 }
 </style>
 
-<script>
+<script lang="ts">
 import { Attributions } from "../lib/Attributions";
 
 export default {
-    name: "about",
+    name: "About",
     data: () => ({
         software_button_text: "Show Software Attribution",
         software: new Attributions().attributions,

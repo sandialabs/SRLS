@@ -5,7 +5,7 @@ module.exports = {
                 appId: "gov.sandia.srls",
                 extraFiles: ["Assets"],
                 artifactName: "SRLS_Setup-${version}.${ext}",
-                preload: 'src/electron/preload/preload.ts'
+                preload: 'src/electron/preload.ts'
             },
         },
     },

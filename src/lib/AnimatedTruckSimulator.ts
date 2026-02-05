@@ -1,5 +1,4 @@
 //const http = require('http')
-import * as fs from "fs";
 import * as http from "http";
 import { ICameraSettings } from "./ICameraSettings";
 import { CameraSimulator } from "./CameraSimulator";
