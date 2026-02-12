@@ -1,3 +1,4 @@
+import Lane from "../components/Lane.vue";
 import { CameraSettings, ICameraSettings } from "./ICameraSettings";
 import { IRPMSettings, RPMSettings } from "./IRPMSettings";
 import { ISettings, Settings } from "./ISettings";
@@ -37,7 +38,7 @@ export class LaneSettings implements ILaneSettings {
     OccupancyState: string;
 
     constructor(settings: ILaneSettings) {
-        this.LaneID = new Date().getTime();
+        this.LaneID = LaneSettings.unique();
         this.LaneName = "";
         this.Enabled = false;
         this.RPMAlgorithm = "simulated";
@@ -55,11 +56,17 @@ export class LaneSettings implements ILaneSettings {
         return new LaneSettings(lane);
     }
 
+    static unique(): number {
+        const timestamp = Date.now(); // milliseconds since Jan 1, 1970
+        const randomPart = Math.floor(Math.random() * 1000000); // 6-digit random number
+        return Number(`${timestamp}${randomPart}`);
+    }
+
     static default_settings(): LaneSettings {
         let settings: ISettings = Settings.default_settings();
 
         let laneSettings: ILaneSettings = {
-            LaneID: new Date().getTime(),
+            LaneID: LaneSettings.unique(),
             LaneName: "",
             Enabled: false,
             RPMAlgorithm: "simulated",

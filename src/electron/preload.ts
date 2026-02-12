@@ -4,6 +4,7 @@ console.log("In preload.ts");
 
 // Expose a method to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
+
     // Example method to send a message to the main process
     sendMessage: (message: string) => {
         // console.log(`sendMessage: ${message}`);
@@ -24,6 +25,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     existsSync: (filepath: string): Promise<boolean> => ipcRenderer.invoke('file-exists', filepath),
     readFileSync: (filepath: string, encoding: BufferEncoding): Promise<string> => ipcRenderer.invoke('read-file', filepath, encoding),
     writeFileSync: (filepath: string, data: string): Promise<void> => ipcRenderer.invoke('write-file', filepath, data),
+
+    listen: (port: number, ipaddr: string): Promise<boolean> => ipcRenderer.invoke('network-listen', port, ipaddr),
+    stopListen: (port: number, ipaddr: striong) => ipcRenderer.invoke('network-stop-listening', port, ipaddr),
+    sendData: (port: number, ipaddr: string, data: string) => ipcRenderer.invoke('network-send-data', port, ipaddr, data),
 });
 
 

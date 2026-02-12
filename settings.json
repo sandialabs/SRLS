@@ -26,7 +26,7 @@
     "LogFilename": "",
     "Lanes": [
         {
-            "LaneID": 1770331780300,
+            "LaneID": 1770936127579668000,
             "LaneName": "",
             "Enabled": false,
             "RPMAlgorithm": "simulated",
@@ -83,7 +83,7 @@
             "OccupancyState": ""
         },
         {
-            "LaneID": 1770331780300,
+            "LaneID": 1770936127579958300,
             "LaneName": "",
             "Enabled": false,
             "RPMAlgorithm": "simulated",
@@ -140,7 +140,7 @@
             "OccupancyState": ""
         },
         {
-            "LaneID": 1770331780300,
+            "LaneID": 1770936127579617500,
             "LaneName": "",
             "Enabled": false,
             "RPMAlgorithm": "simulated",
@@ -197,7 +197,7 @@
             "OccupancyState": ""
         },
         {
-            "LaneID": 1770331780300,
+            "LaneID": 177093612757940030,
             "LaneName": "",
             "Enabled": false,
             "RPMAlgorithm": "simulated",
@@ -254,7 +254,7 @@
             "OccupancyState": ""
         },
         {
-            "LaneID": 1770331780300,
+            "LaneID": 1770936127579549200,
             "LaneName": "",
             "Enabled": false,
             "RPMAlgorithm": "simulated",
@@ -306,42 +306,6 @@
                     "CameraSimulatorType": "canned"
                 }
             ],
-            "ClientCount": 0,
-            "Status": "",
-            "OccupancyState": ""
-        },
-        {
-            "LaneID": 1770331780300,
-            "LaneName": "",
-            "Enabled": false,
-            "RPMAlgorithm": "simulated",
-            "AutoGammaProbability": 0.05,
-            "AutoNeutronProbability": 0.05,
-            "AutoInterval": 30,
-            "RPM": {
-                "IPAddr": "127.0.0.1",
-                "Port": 1600,
-                "GammaBG": 256,
-                "NeutronBG": 3,
-                "GammaDistribution": [
-                    0.25,
-                    0.25,
-                    0.25,
-                    0.25
-                ],
-                "NeutronDistribution": [
-                    0.25,
-                    0.25,
-                    0.25,
-                    0.25
-                ],
-                "GammaNSigma": 7,
-                "NeutronThreshold": 7,
-                "GHThreshold": 300,
-                "GLThreshold": 100,
-                "NHThreshold": 7
-            },
-            "Cameras": [],
             "ClientCount": 0,
             "Status": "",
             "OccupancyState": ""

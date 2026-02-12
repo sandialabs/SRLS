@@ -107,8 +107,8 @@ export default {
             // this.$refs["home_page"].say_hello();
         },
     },
-    async mounted() {
-        banner(["App.vue.mounted"]);
+    async created() {
+        banner(["App.vue.created"]);
 
         var settings = useSettingsStore();
         await settings.loadSettings();

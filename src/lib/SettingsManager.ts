@@ -38,13 +38,7 @@ export class SettingsManager {
         this.Data = Settings.default_settings();
     }
 
-    static async create(filepath: string = "") {
-        const instance = new SettingsManager();
-        await instance.initialize(filepath);
-        return instance;
-    }
-
-    private async initialize(filepath: string) {
+    async initialize(filepath: string) {
         console.log('In SettingsManager.initialize: "' + filepath + '"');
 
         if (window && filepath) {
@@ -54,11 +48,17 @@ export class SettingsManager {
             if (exists) {
                 console.log("File exists " + filepath);
                 let json: string = await window.electronAPI.readFileSync(filepath, "utf8");
-                this.Data = JSON.parse(json);
+
+                // This will reload the existing arrays within the Data object, which will
+                // allow already-existing references to those arrays to keep working
+                this.Data.load(JSON.parse(json));
+                
                 // upgrade older versions
                 if (typeof this.Data.LogLevel == "undefined") this.Data.LogLevel = "warning";
                 if (typeof this.Data.LogFilename == "undefined") this.Data.LogFilename = "";
                 if (typeof this.Data.Version == "undefined") this.Data.Version = AppVersion;
+
+                console.log("SettingsManager.initialize loaded", this.Data);
             } else {
                 console.log(`File ${filepath} doesn't exist`);
                 this.Data = Settings.default_settings();
@@ -74,8 +74,8 @@ export class SettingsManager {
     //     return this.Data;
     // }
 
-    get lanes(): ILaneSettings[] | null {
-        return this.Data?.Lanes;
+    get lanes(): ILaneSettings[] {
+        return this.Data.Lanes;
     }
 
     get num_lanes(): number {

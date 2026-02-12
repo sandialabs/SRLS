@@ -62,6 +62,25 @@ export class Settings implements ISettings {
         this.Lanes = [...settings.Lanes];
     }
 
+    load(settings: ISettings): void {
+        this.Version = settings.Version;
+        this.DefaultGammaBG = settings.DefaultGammaBG;
+        this.DefaultNeutronBG = settings.DefaultNeutronBG;
+        this.DefaultGammaDistribution.splice(0, this.DefaultGammaDistribution.length, ...settings.DefaultGammaDistribution);
+        this.DefaultNeutronDistribution.splice(0, this.DefaultNeutronDistribution.length, ...settings.DefaultNeutronDistribution);
+        this.DefaultGammaNSigma = settings.DefaultGammaNSigma;
+        this.DefaultNeutronThreshold = settings.DefaultNeutronThreshold;
+        this.DefaultGHThreshold = settings.DefaultGHThreshold;
+        this.DefaultGLThreshold = settings.DefaultGLThreshold;
+        this.DefaultNHThreshold = settings.DefaultNHThreshold;
+        this.DefaultAutoGammaProbability = settings.DefaultAutoGammaProbability;
+        this.DefaultAutoNeutronProbability = settings.DefaultAutoNeutronProbability;
+        this.DefaultAutoInterval = settings.DefaultAutoInterval;
+        this.LogLevel = settings.LogLevel;
+        this.LogFilename = settings.LogFilename;
+        this.Lanes.splice(0, this.Lanes.length, ...settings.Lanes);
+    }
+
     static default_settings(): Settings {
         let settings: ISettings = {
             Version: AppVersion,

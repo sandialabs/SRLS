@@ -49,7 +49,9 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                <!-- Lanes: {{ lanedata.length }} -->
                                 <tr v-for="lane in lanedata" :key="lane.LaneID">
+                                    <!-- <pre>{{ lane }} </pre> -->
                                     <td>
                                         <ActionIcon icon="create" color="primary" tooltip="Edit lane"
                                             @icon-clicked="on_trigger_lane(lane, 'editlane')" />
@@ -113,6 +115,7 @@ import { banner } from "../lib/Utility";
 import { ICameraSettings } from "../lib/ICameraSettings";
 import { defineComponent, Reactive, reactive, toRaw } from "vue";
 import { useSettingsStore } from "../store/settingsStore";
+import { storeToRefs } from "pinia";
 
 console.log("Lanes.vue loaded");
 
@@ -123,6 +126,10 @@ interface Headers {
 
 export type LaneActions = "GA" | "NA" | "NG" | "OC" | "TT" | "automode";
 export type LaneEvents = "editlane" | "clone" | "adjust" | "delete" | "automode" | "GA" | "NA" | "NG" | "OC" | "TT";
+
+interface LaneMap {
+    [lane: number]: LaneSimulator;
+}
 
 export default defineComponent({
     props: {
@@ -136,20 +143,23 @@ export default defineComponent({
         RPMControl: RPMControl,
     },
     computed: {
+        lanedata(): ILaneSettings[] {
+            // console.log("Lanes.vue.computed.lanedata", this.settingsManager.lanes.length);
+            return this.settingsManager.lanes;
+        }
     },
     setup: () => {
-        // const settingsStore = useSettingsStore();
-        // const settingsMgr = settingsStore.settingsManager;
-
-        let lanedata: ILaneSettings[] = reactive([]);
+        // let lanedata: ILaneSettings[] = reactive(settingsMgr.lanes);
         let headers: Headers[] = reactive([
             { text: "Name", value: "LaneName" },
             { text: "Enabled", value: "Enabled" }            
         ]);
-        let simMap: Reactive<Map<number, LaneSimulator>> = reactive(new Map<number, LaneSimulator>());
-        // let settingsmgr: SettingsManager = settingsMgr;
+        let simMap: Reactive<LaneMap> = reactive({});
+            
+        const settingsStore = useSettingsStore();
+        const { settingsManager } = storeToRefs(settingsStore);  // Use storeToRefs
 
-        return { lanedata, headers, simMap };
+        return { headers, simMap, settingsManager };
     },
 
     // data: () => ({
@@ -162,39 +172,33 @@ export default defineComponent({
 
     created: function () {
         let self = this;
-        let lanes = useSettingsStore().settingsManager.lanes;
-        if (lanes) {
-            this.lanedata = lanes;
-            console.log("Lanes.vue created", this.lanedata);
-        }
         setInterval(() => {
             self.poll();
         }, 500);
     },
     mounted: function () {
-        // console.log("Lanes.vue mounted", this.lanedata);
-        // create a LaneSimulator for each lane and save it in the
-        // lanes LaneSettings.  If the lane is enabled, start the simulator.
-        this.lanedata.forEach(lane => {
-            // console.log("Lanes.vue.mounted -- looking for", lane);
-            let sim = this.simMap.get(lane.LaneID);
-            if (sim) {
-                console.log("    simulator already exists");
-            } else {
-                // console.log("    creating new simulator", lane);
-                let ls = new LaneSimulator(lane,
-                    <HTMLCanvasElement>document.getElementById("render-canvas")
-                );
+        // // create a LaneSimulator for each lane and save it in the
+        // // lanes LaneSettings.  If the lane is enabled, start the simulator.
+        // this.lanedata.forEach(lane => {
+        //     // console.log("Lanes.vue.mounted -- looking for", lane);
+        //     let sim = this.simMap.get(lane.LaneID);
+        //     if (sim) {
+        //         console.log("    simulator already exists");
+        //     } else {
+        //         // console.log("    creating new simulator", lane);
+        //         let ls = new LaneSimulator(lane,
+        //             <HTMLCanvasElement>document.getElementById("render-canvas")
+        //         );
 
-                // console.log(`Lanes.vue.mounted -- adding to simMap ${lane.LaneID}`, ls);
-                this.simMap.set(lane.LaneID, ls);
-                lane.ClientCount = 0;
-                if (lane.Enabled) {
-                    this.start_simulator(lane);
-                }
-            }
-        });
-        console.log("Lanes.vue mounted -- map", this.simMap);
+        //         // console.log(`Lanes.vue.mounted -- adding to simMap ${lane.LaneID}`, ls);
+        //         this.simMap.set(lane.LaneID, ls);
+        //         lane.ClientCount = 0;
+        //         if (lane.Enabled) {
+        //             this.start_simulator(lane);
+        //         }
+        //     }
+        // });
+        // console.log("Lanes.vue mounted -- map", this.simMap);
     },
     watch: {
         lanedata: function (newval: any, oldval: any) {
@@ -229,7 +233,7 @@ export default defineComponent({
 
             this.lanedata?.forEach(lane => {
                 if (lane.Enabled) {
-                    let sim = this.simMap.get(lane.LaneID);
+                    let sim: LaneSimulator = this.simMap[lane.LaneID];
                     if(sim) {
                         if (
                             event_name === "GA" ||
@@ -257,7 +261,7 @@ export default defineComponent({
         },
 
         on_trigger_lane: function (lane: ILaneSettings, event_name: LaneEvents): void {
-            let sim = this.simMap.get(lane.LaneID);
+            let sim: LaneSimulator = this.simMap[lane.LaneID];
             console.log("on_trigger_lane--simMap", this.simMap);
             console.log("on_trigger_lane--lane", lane);
             console.log("on_trigger_lane--sim", sim);
@@ -345,11 +349,40 @@ export default defineComponent({
         },
 
         poll: function (): void {
+            // console.log("Lanes.vue.polling", this.lanedata.length);
+
             this.lanedata.forEach(lane => {
-                let sim = this.simMap.get(lane.LaneID);
+                // console.log("Lanes.vue.poll -- lane", lane);
+                
+                let sim: LaneSimulator = this.simMap[lane.LaneID];
+
+                if(!sim) {
+                    // A new lane was added, so we need to create a
+                    // simulator for the lane
+                    sim = this.create_sim(lane);
+                }
                 sim?.Poll();
             });
             this.$forceUpdate();
+        },
+
+        create_sim: function(lane: ILaneSettings): LaneSimulator {
+            // Make sure it's not already in the map somehow
+            let sim: LaneSimulator = this.simMap[lane.LaneID];
+            if(sim)
+                return sim;
+
+            let ls = new LaneSimulator(lane,
+                <HTMLCanvasElement>document.getElementById("render-canvas")
+            );
+
+            console.log(`Lanes.vue.create_sim -- adding to simMap ${lane.LaneID}`, ls);
+            this.simMap[lane.LaneID] = ls;
+            lane.ClientCount = 0;
+            if (lane.Enabled) {
+                this.start_simulator(lane);
+            }
+            return ls;
         },
 
         camera_info: function (cam: ICameraSettings): string {
@@ -366,7 +399,7 @@ export default defineComponent({
             let result = "";
             if (lane) {
                 console.log("In rpm_client_count", lane);
-                let sim = this.simMap.get(lane.LaneID);
+                let sim = this.simMap[lane.LaneID];
                 if(sim) {
                     console.log("Simulator", sim);
                     result = String(lane.ClientCount);
@@ -386,7 +419,7 @@ export default defineComponent({
 
         start_simulator: function (lane: ILaneSettings) {
             console.log("start_simulator", lane);
-            let sim = this.simMap.get(lane.LaneID);
+            let sim = this.simMap[lane.LaneID];
             if(!sim)
                 return;
             console.log(`In start_simulator. IsEnabled = ${sim.IsEnabled}, IsRunning = ${sim.IsRunning}"`);
@@ -403,7 +436,7 @@ export default defineComponent({
 
         stop_simulator: function (lane: ILaneSettings): void {
             console.log("Stopping simulator on " + lane.LaneName, lane);
-            let sim = this.simMap.get(lane.LaneID);
+            let sim = this.simMap[lane.LaneID];
             if (sim) {
                 sim.Stop();
                 sim.IsEnabled = false;
@@ -432,7 +465,7 @@ export default defineComponent({
             dlg.show("Delete", "Delete " + lane.LaneName + "?", () => {
                 console.log("In callback");
                 useSettingsStore().settingsManager.remove_lane_by_id(lane.LaneID);
-                self.simMap.delete(lane.LaneID);
+                delete self.simMap[lane.LaneID];
             });
         },
 
@@ -455,7 +488,7 @@ export default defineComponent({
                             console.log("re-creating lane", lane);
                             useSettingsStore().settingsManager.save();
                             // stop and delete simulator on existing lane object
-                            self.simMap.delete(lane.LaneID);
+                            delete self.simMap[lane.LaneID];
                             self.stop_simulator(lane);
                             // lane.Simulator = undefined;
                             lane.Enabled = false;
@@ -465,7 +498,7 @@ export default defineComponent({
                             );
                             if (updated_settings.Enabled) {
                                 self.start_simulator(updated_settings);
-                                self.simMap.set(updated_settings.LaneID, sim);
+                                self.simMap[updated_settings.LaneID] = sim;
                             }
                             self.lanedata[lane_index] = updated_settings;
                             console.log("Updated lanedata:", self.lanedata);

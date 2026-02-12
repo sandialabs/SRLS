@@ -1,4 +1,3 @@
-import { ipcMain } from "electron";
 import * as net from "net";
 
 export class NetworkConfig {
@@ -68,36 +67,23 @@ export class Network {
         });
 
         console.log("Network.constructor -- listening for network-* items");
-
-        ipcMain.handle('network-listen', (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string): Promise<boolean> => {
-            let config = new NetworkConfig(ipaddr, port);
-            return this.listen(config);
-        });
-
-        ipcMain.handle('network-stop-listening', (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string): boolean => {
-            let config = new NetworkConfig(ipaddr, port);
-            return this.stopListening(config);
-        });
-
-        ipcMain.handle("network-send-data", (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string, data: string): boolean => {
-            let config = new NetworkConfig(ipaddr, port);
-            return this.sendData(config, data);
-        });
     }
 
     listen(config: NetworkConfig): Promise<boolean> {
         let self = this;
+        let key = config.asString();
+        let sock = this._socketMap[key];
+
+        console.log(`Network.listen -- starting listen on ${config.asString()}`, sock);
 
         let promise = new Promise<boolean>((resolve, reject) => {
-            let key = config.asString();
-            let sock = this._socketMap[key];
-
             if(sock) {
                 console.error(`Network.listen -- ${key} already exists`);
                 reject(false);
             }
             else {
                 try {
+                    console.log(`Network.listen ${config}`);
                     self._listener.listen(config.port, config.ip);
                     resolve(true);
                 }
@@ -116,6 +102,8 @@ export class Network {
         let sock = this._socketMap[key];
 
         if(sock) {
+            console.log(`Network.stopListening -- stopping listen on ${config.asString()}`, sock);
+
             sock.end();
             delete this._socketMap[key];
             return true;
@@ -127,6 +115,8 @@ export class Network {
     sendData(config: NetworkConfig, data: string): boolean {
         let key = config.asString();
         let sock = this._socketMap[key];
+        
+        console.log(`Network.sendData -- sending '${data}' to ${config.asString()}`, sock);
 
         if (sock) {
             sock.write(data);

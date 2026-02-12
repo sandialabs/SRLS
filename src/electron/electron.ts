@@ -3,6 +3,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { existsSync } from 'fs';
 import { readFile, writeFile } from 'fs/promises';
+import { Network, NetworkConfig } from './network';
 
 // make a directory for replay data if one doesn't exist
 // if (window.electronAPI && !window.electronAPI.existsSync("Replay")) {
@@ -20,6 +21,7 @@ const __dirname = dirname(__filename);
 
 let vitePort: number = 5173;
 const devServer: string = `http://localhost:${vitePort}`;
+const _network: Network = new Network();
 
 function createWindow() {
     console.log("__dirname:", __dirname);
@@ -71,14 +73,14 @@ app.on('activate', () => {
     }
 });
 
-ipcMain.handle('file-exists', async (event, filepath: string) => {
+ipcMain.handle('file-exists', async (event: Electron.IpcMainInvokeEvent, filepath: string) => {
     console.log("Inside file-exists");
     const exists: boolean = existsSync(filepath);
     console.log(`file-exists -- file ${filepath} ${exists ? 'exists' : 'does not exist'}`);
     return exists;
 });
 
-ipcMain.handle('read-file', async (event, filepath: string, encoding: BufferEncoding) => {
+ipcMain.handle('read-file', async (event: Electron.IpcMainInvokeEvent, filepath: string, encoding: BufferEncoding) => {
     console.log("Inside read-file");
     try {
         return await readFile(filepath, encoding);
@@ -89,7 +91,7 @@ ipcMain.handle('read-file', async (event, filepath: string, encoding: BufferEnco
     }
 });
 
-ipcMain.handle('write-file', async (event, filepath: string, data: string) => {
+ipcMain.handle('write-file', async (event: Electron.IpcMainInvokeEvent, filepath: string, data: string) => {
     console.log("Inside write-file");
     try {
         await writeFile(filepath, data, 'utf-8');
@@ -98,4 +100,20 @@ ipcMain.handle('write-file', async (event, filepath: string, data: string) => {
         console.error("Error in write-file", error)
         throw error;
     }
+});
+
+ipcMain.handle('network-listen', async (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string): Promise<boolean> => {
+    let config = new NetworkConfig(ipaddr, port);
+    console.log(`electron.ts network-listen on ${config}`, _network);
+    return _network.listen(config);
+});
+
+ipcMain.handle('network-stop-listening', async (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string): boolean => {
+    let config = new NetworkConfig(ipaddr, port);
+    return _network.stopListening(config);
+});
+
+ipcMain.handle("network-send-data", async (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string, data: string): boolean => {
+    let config = new NetworkConfig(ipaddr, port);
+    return _network.sendData(config, data);
 });

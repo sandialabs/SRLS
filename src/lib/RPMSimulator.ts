@@ -167,18 +167,16 @@ export class RPMSimulator extends Component {
         console.log("Starting listener on " + this.m_ipaddr + ":" + this.m_rpm_port);
         let self = this; // "this" will be something different in callback
 
-        // let promise: Promise<boolean> = ipcRenderer.invoke("network-listen", [this.m_rpm_port, this.m_ipaddr]);
-
-        // promise
-        //     .then(() => {
-        //         console.log("RPM listener created--setting timeout");
-        //         this.m_timer = setTimeout(() => {
-        //             self.on_timer();
-        //         }, 10);
-        //     })
-        //     .catch((err) => {
-        //         console.error(`RPMSimulator.Start error -- ${err}`);
-        //     });
+        window.electronAPI.listen(this.m_rpm_port, this.m_ipaddr)
+            .then(() => {
+                console.log("RPM listener created--setting timeout");
+            })
+            .catch((err) => {
+                console.error(`RPMSimulator.Start error -- ${err}`);
+            });
+            this.m_timer = setTimeout(() => {
+                self.on_timer();
+            }, 10);
     }
 
     public Stop(): void {
@@ -187,6 +185,8 @@ export class RPMSimulator extends Component {
         this.LogDebug("Shutting down RPM simulator on port " + this.m_rpm_port);
 
         // ipcRenderer.invoke("network-stop-listening", [this.m_rpm_port, this.m_ipaddr]);
+
+        window.electronAPI.stopListen(this.m_rpm_port, this.m_ipaddr);
         
         clearInterval(this.m_timer);
         this.m_timer = undefined;
@@ -613,6 +613,8 @@ export class RPMSimulator extends Component {
     private on_timer() {
         let now = this.current_time();
 
+        console.log("RPMSimulator.on_timer");
+
         if (this.m_current_profile == null && this.m_queued_profiles.length > 0) {
             this.LogDebug("Selecting next queued profile");
             // if an occupancy has been triggered manually, stop it now
@@ -824,7 +826,12 @@ export class RPMSimulator extends Component {
     //------------------------------------------------------------
     /** send some text to every connected client */
     say(text: string): void {
-        if (this.m_is_paused) return;
+        if (this.m_is_paused)
+            return;
+
+        console.log(`RPMSimulator.say: ${this.Name} -- '${text}'`);
+
+        window.electronAPI.sendData(this.m_rpm_port, this.m_ipaddr, text);
 
         // ipcRenderer.invoke("network-send-data", [this.m_rpm_port, this.m_ipaddr, text]);
         // if (this.m_clients.length > 0) {
