@@ -27,7 +27,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     writeFileSync: (filepath: string, data: string): Promise<void> => ipcRenderer.invoke('write-file', filepath, data),
 
     listen: (port: number, ipaddr: string): Promise<boolean> => ipcRenderer.invoke('network-listen', port, ipaddr),
-    stopListen: (port: number, ipaddr: striong) => ipcRenderer.invoke('network-stop-listening', port, ipaddr),
+    stopListen: (port: number, ipaddr: string) => ipcRenderer.invoke('network-stop-listening', port, ipaddr),
     sendData: (port: number, ipaddr: string, data: string) => ipcRenderer.invoke('network-send-data', port, ipaddr, data),
 });
 

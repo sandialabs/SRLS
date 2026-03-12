@@ -18,7 +18,8 @@ export default defineConfig({
                 input: {
                     index: electronEntry
                 }
-            }
+            },
+            sourcemap: true
         },
     },
     preload: {
@@ -30,7 +31,8 @@ export default defineConfig({
                     index: electronPreloadEntry
                 },
                 external: ['electron']  // Don't externalize Node modules
-            }
+            },
+            sourcemap: true
         },
     },
     renderer: {
@@ -47,7 +49,8 @@ export default defineConfig({
         build: {
             rollupOptions: {
                 input: htmlEntry
-            }
+            },
+            sourcemap: true
         }
     },
 })

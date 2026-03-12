@@ -174,7 +174,7 @@ export class RPMSimulator extends Component {
             .catch((err) => {
                 console.error(`RPMSimulator.Start error -- ${err}`);
             });
-            this.m_timer = setTimeout(() => {
+            this.m_timer = setInterval(() => {
                 self.on_timer();
             }, 10);
     }
@@ -613,7 +613,7 @@ export class RPMSimulator extends Component {
     private on_timer() {
         let now = this.current_time();
 
-        console.log("RPMSimulator.on_timer");
+        // console.log("RPMSimulator.on_timer");
 
         if (this.m_current_profile == null && this.m_queued_profiles.length > 0) {
             this.LogDebug("Selecting next queued profile");
@@ -768,17 +768,17 @@ export class RPMSimulator extends Component {
             count = Math.round(count + count * (0.5 - Math.random()) * randomization);
             counts.push(Math.max(0, count));
         }
-        //Sconsole.log("    " + counts);
+        console.log("generate_bg: ", counts);
         return counts;
     }
 
     private generate_gamma_bg(): number[] {
         let counts;
-        //console.log("Current counts:", this.m_current_gamma_counts);
+        console.log("Current gamma counts:", this.m_current_gamma_counts);
         if (this.m_current_gamma_counts) {
             // make a copy of the counts
             counts = this.m_current_gamma_counts.slice(0);
-            console.log("Counts: " + counts);
+            console.log("generate_gamma_bg: ", counts);
             let r = this.m_gamma_count_randomization / 4; // 4 detectors
             for (let i = 0; i < 4; i++) {
                 let inc = r - Math.random() * 2 * r; // -r <= x <= r
@@ -797,8 +797,10 @@ export class RPMSimulator extends Component {
 
     private generate_neutron_bg(): number[] {
         let counts;
+        console.log("Current neutron counts:", this.m_current_neutron_counts);
         if (this.m_current_neutron_counts) {
             counts = this.m_current_neutron_counts.slice(0);
+            console.log("generate_neutron_bg: ", counts);
             let r = this.m_neutron_count_randomization / 4; // 4 detectors
             for (let i = 0; i < 4; i++) {
                 let inc = r - Math.random() * 2 * r; // -r <= x <= r

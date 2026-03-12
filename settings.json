@@ -26,7 +26,7 @@
     "LogFilename": "",
     "Lanes": [
         {
-            "LaneID": 1770936127579668000,
+            "LaneID": 1773347943250505000,
             "LaneName": "",
             "Enabled": false,
             "RPMAlgorithm": "simulated",
@@ -83,7 +83,7 @@
             "OccupancyState": ""
         },
         {
-            "LaneID": 1770936127579958300,
+            "LaneID": 1773347943251351600,
             "LaneName": "",
             "Enabled": false,
             "RPMAlgorithm": "simulated",
@@ -140,7 +140,7 @@
             "OccupancyState": ""
         },
         {
-            "LaneID": 1770936127579617500,
+            "LaneID": 1773347943251196,
             "LaneName": "",
             "Enabled": false,
             "RPMAlgorithm": "simulated",
@@ -197,7 +197,7 @@
             "OccupancyState": ""
         },
         {
-            "LaneID": 177093612757940030,
+            "LaneID": 1773347943251328800,
             "LaneName": "",
             "Enabled": false,
             "RPMAlgorithm": "simulated",
@@ -254,7 +254,7 @@
             "OccupancyState": ""
         },
         {
-            "LaneID": 1770936127579549200,
+            "LaneID": 1773347943251591000,
             "LaneName": "",
             "Enabled": false,
             "RPMAlgorithm": "simulated",

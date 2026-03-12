@@ -29,7 +29,7 @@ export class NetworkConfig {
 }
 
 interface SocketMap {
-    [key:string]: net.Socket;
+    [key:string]: net.Socket[];
 }
 
 export class Network {
@@ -50,15 +50,20 @@ export class Network {
                 let key = config.asString();
 
                 console.log(`Connection to ${key}`);
-                self._socketMap[key] = socket;
+                let sockets: net.Socket[] = self._socketMap[key];
+                if(!sockets) {
+                    sockets = [];
+                    self._socketMap[key] = sockets;
+                }
+                sockets.push(socket);
                 
                 socket.on("close", () => {
                     console.log(`Connection ${key} is closing`);
-                    delete self._socketMap[key];
+                    self.removeSocket(config, socket);
                 });
                 socket.on("end", () => {
                     console.log(`Connection ${key} is ending`);
-                    delete self._socketMap[key];
+                    self.removeSocket(config, socket);
                 });
                 socket.on("error", (error) => {
                     console.error(`Connection ${key} error: ${error}`);
@@ -69,15 +74,27 @@ export class Network {
         console.log("Network.constructor -- listening for network-* items");
     }
 
+    private removeSocket(config: NetworkConfig, socket: net.Socket) {
+        let key = config.asString();
+        let sockets: net.Socket[] = this._socketMap[key];
+        if (sockets) {
+            let doomed = sockets.findIndex(s => s == socket);
+            if (doomed)
+                sockets.splice(doomed, 1);
+        }
+        if (sockets.length === 0)
+            delete this._socketMap[key];
+    }
+
     listen(config: NetworkConfig): Promise<boolean> {
         let self = this;
         let key = config.asString();
-        let sock = this._socketMap[key];
+        let sockets: net.Socket[] = this._socketMap[key];
 
-        console.log(`Network.listen -- starting listen on ${config.asString()}`, sock);
+        console.log(`Network.listen -- starting listen on ${config.asString()}`);
 
         let promise = new Promise<boolean>((resolve, reject) => {
-            if(sock) {
+            if(sockets) {
                 console.error(`Network.listen -- ${key} already exists`);
                 reject(false);
             }
@@ -99,13 +116,17 @@ export class Network {
 
     stopListening(config: NetworkConfig): boolean {
         let key = config.asString();
-        let sock = this._socketMap[key];
+        let sockets: net.Socket[] = this._socketMap[key];
 
-        if(sock) {
-            console.log(`Network.stopListening -- stopping listen on ${config.asString()}`, sock);
+        if(sockets) {
+            console.log(`Network.stopListening -- stopping listen on ${config.asString()}`);
 
-            sock.end();
-            delete this._socketMap[key];
+            let doomed: net.Socket[] = sockets;
+            doomed.forEach(socket => {
+                socket.end();
+            });
+            // As the sockets are closed, they should be automatically removed from _socketMap
+            // due to the on("end") code set up when the listen came in.
             return true;
         }
         else
@@ -114,12 +135,12 @@ export class Network {
 
     sendData(config: NetworkConfig, data: string): boolean {
         let key = config.asString();
-        let sock = this._socketMap[key];
+        let sockets: net.Socket[] = this._socketMap[key];
         
-        console.log(`Network.sendData -- sending '${data}' to ${config.asString()}`, sock);
+        console.log(`Network.sendData -- sending '${data}' to ${config.asString()}`);
 
-        if (sock) {
-            sock.write(data);
+        if (sockets) {
+            sockets.forEach(socket => socket.write(data));
             return true;
         }
         else

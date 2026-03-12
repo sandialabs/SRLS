@@ -13,7 +13,29 @@
             "args": [
                 "."
             ],
-            "outputCapture": "std"
+            "outputCapture": "std",
+            "sourceMaps": true,
+            "protocol": "inspector",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        },
+        {
+            "name": "Debug Main Process (Vite)",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run",
+                "dev"
+            ],
+            "outputCapture": "std",
+            "sourceMaps": true,
+            "protocol": "inspector",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
         },
         {
             "name": "Electron: Main",
