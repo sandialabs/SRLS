@@ -39,15 +39,15 @@ export class SettingsManager {
     }
 
     async initialize(filepath: string) {
-        console.log('In SettingsManager.initialize: "' + filepath + '"');
+        console.log(`In SettingsManager.initialize: '${filepath}'`, window);
 
         if (window && filepath) {
             this.m_file_path = filepath;
-            const exists: boolean = await window.electronAPI.existsSync(filepath);
+            const exists: boolean = await window.electronAPI.existsAsync(filepath);
 
             if (exists) {
                 console.log("File exists " + filepath);
-                let json: string = await window.electronAPI.readFileSync(filepath, "utf8");
+                let json: string = await window.electronAPI.readFileAsync(filepath, "utf8");
 
                 // This will reload the existing arrays within the Data object, which will
                 // allow already-existing references to those arrays to keep working
@@ -75,7 +75,7 @@ export class SettingsManager {
     // }
 
     get lanes(): ILaneSettings[] {
-        return this.Data.Lanes;
+        return this.Data.Lanes;0
     }
 
     get num_lanes(): number {
@@ -95,7 +95,7 @@ export class SettingsManager {
     }
 
     async serialize(to_path: string): Promise<void> {
-        await window.electronAPI.writeFileSync(to_path, this.to_string() + "\n");
+        await window.electronAPI.writeFileAsync(to_path, this.to_string() + "\n");
     }
 
     async save(): Promise<void> {

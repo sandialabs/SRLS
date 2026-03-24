@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import path, { dirname, join } from 'path';
 import { existsSync } from 'fs';
 import { readFile, writeFile } from 'fs/promises';
 import { Network, NetworkConfig } from './network';
@@ -25,9 +25,6 @@ const _network: Network = new Network();
 
 function createWindow() {
     console.log("__dirname:", __dirname);
-    console.log("VITE_DEV_SERVER_URL:", process.env.VITE_DEV_SERVER_URL);
-    console.log("NODE_ENV:", process.env.NODE_ENV);
-    console.log("All env vars:", Object.keys(process.env).filter(k => k.includes('VITE')));
 
     const win = new BrowserWindow({
         width: 800,
@@ -40,7 +37,6 @@ function createWindow() {
 
     // Apparently this isn't always set properly. Let's use a
     // different way to identify if we're in dev or prod.
-    const devServerUrl = process.env.VITE_DEV_SERVER_URL;
     const isDev = !app.isPackaged;
 
     if (isDev) {
@@ -74,27 +70,30 @@ app.on('activate', () => {
 });
 
 ipcMain.handle('file-exists', async (event: Electron.IpcMainInvokeEvent, filepath: string) => {
-    console.log("Inside file-exists");
-    const exists: boolean = existsSync(filepath);
-    console.log(`file-exists -- file ${filepath} ${exists ? 'exists' : 'does not exist'}`);
+    const userPath = path.join(app.getPath('userData'), filepath);
+    console.log(`Inside file-exists, looking for ${userPath}`);
+    const exists: boolean = existsSync(userPath);
+    console.log(`file-exists -- file ${userPath} ${exists ? 'exists' : 'does not exist'}`);
     return exists;
 });
 
 ipcMain.handle('read-file', async (event: Electron.IpcMainInvokeEvent, filepath: string, encoding: BufferEncoding) => {
-    console.log("Inside read-file");
+    const userPath = path.join(app.getPath('userData'), filepath);
+    console.log(`Inside read-file, looking for ${userPath}`);
     try {
-        return await readFile(filepath, encoding);
+        return await readFile(userPath, encoding);
     }
-    catch(error) {
+    catch (error) {
         console.error("Error in 'read-file'", error);
         throw error;
     }
 });
 
 ipcMain.handle('write-file', async (event: Electron.IpcMainInvokeEvent, filepath: string, data: string) => {
-    console.log("Inside write-file");
+    const userPath = path.join(app.getPath('userData'), filepath);
+    console.log(`Inside write-file, looking for ${userPath}`);
     try {
-        await writeFile(filepath, data, 'utf-8');
+        await writeFile(userPath, data, 'utf-8');
         return { success: true };
     } catch (error) {
         console.error("Error in write-file", error)
@@ -108,12 +107,12 @@ ipcMain.handle('network-listen', async (event: Electron.IpcMainInvokeEvent, port
     return _network.listen(config);
 });
 
-ipcMain.handle('network-stop-listening', async (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string): boolean => {
+ipcMain.handle('network-stop-listening', async (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string): Promise<boolean> => {
     let config = new NetworkConfig(ipaddr, port);
     return _network.stopListening(config);
 });
 
-ipcMain.handle("network-send-data", async (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string, data: string): boolean => {
+ipcMain.handle("network-send-data", async (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string, data: string): Promise<boolean> => {
     let config = new NetworkConfig(ipaddr, port);
     return _network.sendData(config, data);
 });

@@ -1,4 +1,3 @@
-import Lane from "../components/Lane.vue";
 import { CameraSettings, ICameraSettings } from "./ICameraSettings";
 import { IRPMSettings, RPMSettings } from "./IRPMSettings";
 import { ISettings, Settings } from "./ISettings";

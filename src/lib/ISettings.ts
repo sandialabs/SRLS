@@ -81,6 +81,10 @@ export class Settings implements ISettings {
         this.Lanes.splice(0, this.Lanes.length, ...settings.Lanes);
     }
 
+    to_string(): string {
+        return JSON.stringify(this);
+    }
+
     static default_settings(): Settings {
         let settings: ISettings = {
             Version: AppVersion,

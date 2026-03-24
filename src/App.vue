@@ -111,8 +111,14 @@ export default {
         banner(["App.vue.created"]);
 
         var settings = useSettingsStore();
-        await settings.loadSettings();
-        settings.settingsManager?.create_default_lane();
+
+        try {
+            await settings.loadSettings();
+            settings.settingsManager?.create_default_lane();
+        }
+        catch(e) {
+            console.error(`App.vue created(), error loading settings ${e}`);
+        }
 
         AppData.is_dev = import.meta.env.DEV;
     },

@@ -3,7 +3,7 @@ import About from "./views/About.vue";
 import Help from "./views/Help.vue";
 // import ProfileTest from "components/ProfileTest.vue";
 import GlobalSettings from "./components/GlobalSettings.vue";
-import { createRouter, createWebHistory, Router, RouteRecordRaw, RouterOptions } from "vue-router";
+import { createRouter, createWebHashHistory, createWebHistory, Router, RouteRecordRaw, RouterOptions } from "vue-router";
 
 const routes: RouteRecordRaw[] = [
     {
@@ -33,8 +33,9 @@ const routes: RouteRecordRaw[] = [
     // },
 ];
 
+const history = location.protocol === 'file:' ? createWebHashHistory() : createWebHistory();
 const options: RouterOptions = {
-    history: createWebHistory(),
+    history,
     routes,
 };
 

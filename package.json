@@ -1,7 +1,8 @@
 {
-    "name": "srls-sandiarpmlanesimulator",
+    "name": "srls",
+    "description": "Sandia RPM Lane Simulator",
     "private": true,
-    "version": "1.2.0",
+    "version": "1.2.101",
     "author": "Pete Humphrey, Alfred Johnson, Jonathan Marney",
     "main": "out/main/index.js",
     "type2": "module",
@@ -15,15 +16,8 @@
         "app:dev": "vue-tsc && concurrently electron-vite \" electron .\" \"vue-tsc -w\"",
         "app:build": "npm run build && tsc && electron-builder",
         "app:preview": "npm run build && tsc && electron .",
-        "typecheck": "vue-tsc --noEmit"
-    },
-    "scripts2": {
-        "vite:dev": "vite",
-        "vite:build": "vue-tsc --noEmit && vite build",
-        "vite:preview": "vite preview",
-        "ts": "tsc",
-        "watch": "tsc -w",
-        "lint": "eslint -c .eslintrc --ext .ts ./src"
+        "typecheck": "vue-tsc --noEmit",
+        "postinstall": "electron-builder install-app-deps"
     },
     "build": {
         "appId": "YourAppID",
@@ -33,7 +27,9 @@
             "output": "release/${version}"
         },
         "files": [
-            "dist"
+            "out/**/*",
+            "package.json",
+            "index.html"
         ],
         "mac": {
             "artifactName": "${productName}_${version}.${ext}",
