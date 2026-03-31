@@ -17,7 +17,7 @@ export interface ILaneSettings {
     Cameras: ICameraSettings[];
 
     // these will not be saved to the settings file
-    ClientCount: number;
+    // ClientCount: number;
     Status: string;
     OccupancyState: string;
 }
@@ -32,21 +32,21 @@ export class LaneSettings implements ILaneSettings {
     AutoInterval: number;
     RPM: IRPMSettings;
     Cameras: ICameraSettings[];
-    ClientCount: number;
+    // ClientCount: number;
     Status: string;
     OccupancyState: string;
 
     constructor(settings: ILaneSettings) {
         this.LaneID = LaneSettings.unique();
-        this.LaneName = "";
-        this.Enabled = false;
+        this.LaneName = settings.LaneName;
+        this.Enabled = settings.Enabled;
         this.RPMAlgorithm = "simulated";
         this.AutoGammaProbability = settings.AutoGammaProbability;
         this.AutoNeutronProbability = settings.AutoNeutronProbability;
         this.AutoInterval = settings.AutoInterval;
         this.RPM = new RPMSettings(settings.RPM);
         this.Cameras = settings.Cameras.map(c => new CameraSettings(c));
-        this.ClientCount = 0;
+        // this.ClientCount = 0;
         this.Status = "";
         this.OccupancyState = "";
     }
@@ -74,7 +74,7 @@ export class LaneSettings implements ILaneSettings {
             AutoInterval: settings.DefaultAutoInterval,
             RPM: RPMSettings.default_settings(),
             Cameras: [],
-            ClientCount: 0,
+            // ClientCount: 0,
             Status: "",
             OccupancyState: "",
         };

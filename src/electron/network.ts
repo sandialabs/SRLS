@@ -28,70 +28,80 @@ export class NetworkConfig {
     }
 }
 
+class SocketsManager {
+    private _server: net.Server;
+    private _listener: net.Server;
+    private _sockets: net.Socket[];
+
+    constructor(private config: NetworkConfig) {
+        let self = this;
+
+        this._sockets = [];
+        this._server = net.createServer((socket: net.Socket) => {
+            console.log(`Have connection from ${socket.remoteAddress}:${socket.remotePort}`);
+
+            let config = NetworkConfig.fromSocket(socket);
+            if (config) {
+                let key = config.asString();
+
+                console.log(`Connection to ${key}`);
+                self.add(socket);
+
+                socket.on("close", () => {
+                    console.log(`Connection ${key} is closing`);
+                    self.remove(socket);
+                });
+                socket.on("end", () => {
+                    console.log(`Connection ${key} is ending`);
+                    self.remove(socket);
+                });
+                socket.on("error", (error) => {
+                    console.error(`Connection ${key} error: ${error}`);
+                    self.remove(socket);
+                });
+            }
+        });
+        this._listener = this._server.listen(config.port, config.ip);
+    }
+
+    private add(socket: net.Socket): void {
+        this._sockets.push(socket);
+    }
+
+    private remove(socket: net.Socket): void {
+        let doomed = this._sockets.findIndex(s => s == socket);
+        if (doomed)
+            this._sockets.splice(doomed, 1);
+    }
+
+    close(): void {
+        this._sockets.forEach(s => s.end());
+        this._listener.close();
+        this._server.close();
+    }
+
+    send(text: string): void {
+        this._sockets.forEach(s => s.write(text));
+    }
+}
+
 interface SocketMap {
-    [key:string]: net.Socket[];
+    [key:string]: SocketsManager;
 }
 
 export class Network {
     private _socketMap: SocketMap;
-    private _listener: net.Server;
 
     constructor() {
         this._socketMap = {};
-
-        let self = this;
-
-        this._listener = net.createServer((socket: net.Socket) => {
-            let config = NetworkConfig.fromSocket(socket);
-
-            console.log(`Have connection from ${socket.remoteAddress}:${socket.remotePort}`);
-
-            if(config) {
-                let key = config.asString();
-
-                console.log(`Connection to ${key}`);
-                let sockets: net.Socket[] = self._socketMap[key];
-                if(!sockets) {
-                    sockets = [];
-                    self._socketMap[key] = sockets;
-                }
-                sockets.push(socket);
-                
-                socket.on("close", () => {
-                    console.log(`Connection ${key} is closing`);
-                    self.removeSocket(config, socket);
-                });
-                socket.on("end", () => {
-                    console.log(`Connection ${key} is ending`);
-                    self.removeSocket(config, socket);
-                });
-                socket.on("error", (error) => {
-                    console.error(`Connection ${key} error: ${error}`);
-                });
-            }
-        });
-
-        console.log("Network.constructor -- listening for network-* items");
-    }
-
-    private removeSocket(config: NetworkConfig, socket: net.Socket) {
-        let key = config.asString();
-        let sockets: net.Socket[] = this._socketMap[key];
-        if (sockets) {
-            let doomed = sockets.findIndex(s => s == socket);
-            if (doomed)
-                sockets.splice(doomed, 1);
-        }
-        if (sockets.length === 0)
-            delete this._socketMap[key];
     }
 
     listen(config: NetworkConfig): Promise<boolean> {
         let self = this;
         let key = config.asString();
-        let sockets: net.Socket[] = this._socketMap[key];
+        let sockets: SocketsManager = this._socketMap[key];
 
-        console.log(`Network.listen -- starting listen on ${config.asString()}`);
+        console.log(`Network.listen -- starting listen on ${key}`);
 
         let promise = new Promise<boolean>((resolve, reject) => {
             if(sockets) {
@@ -101,7 +111,8 @@ export class Network {
             else {
                 try {
                     console.log(`Network.listen ${config}`);
-                    self._listener.listen(config.port, config.ip);
+                    let sockets: SocketsManager = new SocketsManager(config);
+                    self._socketMap[key] = sockets;
                     resolve(true);
                 }
                 catch(error) {
@@ -116,17 +127,16 @@ export class Network {
 
     stopListening(config: NetworkConfig): boolean {
         let key = config.asString();
-        let sockets: net.Socket[] = this._socketMap[key];
+        console.log(`Network.stopListening -- stopping listen on ${key}`);
+
+        let sockets: SocketsManager = this._socketMap[key];
+
+        // Regardless of if there are clients connected or not,
+        // remove the key from the socket map
+        delete this._socketMap[key];
 
         if(sockets) {
-            console.log(`Network.stopListening -- stopping listen on ${config.asString()}`);
-
-            let doomed: net.Socket[] = sockets;
-            doomed.forEach(socket => {
-                socket.end();
-            });
-            // As the sockets are closed, they should be automatically removed from _socketMap
-            // due to the on("end") code set up when the listen came in.
+            sockets.close();
             return true;
         }
         else
@@ -135,12 +145,12 @@ export class Network {
 
     sendData(config: NetworkConfig, data: string): boolean {
         let key = config.asString();
-        let sockets: net.Socket[] = this._socketMap[key];
+        let sockets: SocketsManager = this._socketMap[key];
         
-        console.log(`Network.sendData -- sending '${data}' to ${config.asString()}`);
+        console.log(`Network.sendData -- sending '${data}' to ${key}`);
 
         if (sockets) {
-            sockets.forEach(socket => socket.write(data));
+            sockets.send(data);
             return true;
         }
         else

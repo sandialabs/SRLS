@@ -2,7 +2,7 @@
     "name": "srls",
     "description": "Sandia RPM Lane Simulator",
     "private": true,
-    "version": "1.2.101",
+    "version": "1.2.104",
     "author": "Pete Humphrey, Alfred Johnson, Jonathan Marney",
     "main": "out/main/index.js",
     "type2": "module",
@@ -17,7 +17,8 @@
         "app:build": "npm run build && tsc && electron-builder",
         "app:preview": "npm run build && tsc && electron .",
         "typecheck": "vue-tsc --noEmit",
-        "postinstall": "electron-builder install-app-deps"
+        "postinstall": "electron-builder install-app-deps",
+        "release": "npm version patch --no-git-tag-version"
     },
     "build": {
         "appId": "YourAppID",
@@ -58,6 +59,7 @@
     "dependencies": {
         "@electron/remote": "^2.1.2",
         "chart.js": "^4.5.0",
+        "child_process": "^1.0.2",
         "express": "^5.2.1",
         "moment": "^2.30.1",
         "net": "^1.0.2",

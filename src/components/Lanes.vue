@@ -36,12 +36,13 @@
                                 <tr>
                                     <th>&nbsp;</th>
                                     <th>Name</th>
+                                    <th>Status</th>
                                     <th style="text-align: center">
                                         <v-icon class="white--text">wifi</v-icon>
                                     </th>
-                                    <th style="text-align: center">
+                                    <!-- <th style="text-align: center">
                                         <v-icon class="white--text">people</v-icon>
-                                    </th>
+                                    </th> -->
                                     <th>RPM</th>
                                     <th>Camera 1</th>
                                     <th>Camera 2</th>
@@ -49,9 +50,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Lanes: {{ lanedata.length }} -->
                                 <tr v-for="lane in lanedata" :key="lane.LaneID">
-                                    <!-- <pre>{{ lane }} </pre> -->
                                     <td>
                                         <ActionIcon icon="create" color="primary" tooltip="Edit lane"
                                             @icon-clicked="on_trigger_lane(lane, 'editlane')" />
@@ -62,8 +61,9 @@
                                         <ActionIcon icon="delete" color="red" tooltip="Delete lane"
                                             @icon-clicked="on_trigger_lane(lane, 'delete')" />
                                     </td>
+                                    <td>{{  lane.LaneName }}</td>
                                     <td :class="lane.OccupancyState">
-                                        {{ lane.LaneName }} {{ lane.OccupancyState }}
+                                        {{ lane.OccupancyState }}
                                     </td>
                                     <td style="text-align: center;">
                                         <ActionIcon v-if="lane.Enabled" color="green" icon="wifi"
@@ -71,7 +71,7 @@
                                         <ActionIcon v-else color="red" icon="do_not_disturb_alt"
                                             @icon-clicked="on_toggle_lane(lane)" tooltip="Enable lane" />
                                     </td>
-                                    <td style="text-align:center;">{{ lane.ClientCount }}</td>
+                                    <!-- <td style="text-align:center;">{{ lane.ClientCount }}</td> -->
                                     <td>{{ lane.RPM.IPAddr }}:{{ lane.RPM.Port }}</td>
                                     <td>{{ camera_info(lane.Cameras[0]) }}</td>
                                     <td>{{ camera_info(lane.Cameras[1]) }}</td>
@@ -378,7 +378,7 @@ export default defineComponent({
 
             console.log(`Lanes.vue.create_sim -- adding to simMap ${lane.LaneID}`, ls);
             this.simMap[lane.LaneID] = ls;
-            lane.ClientCount = 0;
+            // lane.ClientCount = 0;
             if (lane.Enabled) {
                 this.start_simulator(lane);
             }
@@ -386,27 +386,34 @@ export default defineComponent({
         },
 
         camera_info: function (cam: ICameraSettings): string {
-            if (cam.Enabled) {
-                return (
-                    cam.Manufacturer + " " + cam.Model + " (" + cam.IPAddr + ":" + cam.Port + ")"
-                );
-            } else {
+            if(!cam) {
+                console.trace("Lanes.vue.camera_info -- null cam");
                 return "disabled";
+            }
+            else {
+                console.log("Lanes.vue.camera_info", cam);
+                if (cam.Enabled) {
+                    return (
+                        cam.Manufacturer + " " + cam.Model + " (" + cam.IPAddr + ":" + cam.Port + ")"
+                    );
+                } else {
+                    return "disabled";
+                }
             }
         },
 
-        rpm_client_count: function (lane: ILaneSettings): string {
-            let result = "";
-            if (lane) {
-                console.log("In rpm_client_count", lane);
-                let sim = this.simMap[lane.LaneID];
-                if(sim) {
-                    console.log("Simulator", sim);
-                    result = String(lane.ClientCount);
-                }
-            }
-            return result;
-        },
+        // rpm_client_count: function (lane: ILaneSettings): string {
+        //     let result = "";
+        //     if (lane) {
+        //         console.log("In rpm_client_count", lane);
+        //         let sim = this.simMap[lane.LaneID];
+        //         if(sim) {
+        //             console.log("Simulator", sim);
+        //             result = String(lane.ClientCount);
+        //         }
+        //     }
+        //     return result;
+        // },
 
         show_lane: function (lane: ILaneSettings) {
             let rpm = lane.RPM;

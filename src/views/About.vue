@@ -16,11 +16,11 @@
                             <tbody>
                                 <tr>
                                     <td>Version:</td>
-                                    <td>1.2.0</td>
+                                    <td>{{ version }}</td>
                                 </tr>
                                 <tr>
                                     <td>Build date:</td>
-                                    <td>November 24, 2025</td>
+                                    <td>{{ buildDate }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -91,6 +91,8 @@ export default {
     data: () => ({
         software_button_text: "Show Software Attribution",
         software: new Attributions().attributions,
+        version: import.meta.env.VITE_APP_VERSION,
+        buildDate: import.meta.env.VITE_APP_BUILD_DATE,
     })
 };
 </script>

@@ -170,13 +170,14 @@ export class RPMSimulator extends Component {
         window.electronAPI.listen(this.m_rpm_port, this.m_ipaddr)
             .then(() => {
                 console.log("RPM listener created--setting timeout");
+                this.m_next_background_time = this.current_time();
+                this.m_timer = setInterval(() => {
+                    self.on_timer();
+                }, 10);
             })
             .catch((err) => {
                 console.error(`RPMSimulator.Start error -- ${err}`);
             });
-            this.m_timer = setInterval(() => {
-                self.on_timer();
-            }, 10);
     }
 
     public Stop(): void {
