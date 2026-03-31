@@ -1,4 +1,5 @@
-import { ISettings, Settings } from "./ISettings";
+import { ISettings } from "./ISettings";
+import { Settings } from "./Settings";
 
 export interface IRPMSettings {
     IPAddr: string;

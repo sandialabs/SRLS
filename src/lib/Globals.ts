@@ -3,8 +3,9 @@
 // Globals.ts - const global data
 //
 //############################################################
+import pkg from '../../package.json'
 
-export const AppVersion = "1.0.0";
+export const AppVersion = JSON.stringify(pkg.version);
 
 export interface ICameraDefinitions {
     manufacturer: string;

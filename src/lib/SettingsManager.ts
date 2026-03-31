@@ -3,8 +3,10 @@
 import { AppVersion } from "./Globals";
 import { ICameraSettings } from "./ICameraSettings";
 import { IRPMSettings, RPMSettings } from "./IRPMSettings";
-import { ILaneSettings, LaneSettings } from "./ILaneSettings";
-import { ISettings, Settings } from "./ISettings";
+import { ILaneSettings } from "./ILaneSettings";
+import { LaneSettings } from "./LaneSettings";
+import { ISettings } from "./ISettings";
+import { Settings } from "./Settings";
 
 export class SettingsManager {
     private m_file_path: string = "";
@@ -52,7 +54,7 @@ export class SettingsManager {
                 // This will reload the existing arrays within the Data object, which will
                 // allow already-existing references to those arrays to keep working
                 this.Data.load(JSON.parse(json));
-                
+
                 // upgrade older versions
                 if (typeof this.Data.LogLevel == "undefined") this.Data.LogLevel = "warning";
                 if (typeof this.Data.LogFilename == "undefined") this.Data.LogFilename = "";
@@ -75,7 +77,7 @@ export class SettingsManager {
     // }
 
     get lanes(): ILaneSettings[] {
-        return this.Data.Lanes;0
+        return this.Data.Lanes; 0
     }
 
     get num_lanes(): number {

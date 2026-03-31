@@ -216,7 +216,8 @@
 <script lang="ts">
 import { SettingsManager } from "../lib/SettingsManager";
 import { CameraDefinitions, ICameraDefinitions } from "../lib/Globals";
-import { ILaneSettings, LaneSettings } from "../lib/ILaneSettings";
+import { ILaneSettings } from "../lib/ILaneSettings";
+import { LaneSettings } from "../lib/LaneSettings";
 import { Ref, ref } from "vue";
 import { AppData } from '../lib/AppData';
 import { ISettings } from "../lib/ISettings";

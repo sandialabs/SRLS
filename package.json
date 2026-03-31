@@ -2,12 +2,11 @@
     "name": "srls",
     "description": "Sandia RPM Lane Simulator",
     "private": true,
-    "version": "1.2.104",
+    "version": "1.2.105",
     "author": "Pete Humphrey, Alfred Johnson, Jonathan Marney",
     "main": "out/main/index.js",
     "type2": "module",
     "scripts": {
-        "devx": "cross-env NODE_ENV=development electron .",
         "dev": "electron-vite dev",
         "vite": "electron-vite",
         "build": "vue-tsc -b && electron-vite build",
@@ -18,10 +17,11 @@
         "app:preview": "npm run build && tsc && electron .",
         "typecheck": "vue-tsc --noEmit",
         "postinstall": "electron-builder install-app-deps",
-        "release": "npm version patch --no-git-tag-version"
+        "release": "npm version patch --no-git-tag-version",
+        "new-release": "npm run release && npm run app:build"
     },
     "build": {
-        "appId": "YourAppID",
+        "appId": "gov.sandia.sandiarpmlanesimulator",
         "asar": true,
         "directories": {
             "buildResources": "assets",
@@ -54,7 +54,8 @@
             "perMachine": false,
             "allowToChangeInstallationDirectory": true,
             "deleteAppDataOnUninstall": false
-        }
+        },
+        "productName": "Sandia RPM Lane Simulator"
     },
     "dependencies": {
         "@electron/remote": "^2.1.2",

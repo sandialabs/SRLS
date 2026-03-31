@@ -48,7 +48,8 @@
 <script lang="ts">
 import { Ref, ref } from "vue";
 import { AppData } from '../lib/AppData';
-import { ISettings, Settings } from "../lib/ISettings";
+import { ISettings } from "../lib/ISettings";
+import { Settings } from "../lib/Settings";
 import { useSettingsStore } from "../store/settingsStore";
 
 export default {

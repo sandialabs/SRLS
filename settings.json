@@ -27,7 +27,7 @@
     "Lanes": [
         {
             "LaneID": 1773347943250505000,
-            "LaneName": "",
+            "LaneName": "Lane 01",
             "Enabled": false,
             "RPMAlgorithm": "simulated",
             "AutoGammaProbability": 0.05,
@@ -84,7 +84,7 @@
         },
         {
             "LaneID": 1773347943251351600,
-            "LaneName": "",
+            "LaneName": "Lane 09",
             "Enabled": false,
             "RPMAlgorithm": "simulated",
             "AutoGammaProbability": 0.05,
@@ -141,7 +141,7 @@
         },
         {
             "LaneID": 1773347943251196,
-            "LaneName": "",
+            "LaneName": "Lane 02",
             "Enabled": false,
             "RPMAlgorithm": "simulated",
             "AutoGammaProbability": 0.05,
@@ -198,7 +198,7 @@
         },
         {
             "LaneID": 1773347943251328800,
-            "LaneName": "",
+            "LaneName": "Lane 03",
             "Enabled": false,
             "RPMAlgorithm": "simulated",
             "AutoGammaProbability": 0.05,
@@ -206,7 +206,7 @@
             "AutoInterval": 30,
             "RPM": {
                 "IPAddr": "127.0.0.1",
-                "Port": 1601,
+                "Port": 1603,
                 "GammaBG": 256,
                 "NeutronBG": 3,
                 "GammaDistribution": [
@@ -255,7 +255,7 @@
         },
         {
             "LaneID": 1773347943251591000,
-            "LaneName": "",
+            "LaneName": "Lane 10",
             "Enabled": false,
             "RPMAlgorithm": "simulated",
             "AutoGammaProbability": 0.05,
@@ -263,7 +263,7 @@
             "AutoInterval": 30,
             "RPM": {
                 "IPAddr": "127.0.0.1",
-                "Port": "1609",
+                "Port": "1610",
                 "GammaBG": 256,
                 "NeutronBG": 3,
                 "GammaDistribution": [
