@@ -1,11 +1,9 @@
 <template>
     <v-dialog v-model="is_visible" width="600">
         <v-card>
-            <v-card-title class="headline grey lighten-2" primary-title>
-                <v-layout row justify-space-between>
-                    {{ title }}
-                    <v-icon medium class="green--text" v-on:click="info_visible = !info_visible">info</v-icon>
-                </v-layout>
+            <v-card-title class="d-flex align-left">
+                <span>{{ title }}</span>
+                <v-icon class="ms-auto" color="green" icon="mdi-information" v-on:click="info_visible = !info_visible"></v-icon>
             </v-card-title>
 
             <v-card-text>
@@ -26,28 +24,34 @@
                 <v-row>
                     <v-col cols="12">
                         <v-slider v-model="gamma_sum" label="Gamma Sum" thumb-label min="0" max="2000"
-                            style="height: 30px;" v-on:input="on_gamma_sum_change()"></v-slider>
+                            style="height: 30px;" @update:modelValue="on_gamma_sum_change()"></v-slider>
                         <v-slider v-model="gamma_vals[0]" label="Master Lower:" thumb-label min="0" max="500"
                             :thumb-color="gamma_thumb_color(0)" style="margin-left: 1rem; height: 20px;"
-                            v-on:input="on_gamma_val_change(0)"></v-slider>
+                            @update:modelValue="on_gamma_val_change(0)"></v-slider>
                         <v-slider v-model="gamma_vals[1]" label="Master Upper" thumb-label min="0" max="500"
                             :thumb-color="gamma_thumb_color(1)" style="margin-left: 1rem; height: 20px;"
-                            v-on:input="on_gamma_val_change(1)"></v-slider>
+                            @update:modelValue="on_gamma_val_change(1)"></v-slider>
                         <v-slider v-model="gamma_vals[2]" label="Slave Lower" thumb-label min="0" max="500"
                             :thumb-color="gamma_thumb_color(2)" style="margin-left: 1rem; height: 20px;"
-                            v-on:input="on_gamma_val_change(2)"></v-slider>
+                            @update:modelValue="on_gamma_val_change(2)"></v-slider>
                         <v-slider v-model="gamma_vals[3]" label="Slave Upper" thumb-label min="0" max="500"
                             :thumb-color="gamma_thumb_color(3)" style="margin-left: 1rem; height: 20px;"
-                            v-on:input="on_gamma_val_change(3)"></v-slider>
+                            @update:modelValue="on_gamma_val_change(3)"></v-slider>
                         <v-slider v-model="neutron_sum" label="Neutron Sum" thumb-label min="0" max="50"
                             :thumb-color="neutron_thumb_color()" style="height: 30px; margin-top: 30px;"
-                            v-on:input="on_neutron_sum_change()"></v-slider>
+                            @update:modelValue="on_neutron_sum_change()"></v-slider>
                     </v-col>
                 </v-row>
-                <v-radio-group v-model="is_occupied" row v-on:change="on_occupancy_change()">
+                <div class="d-flex align-center">
+                    <span class="me-3 d-inline-flex align-center">Unoccupied</span>
+                    <v-switch v-model="is_occupied" hide-details inset>
+                    </v-switch>
+                    <span class="me-3 d-inline-flex align-center">Occupied</span>
+                </div>
+                <!-- <v-radio-group v-model="is_occupied" row v-on:change="on_occupancy_change()">
                     <v-radio label="Unoccupied" :value="false"></v-radio>
                     <v-radio label="Occupied" :value="true"></v-radio>
-                </v-radio-group>
+                </v-radio-group> -->
             </v-card-text>
 
             <v-divider></v-divider>
@@ -66,6 +70,7 @@ import { Reactive, reactive, Ref, ref } from "vue";
 import { ILaneSettings } from "../lib/ILaneSettings";
 import { IRPMSettings } from "../lib/IRPMSettings";
 import { RPMSimulator } from "../lib/RPMSimulator";
+import { LaneSimulator } from "../lib/LaneSim";
 
 console.log("Loading RPMControl");
 export default {
@@ -114,11 +119,11 @@ export default {
     created: function () {
     },
     methods: {
-        show: function (lane: ILaneSettings, sim: RPMSimulator) {
-            console.log("RPMControl", lane);
+        show: function (lane: ILaneSettings, sim: LaneSimulator) {
+            console.log("RPMControl", lane, sim);
 
             this.lane = lane;
-            this.rpmsim = sim;
+            this.rpmsim = sim.RPM;
             this.title = lane.LaneName;
             this.is_visible = true;
 
@@ -165,29 +170,25 @@ export default {
         },
 
         set_gamma_val: function (ix: number, val: number) {
-            let vals = this.gamma_vals;
+            console.log(`set_gamma_val: ${ix}, ${val}`);
 
-            // dist doesn't do anything to set the gamma value
-            // let dist = this.current_gamma_distribution.slice(0);
-
-            vals[ix] = val;
-            let sum = vals[0] + vals[1] + vals[2] + vals[3];
-
-            // dist is a local variable, and it's not returned,
-            // and this loop doesn't appear to do anything,
-            // so just comment it out
-            // for (let i = 0; i < 4; i++) {
-            //     dist[i] = (vals[i] / sum).toFixed(4);
-            // }
+            this.gamma_vals[ix] = val;
+            let sum = this.gamma_vals[0] + this.gamma_vals[1] + this.gamma_vals[2] + this.gamma_vals[3];
+            
+            this.current_gamma_distribution.forEach((_, index) => this.current_gamma_distribution[index] = this.gamma_vals[index] / sum);
             this.gamma_sum = sum;
         },
 
         on_gamma_sum_change: function () {
+            console.log("on_gamma_sum_change", this.gamma_sum);
+
             this.set_gamma_sum(this.gamma_sum);
             this.rpmsim?.SetGammaBackground(Math.round(this.gamma_sum / 4));
         },
 
         on_gamma_val_change: function (ix: number) {
+            console.log(`on_gamma_val_change, ${ix}`, this.rpmsim);
+
             let newval = this.gamma_vals[ix];
             this.set_gamma_val(ix, newval);
             this.rpmsim?.SetGammaDistribution(this.current_gamma_distribution);

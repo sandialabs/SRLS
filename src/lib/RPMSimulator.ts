@@ -188,7 +188,7 @@ export class RPMSimulator extends Component {
         // ipcRenderer.invoke("network-stop-listening", [this.m_rpm_port, this.m_ipaddr]);
 
         window.electronAPI.stopListen(this.m_rpm_port, this.m_ipaddr);
-        
+
         clearInterval(this.m_timer);
         this.m_timer = undefined;
     }
@@ -310,6 +310,7 @@ export class RPMSimulator extends Component {
     }
 
     public SetGammaCounts(counts: number[]): void {
+        // console.log("SetGammaCounts", counts);
         this.m_current_gamma_counts = counts;
         if (this.m_logger.Level >= ELogLevel.LOG_DEBUG)
             console.log("New gamma background counts: " + counts);
@@ -673,22 +674,22 @@ export class RPMSimulator extends Component {
                     if (now > this.m_next_background_time) {
                         this.m_next_background_time += this.m_background_interval;
                         // if (this.m_clients.length > 0) {
-                            let counts = this.generate_neutron_bg();
-                            let msg = this.generate_count_msg(
-                                ["NB", "NB", "NH"],
-                                counts,
-                                0,
-                                this.m_neutron_high_threshold
-                            );
-                            this.say(msg + "\r\n");
-                            counts = this.generate_gamma_bg();
-                            msg = this.generate_count_msg(
-                                ["GB", "GL", "GH"],
-                                counts,
-                                this.m_gamma_low_threshold,
-                                this.m_gamma_high_threshold
-                            );
-                            this.say(msg + "\r\n");
+                        let counts = this.generate_neutron_bg();
+                        let msg = this.generate_count_msg(
+                            ["NB", "NB", "NH"],
+                            counts,
+                            0,
+                            this.m_neutron_high_threshold
+                        );
+                        this.say(msg + "\r\n");
+                        counts = this.generate_gamma_bg();
+                        msg = this.generate_count_msg(
+                            ["GB", "GL", "GH"],
+                            counts,
+                            this.m_gamma_low_threshold,
+                            this.m_gamma_high_threshold
+                        );
+                        this.say(msg + "\r\n");
                         // }
                     }
                 }
@@ -762,20 +763,19 @@ export class RPMSimulator extends Component {
     }
 
     private generate_bg(bgval: number, weights: number[], randomization: number): number[] {
-        let counts: number[] = [];
-        //console.log("RPMSimulator.generate_bg  bgval:" + bgval + "  weights:" + weights);
-        for (let w of weights) {
-            let count = bgval * w;
+        // console.log("RPMSimulator.generate_bg  bgval:" + bgval + "  weights:" + weights);
+        let counts: number[] = weights.map(weight => {
+            let count = bgval * weight;
             count = Math.round(count + count * (0.5 - Math.random()) * randomization);
-            counts.push(Math.max(0, count));
-        }
+            return count;
+        });
         // console.log("generate_bg: ", counts);
         return counts;
     }
 
     private generate_gamma_bg(): number[] {
-        let counts;
-        if (this.m_current_gamma_counts && this.m_current_gamma_counts.length > 0) {
+        let counts: number[];
+        if (this.m_current_gamma_counts?.length > 0) {
             // make a copy of the counts
             counts = this.m_current_gamma_counts.slice(0);
             // console.log("generate_gamma_bg: ", counts);
@@ -797,7 +797,7 @@ export class RPMSimulator extends Component {
 
     private generate_neutron_bg(): number[] {
         let counts;
-        if (this.m_current_neutron_counts && this.m_current_neutron_counts.length > 0) {
+        if (this.m_current_neutron_counts?.length > 0) {
             counts = this.m_current_neutron_counts.slice(0);
             // console.log("generate_neutron_bg: ", counts);
             let r = this.m_neutron_count_randomization / 4; // 4 detectors

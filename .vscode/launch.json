@@ -1,69 +1,137 @@
+// {
+//     "version": "0.2.0",
+//     "configurations": [
+//         {
+//             "name": "Debug Main Process",
+//             "type": "node",
+//             "request": "launch",
+//             "cwd": "${workspaceFolder}",
+//             "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+//             "windows": {
+//                 "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
+//             },
+//             "args": [
+//                 "."
+//             ],
+//             "outputCapture": "std",
+//             "sourceMaps": true,
+//             "console": "integratedTerminal",
+//             "skipFiles": [
+//                 "<node_internals>/**"
+//             ]
+//         },
+//         {
+//             "name": "Debug Main Process (Vite)",
+//             "type": "node",
+//             "request": "launch",
+//             "cwd": "${workspaceFolder}",
+//             "runtimeExecutable": "npm",
+//             "runtimeArgs": [
+//                 "run",
+//                 "dev"
+//             ],
+//             "outputCapture": "std",
+//             "sourceMaps": true,
+//             "console": "integratedTerminal",
+//             "skipFiles": [
+//                 "<node_internals>/**"
+//             ]
+//         },
+//         {
+//             "name": "Electron: Main",
+//             "type": "node",
+//             "request": "launch",
+//             "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+//             "program": "${workspaceFolder}/out/main/index.js", // Adjust path based on your build output
+//             "cwd": "${workspaceFolder}",
+//             "args": [
+//                 "--remote-debugging-port=9222"
+//             ],
+//             "outFiles": [
+//                 "${workspaceFolder}/out/**/*.js"
+//             ],
+//             "sourceMaps": true,
+//             "windows": {
+//                 "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
+//             }
+//         },
+//         {
+//             "name": "Electron: Renderer",
+//             "type": "chrome",
+//             "request": "attach",
+//             "port": 9222, // Default Chrome DevTools port
+//             "urlFilter": "http://localhost:*", // Adjust if your renderer serves on a different URL
+//             "webRoot": "${workspaceFolder}/dist_electron/renderer", // Adjust path based on your build output
+//             "sourceMaps": true
+//         }
+//     ],
+//     "compounds": [
+//         {
+//             "name": "Electron: All",
+//             "configurations": [
+//                 "Electron: Main",
+//                 "Electron: Renderer"
+//             ]
+//         }
+//     ]
+// }
 {
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug Main Process",
+            "name": "Electron: Dev (electron-vite + Main)",
             "type": "node",
             "request": "launch",
-            "cwd": "${workspaceFolder}",
-            "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
-            "windows": {
-                "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
-            },
-            "args": [
-                "."
-            ],
-            "outputCapture": "std",
-            "sourceMaps": true,
-            "protocol": "inspector",
-            "skipFiles": [
-                "<node_internals>/**"
-            ]
-        },
-        {
-            "name": "Debug Main Process (Vite)",
-            "type": "node",
-            "request": "launch",
-            "cwd": "${workspaceFolder}",
             "runtimeExecutable": "npm",
             "runtimeArgs": [
                 "run",
                 "dev"
             ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
             "outputCapture": "std",
-            "sourceMaps": true,
-            "protocol": "inspector",
             "skipFiles": [
                 "<node_internals>/**"
             ]
         },
         {
-            "name": "Electron: Main",
+            "name": "Electron: Renderer (attach)",
+            "type": "pwa-chrome",
+            "request": "attach",
+            "port": 9222,
+            "urlFilter": "http://localhost:*",
+            "webRoot": "${workspaceFolder}",
+            "sourceMaps": true
+        },
+        {
+            "name": "Electron: Prod (built main)",
             "type": "node",
             "request": "launch",
             "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
-            "program": "${workspaceFolder}/dist/electron/main/main.js", // Adjust path based on your build output
+            "windows": {
+                "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
+            },
+            "program": "${workspaceFolder}/out/main/index.js",
             "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "outputCapture": "std",
             "outFiles": [
-                "${workspaceFolder}/dist/**/*.js"
+                "${workspaceFolder}/out/**/*.js"
             ],
-            "sourceMaps": true
-        },
-        {
-            "name": "Electron: Renderer",
-            "type": "chrome",
-            "request": "attach",
-            "port": 9222, // Default Chrome DevTools port
-            "urlFilter": "http://localhost:*", // Adjust if your renderer serves on a different URL
-            "webRoot": "${workspaceFolder}/dist_electron/renderer", // Adjust path based on your build output
-            "sourceMaps": true
-        },
-        {
-            "name": "Electron: All",
-            "configurations": [
-                "Electron: Main",
-                "Electron: Renderer"
+            "sourceMaps": true,
+            "skipFiles": [
+                "<node_internals>/**"
             ]
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Electron: All (Dev)",
+            "configurations": [
+                "Electron: Dev (electron-vite + Main)",
+                "Electron: Renderer (attach)"
+            ],
+            "stopAll": true
         }
     ]
 }
