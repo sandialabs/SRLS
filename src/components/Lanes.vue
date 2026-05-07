@@ -65,11 +65,13 @@
                                     <td :class="lane.OccupancyState">
                                         {{ lane.OccupancyState }}
                                     </td>
-                                    <td style="text-align: center;">
-                                        <ActionIcon v-if="lane.Enabled" color="green" icon="wifi"
-                                            @icon-clicked="on_toggle_lane(lane)" tooltip="Disable lane" />
-                                        <ActionIcon v-else color="red" icon="do_not_disturb_alt"
-                                            @icon-clicked="on_toggle_lane(lane)" tooltip="Enable lane" />
+                                    <td>
+                                        <v-row class="align-center">
+                                            <v-switch hide-details inset :model-value="lane.Enabled" @update:model-value="on_toggle_lane(lane)">
+                                            </v-switch>
+                                            <span v-if="lane.Enabled" class="text-secondary">Enabled</span>
+                                            <span v-if="!lane.Enabled" class="text-error">Disabled</span>
+                                        </v-row>
                                     </td>
                                     <!-- <td style="text-align:center;">{{ lane.ClientCount }}</td> -->
                                     <td>{{ lane.RPM.IPAddr }}:{{ lane.RPM.Port }}</td>
