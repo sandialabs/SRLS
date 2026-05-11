@@ -1,4 +1,3 @@
-import { ICameraSettings, CameraSettings } from "./ICameraSettings";
 import { ILaneSettings } from "./ILaneSettings";
 import { IRPMSettings, RPMSettings } from "./IRPMSettings";
 import { ISettings } from "./ISettings";
@@ -14,7 +13,6 @@ export class LaneSettings implements ILaneSettings {
     AutoNeutronProbability: number;
     AutoInterval: number;
     RPM: IRPMSettings;
-    Cameras: ICameraSettings[];
     Status: string;
     OccupancyState: string;
 
@@ -27,7 +25,6 @@ export class LaneSettings implements ILaneSettings {
         this.AutoNeutronProbability = settings.AutoNeutronProbability;
         this.AutoInterval = settings.AutoInterval;
         this.RPM = new RPMSettings(settings.RPM);
-        this.Cameras = settings.Cameras.map(c => new CameraSettings(c));
         this.Status = "";
         this.OccupancyState = "";
     }
@@ -54,7 +51,6 @@ export class LaneSettings implements ILaneSettings {
             AutoNeutronProbability: settings.DefaultAutoNeutronProbability,
             AutoInterval: settings.DefaultAutoInterval,
             RPM: RPMSettings.default_settings(),
-            Cameras: [],
             Status: "",
             OccupancyState: "",
         };
