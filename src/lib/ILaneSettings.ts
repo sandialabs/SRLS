@@ -1,6 +1,4 @@
-import { ICameraSettings } from "./ICameraSettings";
 import { IRPMSettings } from "./IRPMSettings";
-
 
 export interface ILaneSettings {
     LaneID: number; // a unique identifier
@@ -13,7 +11,6 @@ export interface ILaneSettings {
     AutoInterval: number;
 
     RPM: IRPMSettings;
-    Cameras: ICameraSettings[];
 
     // these will not be saved to the settings file
     Status: string;

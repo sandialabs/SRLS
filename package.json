@@ -2,7 +2,7 @@
     "name": "srls",
     "description": "Sandia RPM Lane Simulator",
     "private": true,
-    "version": "1.2.105",
+    "version": "1.2.109",
     "author": "Pete Humphrey, Alfred Johnson, Jonathan Marney",
     "main": "out/main/index.js",
     "type2": "module",

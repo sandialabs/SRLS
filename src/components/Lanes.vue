@@ -37,15 +37,8 @@
                                     <th>&nbsp;</th>
                                     <th>Name</th>
                                     <th>Status</th>
-                                    <th style="text-align: center">
-                                        <v-icon class="white--text">wifi</v-icon>
-                                    </th>
-                                    <!-- <th style="text-align: center">
-                                        <v-icon class="white--text">people</v-icon>
-                                    </th> -->
+                                    <th>&nbsp;</th>
                                     <th>RPM</th>
-                                    <th>Camera 1</th>
-                                    <th>Camera 2</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -75,8 +68,6 @@
                                     </td>
                                     <!-- <td style="text-align:center;">{{ lane.ClientCount }}</td> -->
                                     <td>{{ lane.RPM.IPAddr }}:{{ lane.RPM.Port }}</td>
-                                    <td>{{ camera_info(lane.Cameras[0]) }}</td>
-                                    <td>{{ camera_info(lane.Cameras[1]) }}</td>
                                     <td>
                                         <ActionIcon icon="repeat" color="red darken-2" tooltip="Toggle automatic mode"
                                             :disabled="!lane.Enabled"
@@ -114,7 +105,6 @@ import { SettingsManager } from "../lib/SettingsManager";
 import { ILaneSettings } from "../lib/ILaneSettings";
 import { LaneSimulator } from "../lib/LaneSim";
 import { banner } from "../lib/Utility";
-import { ICameraSettings } from "../lib/ICameraSettings";
 import { defineComponent, Reactive, reactive, toRaw } from "vue";
 import { useSettingsStore } from "../store/settingsStore";
 import { storeToRefs } from "pinia";
@@ -385,23 +375,6 @@ export default defineComponent({
                 this.start_simulator(lane);
             }
             return ls;
-        },
-
-        camera_info: function (cam: ICameraSettings): string {
-            if(!cam) {
-                console.trace("Lanes.vue.camera_info -- null cam");
-                return "disabled";
-            }
-            else {
-                console.log("Lanes.vue.camera_info", cam);
-                if (cam.Enabled) {
-                    return (
-                        cam.Manufacturer + " " + cam.Model + " (" + cam.IPAddr + ":" + cam.Port + ")"
-                    );
-                } else {
-                    return "disabled";
-                }
-            }
         },
 
         // rpm_client_count: function (lane: ILaneSettings): string {

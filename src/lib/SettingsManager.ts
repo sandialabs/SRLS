@@ -1,7 +1,6 @@
 /// <reference path="../electron/types/global.d.ts" />
 
 import { AppVersion } from "./Globals";
-import { ICameraSettings } from "./ICameraSettings";
 import { IRPMSettings, RPMSettings } from "./IRPMSettings";
 import { ILaneSettings } from "./ILaneSettings";
 import { LaneSettings } from "./LaneSettings";
@@ -24,16 +23,6 @@ export class SettingsManager {
         GHThreshold: 0,
         GLThreshold: 0,
         NHThreshold: 0,
-    };
-    private static readonly s_camera_template: ICameraSettings = {
-        Name: "",
-        Enabled: false,
-        Manufacturer: "",
-        Model: "",
-        IPAddr: "",
-        Port: 0,
-        URL: "",
-        CameraSimulatorType: "canned",
     };
 
     constructor() {
