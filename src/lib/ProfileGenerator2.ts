@@ -4,8 +4,7 @@ export class ProfileGenerator2 {
     m_logger: Logger;
 
     public constructor(debug: boolean = false) {
-        if (debug) this.m_logger = new Logger("ProfileGenerator2", ELogLevel.LOG_DEBUG);
-        else this.m_logger = new Logger("ProfileGenerator2", ELogLevel.LOG_ERROR);
+        this.m_logger = new Logger("ProfileGenerator2", debug ? ELogLevel.LOG_DEBUG : ELogLevel.LOG_ERROR);
     }
 
     generate_profile(params: any): number[][] {
