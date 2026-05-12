@@ -84,8 +84,10 @@
                                             <ActionIcon icon="local_shipping" color="green darken-1"
                                             tooltip="Innocent Alarm" :disabled="!lane.Enabled"
                                             @icon-clicked="on_trigger_lane(lane, 'OC')" />
-                                            <ActionIcon icon="lock_open" color="red" tooltip="Toggle case tamper"
-                                            :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'TT')" />
+                                            <v-switch :disabled="!lane.Enabled" hide-details base-color="grey" color="red" :model-value="isInTamperMode(lane)" @update:model-value="on_trigger_lane(lane, 'TT')">
+                                            </v-switch>
+                                            <span v-if="!isInTamperMode(lane)" class="text-secondary">Case tamper</span>
+                                            <span v-if="isInTamperMode(lane)" class="text-error">Case tamper</span>
                                         </v-row>
                                     </td>
                                 </tr>
@@ -406,6 +408,11 @@ export default defineComponent({
         isInAutoMode(lane: ILaneSettings): boolean {
             let sim: LaneSimulator = this.simMap[lane.LaneID];
             return sim ? sim.IsInAutoMode : false
+        },
+
+        isInTamperMode(lane: ILaneSettings): boolean {
+            let sim: LaneSimulator = this.simMap[lane.LaneID];
+            return sim && sim.RPM ? sim.RPM.m_is_tamper_active : false;
         },
 
         start_simulator: function (lane: ILaneSettings) {
