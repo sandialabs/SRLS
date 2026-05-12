@@ -60,8 +60,9 @@
                                     </td>
                                     <td>
                                         <v-row class="align-center">
-                                            <v-switch hide-details inset :model-value="lane.Enabled" @update:model-value="on_toggle_lane(lane)">
+                                            <v-switch hide-details base-color="gray" color="green" :model-value="lane.Enabled" @update:model-value="on_toggle_lane(lane)">
                                             </v-switch>
+                                            <span>&nbsp;</span>
                                             <span v-if="lane.Enabled" class="text-secondary">Enabled</span>
                                             <span v-if="!lane.Enabled" class="text-error">Disabled</span>
                                         </v-row>
@@ -69,20 +70,23 @@
                                     <!-- <td style="text-align:center;">{{ lane.ClientCount }}</td> -->
                                     <td>{{ lane.RPM.IPAddr }}:{{ lane.RPM.Port }}</td>
                                     <td>
-                                        <ActionIcon icon="repeat" color="red darken-2" tooltip="Toggle automatic mode"
-                                            :disabled="!lane.Enabled"
-                                            @icon-clicked="on_trigger_lane(lane, 'automode')" />
-                                        <ActionIcon icon="local_shipping" color="red" tooltip="Gamma Alarm"
+                                        <v-row class="align-center">
+                                            <v-switch :disabled="!lane.Enabled" hide-details base-color="grey" color="green" :model-value="isInAutoMode(lane)" @update:model-value="on_trigger_lane(lane, 'automode')">
+                                            </v-switch>
+                                            <span>Automatic</span>
+                                            <span>&nbsp;</span>
+                                            <ActionIcon icon="local_shipping" color="red" tooltip="Gamma Alarm"
                                             :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'GA')" />
-                                        <ActionIcon icon="local_shipping" color="blue" tooltip="Neutron Alarm"
+                                            <ActionIcon icon="local_shipping" color="blue" tooltip="Neutron Alarm"
                                             :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'NA')" />
-                                        <ActionIcon icon="local_shipping" color="cyan" tooltip="Neutron/Gamma Alarm"
+                                            <ActionIcon icon="local_shipping" color="cyan" tooltip="Neutron/Gamma Alarm"
                                             :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'NG')" />
-                                        <ActionIcon icon="local_shipping" color="green darken-1"
+                                            <ActionIcon icon="local_shipping" color="green darken-1"
                                             tooltip="Innocent Alarm" :disabled="!lane.Enabled"
                                             @icon-clicked="on_trigger_lane(lane, 'OC')" />
-                                        <ActionIcon icon="lock_open" color="red" tooltip="Toggle case tamper"
+                                            <ActionIcon icon="lock_open" color="red" tooltip="Toggle case tamper"
                                             :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'TT')" />
+                                        </v-row>
                                     </td>
                                 </tr>
                             </tbody>
@@ -397,6 +401,11 @@ export default defineComponent({
             lines.push(`    IP:   ${rpm.IPAddr}`);
             lines.push(`    Port: ${rpm.Port}`);
             banner(lines);
+        },
+
+        isInAutoMode(lane: ILaneSettings): boolean {
+            let sim: LaneSimulator = this.simMap[lane.LaneID];
+            return sim ? sim.IsInAutoMode : false
         },
 
         start_simulator: function (lane: ILaneSettings) {
