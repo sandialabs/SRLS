@@ -214,8 +214,8 @@ export default defineComponent({
         on_add_lane: function (): void {
             console.log("In on_add_lane");
 
-            let self = this;
-            let settings = useSettingsStore().settingsManager.default_lane_settings("New Lane", "127.0.0.1", 1600);
+            const maxPort = this.lanedata.reduce((acc, currentValue) => Math.max(currentValue.RPM.Port, acc), 0);
+            let settings = useSettingsStore().settingsManager.default_lane_settings("New Lane", "127.0.0.1", maxPort + 1);
             console.log("Lane Settings", settings);
             (<typeof LaneSettings>this.$refs["settingsdialog"]).open("Add New Lane", settings, function (updated_settings: ILaneSettings) {
                 console.log("Lanes on_add_lane callback");

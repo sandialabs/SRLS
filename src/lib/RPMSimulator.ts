@@ -2,15 +2,9 @@
 
 import { Component } from "./Component";
 import { RPMProfile, DetectorValues } from "./RPMProfile";
-// import * as net from "net";
-// import * as http from "http";
-// import { ipcRenderer } from 'electron';
-// import * as fs from "fs";
-import * as path from "path";
-//import { ProfileGenerator1 } from "./ProfileGenerator1";
 import { ProfileGenerator2 } from "./ProfileGenerator2";
 import { ILaneSettings } from "./ILaneSettings";
-import { ELogLevel, Logger } from "./Logger";
+import { ELogLevel } from "./Logger";
 import { LaneSimulator } from "./LaneSim";
 
 const ONE_YEAR_IN_MS = 60 * 60 * 24 * 365 * 1000;
@@ -41,8 +35,10 @@ export class RPMSimulator extends Component {
 
     m_queued_profiles: RPMProfile[] = [];
     m_current_profile: RPMProfile | null = null;
+
     m_ipaddr: string;
     m_rpm_port: number; // the port we are talking on
+
     // m_listener: any; // the TCP/IP server
     // m_clients: any[] = []; // connected clients
     m_gamma_background = 220; // mean single gamma detector background count
@@ -297,6 +293,8 @@ export class RPMSimulator extends Component {
     }
 
     public SetOccupancy(state: boolean): void {
+        console.log(`SetOccupancy -- lane ${this.Name}, state ${state}`);
+
         if (this.m_is_occupied != state) {
             this.m_is_occupied = state;
             let now = this.current_time();
@@ -633,15 +631,18 @@ export class RPMSimulator extends Component {
 
         if (this.m_current_profile == null && this.m_queued_profiles.length > 0) {
             this.LogDebug("Selecting next queued profile");
+
             // if an occupancy has been triggered manually, stop it now
             this.SetOccupancy(false);
-            if (this.m_current_profile != null) {
-                this.m_current_profile = new RPMProfile();
-            }
+
             this.m_current_profile = this.m_queued_profiles.shift() ?? null;
-            this.m_current_profile!.AddTimeOffset(now);
-            this.m_current_profile!.m_cursor = 0;
+
+            if(this.m_current_profile) {
+                this.m_current_profile.AddTimeOffset(now);
+                this.m_current_profile.Cursor = 0;
+            }
         }
+
         if (this.m_current_profile == null) {
             // has the user turned on the is_occupied flag?
             if (this.m_is_occupied) {

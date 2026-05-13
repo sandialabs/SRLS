@@ -2,14 +2,11 @@
     <v-layout row>
         <v-dialog v-model="dialog" fullscreen hide-overlay persistent transition="dialog-bottom-transition">
             <v-card>
-                <v-card-title style="margin-top: 60px; margin-bottom: 0;">
-                    <v-spacer />
+                <v-card-title>
                     <span class="headline">{{ title }}</span>
-                    <v-spacer />
                 </v-card-title>
 
                 <v-card-text>
-                    <!-- <span>Settings: {{ settings }}</span> -->
                     <v-container>
                         <!-- First row of fields -->
                         <v-row class="mt-0">
@@ -26,12 +23,12 @@
                         <!-- First row: four text fields -->
                         <v-row justify="center">
                             <v-col cols="12" sm="3" md="3">
-                                <v-text-field label="GB" v-model="settings.RPM.GammaBG"
+                                <v-text-field label="Gamma Background" v-model="settings.RPM.GammaBG"
                                     hint="Single detector gamma background level"
                                     persistent-hint></v-text-field>
                             </v-col>
                             <v-col cols="12" sm="3" md="3">
-                                <v-text-field label="NB" v-model="settings.RPM.NeutronBG"
+                                <v-text-field label="Neutron Background" v-model="settings.RPM.NeutronBG"
                                     hint="Single detector neutron background level"
                                     persistent-hint></v-text-field>
                             </v-col>
@@ -40,7 +37,7 @@
                                     hint="Max n-sigma for gamma alarms" persistent-hint></v-text-field>
                             </v-col>
                             <v-col cols="12" sm="3" md="3">
-                                <v-text-field label="NA" v-model="settings.RPM.NeutronThreshold"
+                                <v-text-field label="Neutron Alarm" v-model="settings.RPM.NeutronThreshold"
                                     hint="Single detector neutron alarm threshold"
                                     persistent-hint></v-text-field>
                             </v-col>
@@ -49,17 +46,17 @@
                         <!-- Second row: four fields -->
                         <v-row justify="center">
                             <v-col cols="12" sm="3" md="3">
-                                <v-text-field label="GH" v-model="settings.RPM.GHThreshold"
+                                <v-text-field label="Gamma High" v-model="settings.RPM.GHThreshold"
                                     hint="Single detector gamma background high threshold"
                                     persistent-hint></v-text-field>
                             </v-col>
                             <v-col cols="12" sm="3" md="3">
-                                <v-text-field label="GL" v-model="settings.RPM.GLThreshold"
+                                <v-text-field label="Gamma Low" v-model="settings.RPM.GLThreshold"
                                     hint="Single detector gamma background low threshold"
                                     persistent-hint></v-text-field>
                             </v-col>
                             <v-col cols="12" sm="3" md="3">
-                                <v-text-field label="NH" v-model="settings.RPM.NHThreshold"
+                                <v-text-field label="Neutron High" v-model="settings.RPM.NHThreshold"
                                     hint="Single detector neutron background high threshold"
                                     persistent-hint></v-text-field>
                             </v-col>
@@ -72,12 +69,12 @@
                         <!-- Third row: three text fields -->
                         <v-row>
                             <v-col cols="12" sm="3" md="3">
-                                <v-text-field label="GA %" v-model="settings.AutoGammaProbability"
+                                <v-text-field label="Gamma Alarm %" v-model="settings.AutoGammaProbability"
                                     hint="Percentage of occupancies that will have a gamma alarm"
                                     persistent-hint></v-text-field>
                             </v-col>
                             <v-col cols="12" sm="3" md="3">
-                                <v-text-field label="NA %" v-model="settings.AutoNeutronProbability"
+                                <v-text-field label="Neutron Alarm %" v-model="settings.AutoNeutronProbability"
                                     hint="Percentage of occupancies that will have a gamma alarm"
                                     persistent-hint></v-text-field>
                             </v-col>
@@ -90,10 +87,8 @@
                 </v-card-text>
 
                 <v-card-actions>
-                    <v-spacer />
-                    <v-btn color="green darken-1" @click="save()">Save</v-btn>
-                    <v-btn color="red darken-1" @click="dialog = false">Cancel</v-btn>
-                    <v-spacer />
+                    <v-btn color="green" @click="save()">Save</v-btn>
+                    <v-btn color="red" @click="close()">Cancel</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -119,7 +114,6 @@ export default {
 
         let dialog = ref(false);
         let title = ref("SETTINGS DIALOG");
-        let camtypes: Ref<string[]> = ref(["canned", "animated"]);
         let rpm_algorithms: Ref<string[]> = ref(["simulated", "replay"]);
         let settings: Ref<LaneSettings> = ref<LaneSettings>(laneSettings);
         let callback: Ref<LaneSettingsCallback | null> = ref(null);
@@ -127,7 +121,6 @@ export default {
         return {
             dialog,
             title,
-            camtypes,
             rpm_algorithms,
             settings,
             callback
@@ -149,7 +142,6 @@ export default {
             // console.log("LaneSettings.vue settings", this.settings, newSettings);
 
             this.callback = callback;
-            // console.log("LaneSettings.callback", this.callback);
         },
         save: function () {
             this.dialog = false;

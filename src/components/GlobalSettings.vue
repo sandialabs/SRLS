@@ -12,13 +12,13 @@
                     <v-text-field label="Neutron Background" v-model="settings.DefaultNeutronBG"></v-text-field>
                 </v-col>
                 <v-col cols="12" sm="1" lg="3">
-                    <v-text-field label="GH Threshold" v-model="settings.DefaultGHThreshold"></v-text-field>
+                    <v-text-field label="Gamma High (GH) Threshold" v-model="settings.DefaultGHThreshold"></v-text-field>
                 </v-col>
                 <v-col cols="12" sm="1" lg="3">
-                    <v-text-field label="GL Threshold" v-model="settings.DefaultGLThreshold"></v-text-field>
+                    <v-text-field label="Gamma Low (GL) Threshold" v-model="settings.DefaultGLThreshold"></v-text-field>
                 </v-col>
                 <v-col cols="12" sm="1" lg="3">
-                    <v-text-field label="NH Threshold" v-model="settings.DefaultNHThreshold"></v-text-field>
+                    <v-text-field label="Neutron High (NH) Threshold" v-model="settings.DefaultNHThreshold"></v-text-field>
                 </v-col>
                 <v-col cols="12" sm="1" lg="3">
                     <v-text-field label="Gamma N-Sigma" v-model="settings.DefaultGammaNSigma"></v-text-field>
@@ -27,10 +27,10 @@
                     <v-text-field label="Neutron Threshold" v-model="settings.DefaultNeutronThreshold"></v-text-field>
                 </v-col>
                 <v-col cols="12" sm="1" lg="3">
-                    <v-text-field label="GA Probability" v-model="settings.DefaultAutoGammaProbability"></v-text-field>
+                    <v-text-field label="Gamma Auto Probability" v-model="settings.DefaultAutoGammaProbability"></v-text-field>
                 </v-col>
                 <v-col cols="12" sm="1" lg="3">
-                    <v-text-field label="NA Probability"
+                    <v-text-field label="Neutron Auto Probability"
                         v-model="settings.DefaultAutoNeutronProbability"></v-text-field>
                 </v-col>
                 <v-col cols="12" sm="1" lg="3">
@@ -40,7 +40,7 @@
         </v-card-text>
         <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="green" variant="tonal" @click="save()">Save</v-btn>
+            <v-btn color="green" @click="save()">Save</v-btn>
         </v-card-actions>
     </v-card>
 </template>

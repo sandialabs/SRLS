@@ -15,12 +15,10 @@
                     sliders control the sum of the four detectors and this total count will be distributed to
                     the detectors according to the global gamma or neutron detector distribution settings.
                     For the gamma detectors, you can control each detector individually as well using the
-                    Master/Slave Upper/Lower sliders.
+                    Master/Slave and Upper/Lower sliders.
                 </p>
                 <p v-if="info_visible">
-                    Use the
-                    <i>Unoccupied/Occupied</i> radio buttons
-                    to toggle the RPM's occupancy sensor.
+                    Use the <i>Unoccupied/Occupied</i> switch to toggle the RPM's occupancy sensor.
                 </p>
                 <v-row>
                     <v-col cols="12">
@@ -44,21 +42,15 @@
                     </v-col>
                 </v-row>
                 <div class="d-flex align-center">
-                    <span class="me-3 d-inline-flex align-center">Unoccupied</span>
-                    <v-switch v-model="is_occupied" hide-details inset>
+                    <span>Unoccupied</span>
+                    <v-switch hide-details inset :model-value="is_occupied"
+                        @update:model-value="on_occupancy_change()">
                     </v-switch>
-                    <span class="me-3 d-inline-flex align-center">Occupied</span>
+                    <span>Occupied</span>
                 </div>
-                <!-- <v-radio-group v-model="is_occupied" row v-on:change="on_occupancy_change()">
-                    <v-radio label="Unoccupied" :value="false"></v-radio>
-                    <v-radio label="Occupied" :value="true"></v-radio>
-                </v-radio-group> -->
             </v-card-text>
 
-            <v-divider></v-divider>
-
             <v-card-actions>
-                <v-spacer></v-spacer>
                 <v-btn color="primary" @click="is_visible = false">Close</v-btn>
             </v-card-actions>
         </v-card>
@@ -69,7 +61,6 @@
 
 import { Reactive, reactive, Ref, ref } from "vue";
 import { ILaneSettings } from "../lib/ILaneSettings";
-import { IRPMSettings } from "../lib/IRPMSettings";
 import { RPMSimulator } from "../lib/RPMSimulator";
 import { LaneSimulator } from "../lib/LaneSim";
 
@@ -203,6 +194,7 @@ export default {
         },
 
         on_occupancy_change: function () {
+            this.is_occupied = !this.is_occupied;
             console.log("Occupied: ", this.is_occupied);
             this.rpmsim?.SetOccupancy(this.is_occupied);
         },
