@@ -1,7 +1,8 @@
 /// <reference path="../electron/types/global.d.ts" />
 
 import { AppVersion } from "./Globals";
-import { IRPMSettings, RPMSettings } from "./IRPMSettings";
+import { RPMSettings } from "./RPMSettings";
+import { IRPMSettings } from "./IRPMSettings";
 import { ILaneSettings } from "./ILaneSettings";
 import { LaneSettings } from "./LaneSettings";
 import { ISettings } from "./ISettings";

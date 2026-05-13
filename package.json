@@ -2,7 +2,7 @@
     "name": "srls",
     "description": "Sandia RPM Lane Simulator",
     "private": true,
-    "version": "1.2.110",
+    "version": "1.2.111",
     "author": "Pete Humphrey, Alfred Johnson, Jonathan Marney",
     "main": "out/main/index.js",
     "type2": "module",
@@ -55,7 +55,13 @@
             "allowToChangeInstallationDirectory": true,
             "deleteAppDataOnUninstall": false
         },
-        "productName": "Sandia RPM Lane Simulator"
+        "productName": "Sandia RPM Lane Simulator",
+        "extraResources": [
+            {
+                "from": "assets",
+                "to": "assets"
+            }
+        ]
     },
     "dependencies": {
         "@electron/remote": "^2.1.2",

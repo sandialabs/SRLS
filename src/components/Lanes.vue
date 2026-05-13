@@ -34,30 +34,18 @@
                         <table style="width: 100%;">
                             <thead class="white--text">
                                 <tr>
-                                    <th>&nbsp;</th>
                                     <th>Name</th>
-                                    <th>Status</th>
                                     <th>&nbsp;</th>
-                                    <th>RPM</th>
+                                    <th>&nbsp;</th>
+                                    <th>Status</th>
                                     <th>Actions</th>
+                                    <th>RPM</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr v-for="lane in lanedata" :key="lane.LaneID">
-                                    <td>
-                                        <ActionIcon icon="create" color="primary" tooltip="Edit lane"
-                                            @icon-clicked="on_trigger_lane(lane, 'editlane')" />
-                                        <ActionIcon icon="content_copy" color="primary" tooltip="Clone lane"
-                                            @icon-clicked="on_trigger_lane(lane, 'clone')" />
-                                        <ActionIcon icon="tune" color="primary" tooltip="Adjust RPM setting"
-                                            @icon-clicked="on_trigger_lane(lane, 'adjust')" />
-                                        <ActionIcon icon="delete" color="red" tooltip="Delete lane"
-                                            @icon-clicked="on_trigger_lane(lane, 'delete')" />
-                                    </td>
                                     <td>{{  lane.LaneName }}</td>
-                                    <td :class="lane.OccupancyState">
-                                        {{ lane.OccupancyState }}
-                                    </td>
+                                    <td>{{ lane.RPM.IPAddr }}:{{ lane.RPM.Port }}</td>
                                     <td>
                                         <v-row class="align-center">
                                             <v-switch hide-details base-color="gray" color="green" :model-value="lane.Enabled" @update:model-value="on_toggle_lane(lane)">
@@ -67,28 +55,42 @@
                                             <span v-if="!lane.Enabled" class="text-error">Disabled</span>
                                         </v-row>
                                     </td>
+                                    <td :class="lane.OccupancyState">
+                                        {{ mostRecentMessage(lane) }}
+                                    </td>
                                     <!-- <td style="text-align:center;">{{ lane.ClientCount }}</td> -->
-                                    <td>{{ lane.RPM.IPAddr }}:{{ lane.RPM.Port }}</td>
                                     <td>
                                         <v-row class="align-center">
-                                            <v-switch :disabled="!lane.Enabled" hide-details base-color="grey" color="green" :model-value="isInAutoMode(lane)" @update:model-value="on_trigger_lane(lane, 'automode')">
+                                            <v-switch :disabled="!lane.Enabled" hide-details base-color="grey" color="green"
+                                            :model-value="isInAutoMode(lane)" @update:model-value="on_trigger_lane(lane, 'automode')">
                                             </v-switch>
-                                            <span>Automatic</span>
-                                            <span>&nbsp;</span>
-                                            <ActionIcon icon="local_shipping" color="red" tooltip="Gamma Alarm"
-                                            :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'GA')" />
-                                            <ActionIcon icon="local_shipping" color="blue" tooltip="Neutron Alarm"
-                                            :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'NA')" />
-                                            <ActionIcon icon="local_shipping" color="cyan" tooltip="Neutron/Gamma Alarm"
-                                            :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'NG')" />
-                                            <ActionIcon icon="local_shipping" color="green darken-1"
-                                            tooltip="Innocent Alarm" :disabled="!lane.Enabled"
-                                            @icon-clicked="on_trigger_lane(lane, 'OC')" />
-                                            <v-switch :disabled="!lane.Enabled" hide-details base-color="grey" color="red" :model-value="isInTamperMode(lane)" @update:model-value="on_trigger_lane(lane, 'TT')">
+                                                <span>Automatic</span>
+                                                <span>&nbsp;</span>
+                                                <ActionIcon icon="local_shipping" color="red" tooltip="Gamma Alarm"
+                                                :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'GA')" />
+                                                <ActionIcon icon="local_shipping" color="blue" tooltip="Neutron Alarm"
+                                                :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'NA')" />
+                                                <ActionIcon icon="local_shipping" color="cyan" tooltip="Neutron/Gamma Alarm"
+                                                :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'NG')" />
+                                                <ActionIcon icon="local_shipping" color="green darken-1"
+                                                tooltip="Non-Alarming Occupancy" :disabled="!lane.Enabled"
+                                                @icon-clicked="on_trigger_lane(lane, 'OC')" />
+                                                <v-switch :disabled="!lane.Enabled" hide-details base-color="grey" color="red"
+                                                :model-value="isInTamperMode(lane)" @update:model-value="on_trigger_lane(lane, 'TT')">
                                             </v-switch>
                                             <span v-if="!isInTamperMode(lane)" class="text-secondary">Case tamper</span>
                                             <span v-if="isInTamperMode(lane)" class="text-error">Case tamper</span>
                                         </v-row>
+                                    </td>
+                                    <td>
+                                        <ActionIcon icon="create" color="primary" tooltip="Edit lane"
+                                            @icon-clicked="on_trigger_lane(lane, 'editlane')" />
+                                        <ActionIcon icon="content_copy" color="primary" tooltip="Clone lane"
+                                            @icon-clicked="on_trigger_lane(lane, 'clone')" />
+                                        <ActionIcon icon="tune" color="primary" tooltip="Adjust RPM setting"
+                                            @icon-clicked="on_trigger_lane(lane, 'adjust')" />
+                                        <ActionIcon icon="delete" color="red" tooltip="Delete lane"
+                                            @icon-clicked="on_trigger_lane(lane, 'delete')" />
                                     </td>
                                 </tr>
                             </tbody>
@@ -413,6 +415,11 @@ export default defineComponent({
         isInTamperMode(lane: ILaneSettings): boolean {
             let sim: LaneSimulator = this.simMap[lane.LaneID];
             return sim && sim.RPM ? sim.RPM.m_is_tamper_active : false;
+        },
+
+        mostRecentMessage(lane: ILaneSettings): string {
+            let sim: LaneSimulator = this.simMap[lane.LaneID];
+            return sim && sim.RPM ? sim.RPM.MostRecentMessage : "";
         },
 
         start_simulator: function (lane: ILaneSettings) {

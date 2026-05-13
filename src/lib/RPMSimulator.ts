@@ -15,7 +15,7 @@ import { LaneSimulator } from "./LaneSim";
 
 const ONE_YEAR = 60 * 60 * 24 * 365 * 1000;
 
-interface ProfileGenerator {
+interface IProfileGenerator {
     generate_profile(settings: any): number[][];
 }
 
@@ -37,7 +37,7 @@ export class RPMSimulator extends Component {
 
     m_is_tamper_active = false;
     m_name = "RPMSim";
-    m_profile_generator: ProfileGenerator;
+    m_profile_generator: IProfileGenerator;
 
     m_queued_profiles: RPMProfile[] = [];
     m_current_profile: RPMProfile | null = null;
@@ -80,7 +80,8 @@ export class RPMSimulator extends Component {
     m_auto_mode_next_occupancy_time: number = new Date().getTime() + 1000 * 60 * 60 * 24 * 365;
 
     private m_is_paused = false;
-    m_debug = false;
+    private m_debug = false;
+    private m_most_recent_message: string = "";
 
     get Name(): string {
         return this.m_name;
@@ -97,6 +98,10 @@ export class RPMSimulator extends Component {
         this.m_is_paused = value;
     }
 
+    get MostRecentMessage(): string {
+        return this.m_most_recent_message;
+    }
+
     //------------------------------------------------------------
     //
     // Function:    constructor
@@ -111,7 +116,7 @@ export class RPMSimulator extends Component {
         ipaddr: string,
         port: number,
         name: string,
-        profile_generator: ProfileGenerator,
+        profile_generator: IProfileGenerator,
         owner: LaneSimulator,
         debug: boolean = false
     ) {
@@ -265,8 +270,10 @@ export class RPMSimulator extends Component {
 
     public ToggleTamper(): boolean {
         this.m_is_tamper_active = !this.m_is_tamper_active;
-        if (this.m_is_tamper_active) this.say("TT,000000,000000,000000,000000\r\n");
-        else this.say("TC,111111,111111,111111,111111\r\n");
+        if (this.m_is_tamper_active)
+            this.say("TT,000000,000000,000000,000000");
+        else
+            this.say("TC,111111,111111,111111,111111");
         return this.m_is_tamper_active;
     }
 
@@ -641,7 +648,7 @@ export class RPMSimulator extends Component {
                         0,
                         this.m_neutron_high_threshold
                     );
-                    this.say(msg + "\r\n");
+                    this.say(msg);
                 }
                 if (now >= this.m_next_gs_time) {
                     this.m_next_gs_time += 200;
@@ -653,7 +660,7 @@ export class RPMSimulator extends Component {
                         this.m_gamma_low_threshold / 5,
                         this.m_gamma_high_threshold / 5
                     );
-                    this.say(msg + "\r\n");
+                    this.say(msg);
                 }
             } else {
                 if (this.m_auto_mode_active && now > this.m_auto_mode_next_occupancy_time) {
@@ -681,7 +688,7 @@ export class RPMSimulator extends Component {
                             0,
                             this.m_neutron_high_threshold
                         );
-                        this.say(msg + "\r\n");
+                        this.say(msg);
                         counts = this.generate_gamma_bg();
                         msg = this.generate_count_msg(
                             ["GB", "GL", "GH"],
@@ -689,7 +696,7 @@ export class RPMSimulator extends Component {
                             this.m_gamma_low_threshold,
                             this.m_gamma_high_threshold
                         );
-                        this.say(msg + "\r\n");
+                        this.say(msg);
                         // }
                     }
                 }
@@ -697,14 +704,14 @@ export class RPMSimulator extends Component {
         } else {
             // send all pending occupancy messages
             let counts = this.m_current_profile.GetNextMessage(now);
-            let msgs: string = "";
+            let msgs: string[] = [];
             while (counts != null) {
                 let msg = counts.ToString();
                 //this.LogDebug("Sending next profile message: " + msg);
-                msgs += msg + "\r\n";
+                msgs.push(msg);
                 counts = this.m_current_profile.GetNextMessage(now);
             }
-            if (msgs.length > 0) this.say(msgs);
+            msgs.forEach(msg => this.say(msg));
             if (this.m_current_profile.IsEOF()) {
                 this.LogInfo("At end of current profile");
                 //this.LogDebug("    Counts: ", this.m_current_profile.m_counts.length);
@@ -826,7 +833,7 @@ export class RPMSimulator extends Component {
     //
     //------------------------------------------------------------
     /** send some text to every connected client */
-    say(text: string): void {
+    private say(text: string): void {
         if (this.m_is_paused)
             return;
 
@@ -834,20 +841,7 @@ export class RPMSimulator extends Component {
 
         window.electronAPI.sendData(this.m_rpm_port, this.m_ipaddr, text);
 
-        // ipcRenderer.invoke("network-send-data", [this.m_rpm_port, this.m_ipaddr, text]);
-        // if (this.m_clients.length > 0) {
-        //     //console.log("Sending to " + this.m_clients.length + " clients.");
-        //     let doomed: any[] = [];
-        //     for (let client of this.m_clients) {
-        //         try {
-        //             client.write(text);
-        //         } catch (e) {
-        //             console.error("Error writing to client: ", String(e));
-        //             doomed.push(client);
-        //         }
-        //     }
-        //     for (let client of doomed) this.delete_client(client);
-        // }
+        this.m_most_recent_message = text;
     }
 
     private current_time(): number {

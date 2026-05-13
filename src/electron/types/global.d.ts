@@ -15,6 +15,8 @@ declare global {
             listen: (port: number, ipaddr: string) => Promise<boolean>;
             stopListen: (port: number, ipaddr: string) => void;
             sendData: (port: number, ipaddr: string, data: string) => void;
+
+            openAsset: (asset: string) => void;
         };
     }
 }

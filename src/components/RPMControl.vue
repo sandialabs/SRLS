@@ -3,7 +3,8 @@
         <v-card>
             <v-card-title class="d-flex align-left">
                 <span>{{ title }}</span>
-                <v-icon class="ms-auto" color="green" icon="mdi-information" v-on:click="info_visible = !info_visible"></v-icon>
+                <v-icon class="ms-auto" color="green" icon="mdi-information"
+                    v-on:click="info_visible = !info_visible"></v-icon>
             </v-card-title>
 
             <v-card-text>
@@ -174,7 +175,7 @@ export default {
 
             this.gamma_vals[ix] = val;
             let sum = this.gamma_vals[0] + this.gamma_vals[1] + this.gamma_vals[2] + this.gamma_vals[3];
-            
+
             this.current_gamma_distribution.forEach((_, index) => this.current_gamma_distribution[index] = this.gamma_vals[index] / sum);
             this.gamma_sum = sum;
         },
