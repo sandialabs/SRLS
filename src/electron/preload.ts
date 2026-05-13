@@ -11,4 +11,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     listen: (port: number, ipaddr: string): Promise<boolean> => ipcRenderer.invoke('network-listen', port, ipaddr),
     stopListen: (port: number, ipaddr: string) => ipcRenderer.invoke('network-stop-listening', port, ipaddr),
     sendData: (port: number, ipaddr: string, data: string) => ipcRenderer.invoke('network-send-data', port, ipaddr, data),
+
+    openAsset: (asset: string) => ipcRenderer.invoke('open-asset', asset),
 });

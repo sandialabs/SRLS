@@ -1,7 +1,8 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { fileURLToPath } from 'url';
 import path, { dirname, join } from 'path';
-import { existsSync } from 'fs';
+import fs from 'fs';
+import os from 'os';
 import { readFile, writeFile } from 'fs/promises';
 import { Network, NetworkConfig } from './network';
 
@@ -72,7 +73,7 @@ app.on('activate', () => {
 ipcMain.handle('file-exists', async (event: Electron.IpcMainInvokeEvent, filepath: string) => {
     const userPath = path.join(app.getPath('userData'), filepath);
     console.log(`Inside file-exists, looking for ${userPath}`);
-    const exists: boolean = existsSync(userPath);
+    const exists: boolean = fs.existsSync(userPath);
     console.log(`file-exists -- file ${userPath} ${exists ? 'exists' : 'does not exist'}`);
     return exists;
 });
@@ -114,5 +115,64 @@ ipcMain.handle('network-stop-listening', async (event: Electron.IpcMainInvokeEve
 
 ipcMain.handle("network-send-data", async (event: Electron.IpcMainInvokeEvent, port: number, ipaddr: string, data: string): Promise<boolean> => {
     let config = new NetworkConfig(ipaddr, port);
-    return _network.sendData(config, data);
+
+    // Append "\r\n" to everything sent through the socket
+    return _network.sendData(config, data + "\r\n");
 });
+
+// ipcMain.handle("open-asset", async (event: Electron.IpcMainInvokeEvent, asset: string) => {
+//     // The __dirname variable will be either
+//     //      "D:\Projects\Development\RPMSimulator\dist_electron"
+//     // or
+//     //      "C:\Users\wrhumph\AppData\Local\Programs\srls\resources\app.asar"
+//     console.log("ipc.on('open-asset'): ", asset);
+//     console.log('__dirname is "' + __dirname + '"');
+//     let assets_dir = find_assets(__dirname);
+//     let filepath = path.join(assets_dir, asset);
+//     console.log('filepath is "' + filepath + '"');
+//     console.log("Opening " + filepath);
+//     shell.openPath(filepath);
+// });
+
+ipcMain.handle('open-asset', async (_event, assetName: string) => {
+    // Where the asset is bundled (adjust to your build layout)
+    const bundledPath = app.isPackaged
+        ? path.join(process.resourcesPath, 'assets', assetName) // if you ship assets as extraResources
+        : path.join(process.cwd(), 'assets', assetName);
+
+    console.log(`open-asset: ${bundledPath}`);
+
+    if (!fs.existsSync(bundledPath)) {
+        throw new Error(`Asset not found at: ${bundledPath}`);
+    }
+
+    // Copy to a real filesystem location
+    const outPath = path.join(os.tmpdir(), assetName);
+
+    console.log(`copyFileSync: ${bundledPath} -> ${outPath}`);
+
+    fs.copyFileSync(bundledPath, outPath);
+
+    const err = await shell.openPath(outPath);
+    if (err) {
+        console.error(err);
+        throw new Error(err);
+    }
+
+    return true;
+})
+
+// function find_assets(dir_name: string): string {
+//     console.log('Looking for Assets in "' + dir_name + '"');
+//     let dir = dir_name;
+//     for (let i = 0; i < 4; i++) {
+//         let tpath = path.join(dir, "Assets");
+//         console.log('    checking for "' + tpath + '"');
+//         if (existsSync(tpath)) {
+//             console.log('   Found in "' + dir + '"');
+//             return tpath;
+//         }
+//         dir = path.dirname(dir);
+//     }
+//     return dir_name; // I give up
+// }

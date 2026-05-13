@@ -1,5 +1,6 @@
 import { ILaneSettings } from "./ILaneSettings";
-import { IRPMSettings, RPMSettings } from "./IRPMSettings";
+import { RPMSettings } from "./RPMSettings";
+import { IRPMSettings } from "./IRPMSettings";
 import { ISettings } from "./ISettings";
 import { Settings } from "./Settings";
 

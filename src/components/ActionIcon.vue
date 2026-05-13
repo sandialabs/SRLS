@@ -4,9 +4,6 @@
             <template #activator="{ props }">
                 <v-btn icon v-bind="props" :disabled="disabled" style="margin: 0; padding: 0;"
                     @click="$emit('icon-clicked')">
-                    <!-- <v-icon :color="color" :style="{ fontSize: size, margin: 0, padding: 0 }">
-                        {{ icon }}
-                    </v-icon> -->
                     <span :style="{ color: color, fontSize: size, margin: 0, padding: 0 }" class="material-icons">{{
                         icon }}</span>
                 </v-btn>

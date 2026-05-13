@@ -1,104 +1,174 @@
 <template>
     <div class="help">
         <v-container>
-            <v-layout>
-                <v-flex>
-                    <div class="text-md-center display-1 mb-4">SRLS - Sandia RPM Lane Simulator</div>
-                    <hr />
-                    <v-btn
-                        block
-                        color="primary"
-                        @click="send_ipc('open-asset', 'SRLS User Guide.docx')"
-                    >Open the User Guide</v-btn>
-                    <h1>Overview</h1>
+            <h1 class="mb-4">SRLS - Sandia RPM Lane Simulator</h1>
+            <hr />
+            <v-btn block color="primary" @click="openUserGuide()">Open the User
+                Guide</v-btn>
+            <h1>Overview</h1>
+            <p>
+                The Sandia RPM Lane Simulator (SRLS) simulates Rapiscan radiation portal monitors (RPMs)
+                such as those deployed to a vehicle scanning lane. It allows you to define multiple
+                "lanes", each of which will contain an RPM. Various types of
+                radiation events can be triggered from individual lanes or from all lanes simultaneously.
+            </p>
+            <p>The SRLS user interface comprises four main pages:</p>
+            <v-card>
+                <v-card-title>
+                    <v-icon color="primary">mdi-truck</v-icon>
+                    Lanes
+                </v-card-title>
+                <v-card-text>
+                    This is the main page where you will create and control the simulator.
+                </v-card-text>
+            </v-card>
+            <v-card>
+                <v-card-title>
+                    <v-icon color="primary">mdi-cog</v-icon>
+                    Settings
+                </v-card-title>
+                <v-card-text>
+                    This page allows the user to modify global settings.
+                </v-card-text>
+            </v-card>
+            <v-card>
+                <v-card-title>
+                    <v-icon color="primary">mdi-information</v-icon>
+                    About
+                </v-card-title>
+                <v-card-text>
+                    This page contains copyright and version information, as well as a list of the software libraries
+                    that are used to build SRLS.
+                </v-card-text>
+            </v-card>
+            <v-card>
+                <v-card-title>
+                    <v-icon color="primary">mdi-help</v-icon>
+                    Help
+                </v-card-title>
+                <v-card-text>
+                    This is what you are looking at right now.
+                </v-card-text>
+            </v-card>
+            <hr />
+            <v-card>
+                <v-card-title>
+                    <v-icon color='primary'>mdi-truck</v-icon>
+                    The Lane Management Page
+                </v-card-title>
+                <v-card-text>
                     <p>
-                        The RPM Lane Simulator (SRLS) simulates Rapiscan radiation portal monitors (RPMs) and IP camers
-                        such as those deployed to a vehicle scanning lane. It allows you to define multiple
-                        "lanes", each of which will contain an RPM and up to two cameras. Various types of
-                        radiation events can be triggered from individual lanes or from all lanes simultaneously.
+                        This page displays a list of all the scanning lanes that you have defined.
+                        At the top of the page are a set of global lane controls. These trigger events
+                        on all enabled lanes simultaneously. See the description of the <i>Action</i>
+                        buttons below.
                     </p>
                     <p>
-                        The SRLS user interface comprises four main pages:
+                        Each lane must have a unique name. The RPM can be enabled or disabled by toggling the
+                        enabled/disabled switch
+                        to the right of the lane name. On the right side of each lane are four icons for managing the
+                        lane.
                     </p>
-                        <ul>
-                            <li class='spaced'>Lanes
-                                &nbsp;
-                                <v-icon color='primary'>local_shipping</v-icon>
-                                <br>This is the main page where you will create and control the simulator.
-                            </li>
-                            <li class='spaced'>Settings
-                                &nbsp;
-                                <v-icon color='primary'>settings</v-icon>
-                                <br>This pages allows the user to modify global settings.
-                            </li>
-                            <li class='spaced'>Help
-                                &nbsp;
-                                <v-icon color='primary'>help</v-icon>
-                                <br>This is what you are looking at right now.
-                            </li>
-                            <li class='spaced'>About
-                                &nbsp;
-                                <v-icon color='primary'>info</v-icon>
-                                <br>This page contains copyright and version information, as well as
-                                a list of the software libraries that are used to build SRLS.
-                            </li>
-                        </ul>
-                    <div class='h1'>The Lane Management Page <v-icon color='primary' style='margin-top: 10px;'>local_shipping</v-icon>
-                    </div>
-                    <p>This page displays a list of all the scanning lanes that you have defined.
-                       At the top of the page are a set of global lane controls.  These trigger events
-                       on all enabled lanes simultaneously.  See the description of the <i>Action</i>
-                       buttons below.
-                    </p>
-                    <p> Each lane  must have a unique name and consists of an RPM and two cameras.  
-                        The RPM and cameras can be enabled or disabled by clicking the 
-                        <v-icon color="green">wifi</v-icon> or
-                        <v-icon color="red">do_not_disturb</v-icon>
-                        icon to the right of
-                        the lane name.  On the left side of each lane are four icons for managing the lane.
-                    </p>
-                        <ul>
-                            <li class='spaced'>Edit&nbsp;<v-icon color='primary'>create</v-icon>
-                                <br>Edit RPM and camera settings.
-                            </li>
-                            <li class='spaced'>Duplicate&nbsp;<v-icon color='primary'>content_copy</v-icon>
-                                <br>Create a new lane by duplicating this lane.
-                            </li>
-                            <li class='spaced'>Levels&nbsp;<v-icon color='primary'>tune</v-icon>
-                                <br>Interactively control the RPM simulator.
-                            </li>
-                            <li class='spaced'>Delete&nbsp;<v-icon color='red'>delete</v-icon>
-                                <br>Delete this lane.
-                            </li>
-                        </ul>
-                    <p>
-                        To control each lane, use the <i>Action</i> buttons at the right of the lane.
-                    </p>
-                        <ul>
-                            <li class='spaced'>AutoMode&nbsp;<v-icon color='red'>repeat</v-icon>
-                                <br>Toggle <i>Auto</i> mode for the RPM.  This causes the RPM to simulate
-                                radiation events at regular intervals.  You can control what kinds of
-                                events are simulated (innocent, gamma, neutron, and neutron/gamma) by
-                                clicking on the lane <i>Edit</i> button.&nbsp;<v-icon color='primary'>create</v-icon>
-                            </li>
-                            <li class='spaced'>Gamma Alarm&nbsp;<v-icon color='red'>local_shipping</v-icon>
-                                <br>Simulate a Gamma alarm.
-                            </li>
-                            <li class='spaced'>Neutron Alarm&nbsp;<v-icon color="blue darken-2">local_shipping</v-icon>
-                                <br>Simulate a Neutron alarm.
-                            </li>
-                            <li class='spaced'>Neutron/Gamma Alarm&nbsp;<v-icon color="cyan lighten-2">local_shipping</v-icon>
-                                <br>Simulate a Neutron/Gamma alarm.
-                            </li>
-                            <li class='spaced'>Occupancy&nbsp;<v-icon color="green darken-1">local_shipping</v-icon>
-                                <br>Simulate a non-alarming occupancy.
-                            </li>
-                            <li class='spaced'>Tamper&nbsp;<v-icon color='red' style="margin-left: -120px;">open_lock</v-icon>
-                                <br>Simulate a case tamper event.
-                            </li>
-                        </ul>
-                </v-flex>
-            </v-layout>
+                    <v-card>
+                        <v-card-title>
+                            <v-icon color='primary'>mdi-pencil</v-icon>
+                            Edit
+                        </v-card-title>
+                        <v-card-text>
+                            Edit RPM settings
+                        </v-card-text>
+                    </v-card>
+                    <v-card>
+                        <v-card-title>
+                            <v-icon color='primary'>mdi-content-copy</v-icon>
+                            Duplicate
+                        </v-card-title>
+                        <v-card-text>
+                            Create a new lane by duplicating this lane.
+                        </v-card-text>
+                    </v-card>
+                    <v-card>
+                        <v-card-title>
+                            <v-icon color='primary'>mdi-tune</v-icon>
+                            Levels
+                        </v-card-title>
+                        <v-card-text>
+                            Interactively control the RPM simulator.
+                        </v-card-text>
+                    </v-card>
+                    <v-card>
+                        <v-card-title>
+                            <v-icon color='red'>mdi-delete</v-icon>
+                            Delete
+                        </v-card-title>
+                        <v-card-text>
+                            Delete this lane.
+                        </v-card-text>
+                    </v-card>
+                </v-card-text>
+            </v-card>
+            <v-card>
+                <v-card-title>
+                    To control each lane, use the <i>Action</i> buttons/switches.
+                </v-card-title>
+                <v-card-text>
+                    <v-card>
+                        <v-card-title>
+                            Automatic mode
+                        </v-card-title>
+                        <v-card-text>
+                            Toggle automatic mode for the RPM. This causes the RPM to simulate
+                            radiation events at regular intervals. You can control what kinds of
+                            events are simulated (innocent, gamma, neutron, and neutron/gamma) by
+                            clicking on the lane <i>Levels</i><v-icon color='primary'>mdi-tune</v-icon> button.
+                        </v-card-text>
+                    </v-card>
+                    <v-card>
+                        <v-card-title>
+                            <v-icon color='red'>mdi-truck</v-icon>
+                            Gamma Alarm
+                        </v-card-title>
+                        <v-card-text>
+                            Simulate a Gamma alarm.
+                        </v-card-text>
+                    </v-card>
+                    <v-card>
+                        <v-card-title>
+                            <v-icon color='blue'>mdi-truck</v-icon>
+                            Neutron Alarm
+                        </v-card-title>
+                        <v-card-text>
+                            Simulate a Neutron alarm.
+                        </v-card-text>
+                    </v-card>
+                   <v-card>
+                        <v-card-title>
+                            <v-icon color='cyan'>mdi-truck</v-icon>
+                            Neutron/Gamma Alarm
+                        </v-card-title>
+                        <v-card-text>
+                            Simulate a Neutron/Gamma alarm.
+                        </v-card-text>
+                    </v-card>
+                    <v-card>
+                        <v-card-title>
+                            <v-icon color='green'>mdi-truck</v-icon>
+                            Non-alarming occupancy
+                        </v-card-title>
+                        <v-card-text>
+                            Simulate a non-alarming occupancy.
+                        </v-card-text>
+                    </v-card>
+                    <v-card>
+                        <v-card-title>
+                            Case Tamper
+                        </v-card-title>
+                        <v-card-text>
+                            Toggle switch to simulate a case tamper event.
+                        </v-card-text>
+                    </v-card>
+                </v-card-text>
+            </v-card>
         </v-container>
     </div>
 </template>
@@ -110,14 +180,13 @@
 let helpview = {
     name: "Help",
     data: () => ({}),
-    mounted: function() {
+    mounted: function () {
         console.log("In mounted");
     },
     methods: {
-        send_ipc: function(msg: string) {
-            console.log("SENDING IPC: " + msg);
-            // window.electronAPI.sendMessage(msg);
-        },
+        openUserGuide(): void {
+            window.electronAPI.openAsset('SRLS User Guide.docx');
+        }
     },
 };
 
@@ -159,5 +228,8 @@ td {
     text-align: left;
     border: none;
 }
-</style>
 
+.help {
+    text-align: left;
+}
+</style>
