@@ -5,100 +5,100 @@
         <Notify ref="notifydialog" />
         <RPMControl ref="rpmcontrol" />
 
-        <!-- this hidden canvas is used for rendering animated trucks -->
-        <canvas id="render-canvas" width="640" height="480" style="display: none;"></canvas>
-
-        <v-row justify="space-between" style="margin-top: -1rem; margin-bottom: 1rem;">
-            <v-col cols="12">
-                <v-card>
-                    <v-card-title>
-                        <span v-if="labeltext" class="page-title" style="margin-right: 20px;">{{ labeltext }}</span>
-                        <div style="margin-top: 10px;">
-                            <ActionIcon icon="repeat" color="red darken-2" tooltip="Toggle automatic mode" size="32px"
-                                style="margin-right: 20px;" @icon-clicked="on_trigger_all('automode')" />
-                            <ActionIcon icon="local_shipping" color="red" tooltip="Gamma Alarm" size="32px"
-                                style="margin-right: 20px;" @icon-clicked="on_trigger_all('GA')" />
-                            <ActionIcon icon="local_shipping" color="blue" tooltip="Neutron Alarm" size="32px"
-                                style="margin-right: 20px;" @icon-clicked="on_trigger_all('NA')" />
-                            <ActionIcon icon="local_shipping" color="cyan" tooltip="Neutron/Gamma Alarm" size="32px"
-                                style="margin-right: 20px;" @icon-clicked="on_trigger_all('NG')" />
-                            <ActionIcon icon="local_shipping" color="green" tooltip="Innocent Alarm" size="32px"
-                                style="margin-right: 20px;" @icon-clicked="on_trigger_all('OC')" />
-                            <ActionIcon icon="lock_open" color="red" tooltip="Toggle case tamper" size="32px"
-                                style="margin-right: 20px;" @icon-clicked="on_trigger_all('TT')" />
-                        </div>
-                        <ActionIcon icon="add_circle" size="32px" tooltip="Add new lane" @icon-clicked="on_add_lane()"
-                            style="margin-top: 10px;" />
-                    </v-card-title>
-                    <v-card-text>
-                        <table style="width: 100%;">
-                            <thead class="white--text">
-                                <tr>
-                                    <th>Name</th>
-                                    <th>&nbsp;</th>
-                                    <th>&nbsp;</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                    <th>RPM</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="lane in lanedata" :key="lane.LaneID">
-                                    <td>{{  lane.LaneName }}</td>
-                                    <td>{{ lane.RPM.IPAddr }}:{{ lane.RPM.Port }}</td>
-                                    <td>
-                                        <v-row class="align-center">
-                                            <v-switch hide-details base-color="gray" color="green" :model-value="lane.Enabled" @update:model-value="on_toggle_lane(lane)">
-                                            </v-switch>
-                                            <span>&nbsp;</span>
-                                            <span v-if="lane.Enabled" class="text-secondary">Enabled</span>
-                                            <span v-if="!lane.Enabled" class="text-error">Disabled</span>
-                                        </v-row>
-                                    </td>
-                                    <td :class="lane.OccupancyState">
-                                        {{ mostRecentMessage(lane) }}
-                                    </td>
-                                    <!-- <td style="text-align:center;">{{ lane.ClientCount }}</td> -->
-                                    <td>
-                                        <v-row class="align-center">
-                                            <v-switch :disabled="!lane.Enabled" hide-details base-color="grey" color="green"
-                                            :model-value="isInAutoMode(lane)" @update:model-value="on_trigger_lane(lane, 'automode')">
-                                            </v-switch>
-                                                <span>Automatic</span>
-                                                <span>&nbsp;</span>
-                                                <ActionIcon icon="local_shipping" color="red" tooltip="Gamma Alarm"
-                                                :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'GA')" />
-                                                <ActionIcon icon="local_shipping" color="blue" tooltip="Neutron Alarm"
-                                                :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'NA')" />
-                                                <ActionIcon icon="local_shipping" color="cyan" tooltip="Neutron/Gamma Alarm"
-                                                :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'NG')" />
-                                                <ActionIcon icon="local_shipping" color="green darken-1"
-                                                tooltip="Non-Alarming Occupancy" :disabled="!lane.Enabled"
-                                                @icon-clicked="on_trigger_lane(lane, 'OC')" />
-                                                <v-switch :disabled="!lane.Enabled" hide-details base-color="grey" color="red"
-                                                :model-value="isInTamperMode(lane)" @update:model-value="on_trigger_lane(lane, 'TT')">
-                                            </v-switch>
-                                            <span v-if="!isInTamperMode(lane)" class="text-secondary">Case tamper</span>
-                                            <span v-if="isInTamperMode(lane)" class="text-error">Case tamper</span>
-                                        </v-row>
-                                    </td>
-                                    <td>
-                                        <ActionIcon icon="create" color="primary" tooltip="Edit lane"
-                                            @icon-clicked="on_trigger_lane(lane, 'editlane')" />
-                                        <ActionIcon icon="content_copy" color="primary" tooltip="Clone lane"
-                                            @icon-clicked="on_trigger_lane(lane, 'clone')" />
-                                        <ActionIcon icon="tune" color="primary" tooltip="Adjust RPM setting"
-                                            @icon-clicked="on_trigger_lane(lane, 'adjust')" />
-                                        <ActionIcon icon="delete" color="red" tooltip="Delete lane"
-                                            @icon-clicked="on_trigger_lane(lane, 'delete')" />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </v-card-text>
-                </v-card>
-            </v-col>
-        </v-row>
+        <v-card>
+            <v-card-title>
+                <span v-if="labeltext" class="page-title">{{ labeltext }}</span>
+                <div>
+                    <ActionIcon v-if="!areAllLanesOn" icon="toggle_on" color="black" tooltip="Enable all lanes" size="32px"
+                        @icon-clicked="enable_disable_all_lanes(true)" />
+                    <ActionIcon v-if="areAllLanesOn" icon="toggle_off" color="black" tooltip="Disable all lanes" size="32px"
+                        @icon-clicked="enable_disable_all_lanes(false)" />
+                    <ActionIcon icon="repeat" color="black" tooltip="Toggle automatic mode" size="32px"
+                        @icon-clicked="on_trigger_all('automode')" />
+                    <ActionIcon icon="local_shipping" color="red" tooltip="Gamma Alarm" size="32px"
+                        @icon-clicked="on_trigger_all('GA')" />
+                    <ActionIcon icon="local_shipping" color="blue" tooltip="Neutron Alarm" size="32px"
+                        @icon-clicked="on_trigger_all('NA')" />
+                    <ActionIcon icon="local_shipping" color="purple" tooltip="Neutron/Gamma Alarm" size="32px"
+                        @icon-clicked="on_trigger_all('NG')" />
+                    <ActionIcon icon="local_shipping" color="green" tooltip="Innocent Alarm" size="32px"
+                        @icon-clicked="on_trigger_all('OC')" />
+                    <ActionIcon icon="lock_open" color="red" tooltip="Toggle case tamper" size="32px"
+                        @icon-clicked="on_trigger_all('TT')" />
+                </div>
+            </v-card-title>
+            <v-card-text>
+                <table style="width: 100%;">
+                    <thead class="white--text">
+                        <tr>
+                            <th>Name</th>
+                            <th>&nbsp;</th>
+                            <th>&nbsp;</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                            <th>Lane</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="lane in lanedata" :key="lane.LaneID">
+                            <td>{{ lane.LaneName }}</td>
+                            <td>{{ lane.RPM.IPAddr }}:{{ lane.RPM.Port }}</td>
+                            <td>
+                                <v-row class="align-center">
+                                    <v-switch hide-details base-color="gray" color="green" :model-value="lane.Enabled"
+                                        @update:model-value="on_toggle_lane(lane)">
+                                    </v-switch>
+                                    <span>&nbsp;</span>
+                                    <span v-if="lane.Enabled" class="text-secondary">Enabled</span>
+                                    <span v-if="!lane.Enabled" class="text-error">Disabled</span>
+                                </v-row>
+                            </td>
+                            <td :class="lane.OccupancyState">
+                                {{ mostRecentMessage(lane) }}
+                            </td>
+                            <!-- <td style="text-align:center;">{{ lane.ClientCount }}</td> -->
+                            <td>
+                                <v-row class="align-center">
+                                    <v-switch :disabled="!lane.Enabled" hide-details base-color="grey" color="green"
+                                        :model-value="isInAutoMode(lane)"
+                                        @update:model-value="on_trigger_lane(lane, 'automode')">
+                                    </v-switch>
+                                    <span>Automatic</span>
+                                    <span>&nbsp;</span>
+                                    <ActionIcon icon="local_shipping" color="red" tooltip="Gamma Alarm"
+                                        :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'GA')" />
+                                    <ActionIcon icon="local_shipping" color="blue" tooltip="Neutron Alarm"
+                                        :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'NA')" />
+                                    <ActionIcon icon="local_shipping" color="purple" tooltip="Neutron/Gamma Alarm"
+                                        :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'NG')" />
+                                    <ActionIcon icon="local_shipping" color="green" tooltip="Non-Alarming Occupancy"
+                                        :disabled="!lane.Enabled" @icon-clicked="on_trigger_lane(lane, 'OC')" />
+                                    <v-switch :disabled="!lane.Enabled" hide-details base-color="grey" color="red"
+                                        :model-value="isInTamperMode(lane)"
+                                        @update:model-value="on_trigger_lane(lane, 'TT')">
+                                    </v-switch>
+                                    <span v-if="!isInTamperMode(lane)" class="text-secondary">Case tamper</span>
+                                    <span v-if="isInTamperMode(lane)" class="text-error">Case tamper</span>
+                                </v-row>
+                            </td>
+                            <td>
+                                <ActionIcon icon="create" color="primary" tooltip="Edit lane"
+                                    @icon-clicked="on_trigger_lane(lane, 'editlane')" />
+                                <ActionIcon icon="content_copy" color="primary" tooltip="Clone lane"
+                                    @icon-clicked="on_trigger_lane(lane, 'clone')" />
+                                <ActionIcon icon="tune" color="primary" tooltip="Adjust RPM setting"
+                                    @icon-clicked="on_trigger_lane(lane, 'adjust')" />
+                                <ActionIcon icon="delete" color="red" tooltip="Delete lane"
+                                    @icon-clicked="on_trigger_lane(lane, 'delete')" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </v-card-text>
+            <v-card-actions>
+                <v-btn prepend-icon="mdi-plus" @click="on_add_lane()">Add new lane</v-btn>
+            </v-card-actions>
+        </v-card>
     </v-container>
 </template>
 
@@ -113,7 +113,7 @@ import { SettingsManager } from "../lib/SettingsManager";
 import { ILaneSettings } from "../lib/ILaneSettings";
 import { LaneSimulator } from "../lib/LaneSim";
 import { banner } from "../lib/Utility";
-import { defineComponent, Reactive, reactive, toRaw } from "vue";
+import { defineComponent, Reactive, reactive, ref } from "vue";
 import { useSettingsStore } from "../store/settingsStore";
 import { storeToRefs } from "pinia";
 
@@ -145,21 +145,23 @@ export default defineComponent({
     computed: {
         lanedata(): ILaneSettings[] {
             // console.log("Lanes.vue.computed.lanedata", this.settingsManager.lanes.length);
-            return this.settingsManager.lanes;
+            return useSettingsStore().settingsManager.lanes;
+        },
+        areAllLanesOn(): boolean {
+            const allAreOn: boolean = useSettingsStore().settingsManager.lanes.find(lane => !lane.Enabled) == undefined;
+            console.log(`areAllLanesOn: ${allAreOn}`);
+            return allAreOn;
         }
     },
     setup: () => {
         // let lanedata: ILaneSettings[] = reactive(settingsMgr.lanes);
         let headers: Headers[] = reactive([
             { text: "Name", value: "LaneName" },
-            { text: "Enabled", value: "Enabled" }            
+            { text: "Enabled", value: "Enabled" }
         ]);
         let simMap: Reactive<LaneMap> = reactive({});
-            
-        const settingsStore = useSettingsStore();
-        const { settingsManager } = storeToRefs(settingsStore);  // Use storeToRefs
 
-        return { headers, simMap, settingsManager };
+        return { headers, simMap };
     },
 
     // data: () => ({
@@ -220,7 +222,7 @@ export default defineComponent({
 
                 updated_settings.Enabled = false;
                 let rc = useSettingsStore().settingsManager.add_new_lane(updated_settings);
-                if(rc) {
+                if (rc) {
                     console.log("on_add_lane result: " + rc[1]);
                     if (rc[0])
                         useSettingsStore().settingsManager.save();
@@ -234,7 +236,7 @@ export default defineComponent({
             this.lanedata?.forEach(lane => {
                 if (lane.Enabled) {
                     let sim: LaneSimulator = this.simMap[lane.LaneID];
-                    if(sim) {
+                    if (sim) {
                         if (
                             event_name === "GA" ||
                             event_name === "NA" ||
@@ -279,7 +281,7 @@ export default defineComponent({
                 case "adjust":
                     console.log("adjust", this.$refs);
                     console.log("adjustlane", lane);
-                    
+
                     (<typeof RPMControl>this.$refs["rpmcontrol"]).show(lane, sim);
                     break;
                 case "delete":
@@ -287,57 +289,61 @@ export default defineComponent({
                     break;
                 case "automode":
                     console.log("Toggling simulator");
-                    if(sim)
+                    if (sim)
                         sim.ToggleAutoMode();
                     else
                         console.error("on_trigger_lane-automode", lane);
                     break;
                 case "GA":
                     console.log("Generating " + event_name);
-                    if(sim)
+                    if (sim)
                         sim.GenerateAlarm(event_name);
                     else
                         console.error("on_trigger_lane-GA", lane);
                     break;
                 case "NA":
                     console.log("Generating " + event_name);
-                    if(sim)
+                    if (sim)
                         sim.GenerateAlarm(event_name);
                     else
                         console.error("on_trigger_lane-NA", lane);
                     break;
                 case "NG":
                     console.log("Generating " + event_name);
-                    if(sim)
+                    if (sim)
                         sim.GenerateAlarm(event_name);
                     else
                         console.error("on_trigger_lane-NG", lane);
                     break;
                 case "OC":
                     console.log("Generating innocent occupancy");
-                    if(sim)
+                    if (sim)
                         sim.GenerateAlarm(event_name);
                     else
                         console.error("on_trigger_lane-OC", lane);
                     break;
                 case "TT":
                     console.log("Toggling case tamper");
-                    if(sim)
+                    if (sim)
                         sim.RPM?.ToggleTamper();
                     else
                         console.error("on_trigger_lane-TT", lane);
                     break;
             }
         },
-        on_toggle_lane: function (lane: ILaneSettings): void {
+        on_toggle_lane: function (lane: ILaneSettings, enable?: boolean): void {
             console.log("on_toggle_lane");
-            lane.Enabled = !lane.Enabled;
+            lane.Enabled = enable ?? !lane.Enabled;
             if (lane.Enabled) {
                 this.start_simulator(lane);
             } else {
                 this.stop_simulator(lane);
             }
             useSettingsStore().settingsManager.save();
+        },
+
+        enable_disable_all_lanes: function (enable: boolean): void {
+            this.lanedata.forEach(lane => this.on_toggle_lane(lane, enable));
         },
 
         //-------------------------------------------------------
@@ -353,10 +359,10 @@ export default defineComponent({
 
             this.lanedata.forEach(lane => {
                 // console.log("Lanes.vue.poll -- lane", lane);
-                
+
                 let sim: LaneSimulator = this.simMap[lane.LaneID];
 
-                if(!sim) {
+                if (!sim) {
                     // A new lane was added, so we need to create a
                     // simulator for the lane
                     sim = this.create_sim(lane);
@@ -366,10 +372,10 @@ export default defineComponent({
             this.$forceUpdate();
         },
 
-        create_sim: function(lane: ILaneSettings): LaneSimulator {
+        create_sim: function (lane: ILaneSettings): LaneSimulator {
             // Make sure it's not already in the map somehow
             let sim: LaneSimulator = this.simMap[lane.LaneID];
-            if(sim)
+            if (sim)
                 return sim;
 
             let ls = new LaneSimulator(lane,
@@ -425,7 +431,7 @@ export default defineComponent({
         start_simulator: function (lane: ILaneSettings) {
             console.log("start_simulator", lane);
             let sim = this.simMap[lane.LaneID];
-            if(!sim)
+            if (!sim)
                 return;
             console.log(`In start_simulator. IsEnabled = ${sim.IsEnabled}, IsRunning = ${sim.IsRunning}"`);
             // console.log("Lane data: ", lane);
@@ -487,7 +493,7 @@ export default defineComponent({
                 settingsdlg.open("Edit Lane", lane, function (updated_settings: ILaneSettings) {
                     updated_settings.Enabled = false;
                     let rc = useSettingsStore().settingsManager.update_lane(updated_settings);
-                    if(rc) {
+                    if (rc) {
                         console.log("edit_lane result: " + rc[1]);
                         if (rc[0]) {
                             console.log("re-creating lane", lane);
@@ -508,7 +514,7 @@ export default defineComponent({
                             self.lanedata[lane_index] = updated_settings;
                             console.log("Updated lanedata:", self.lanedata);
                             self.$forceUpdate();
-                        }                        
+                        }
                     }
                 });
             }

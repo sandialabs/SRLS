@@ -13,7 +13,7 @@ import { ILaneSettings } from "./ILaneSettings";
 import { ELogLevel, Logger } from "./Logger";
 import { LaneSimulator } from "./LaneSim";
 
-const ONE_YEAR = 60 * 60 * 24 * 365 * 1000;
+const ONE_YEAR_IN_MS = 60 * 60 * 24 * 365 * 1000;
 
 interface IProfileGenerator {
     generate_profile(settings: any): number[][];
@@ -68,8 +68,8 @@ export class RPMSimulator extends Component {
     m_next_background_time: number;
     m_background_interval = 5000;
     m_is_occupied = false;
-    m_next_gs_time = new Date().getTime() + ONE_YEAR; // used when m_is_occupied is on
-    m_next_ns_time = new Date().getTime() + ONE_YEAR; // used when m_is_occupied is on
+    m_next_gs_time = new Date().getTime() + ONE_YEAR_IN_MS; // used when m_is_occupied is on
+    m_next_ns_time = new Date().getTime() + ONE_YEAR_IN_MS; // used when m_is_occupied is on
     m_timer: NodeJS.Timeout | undefined;
 
     // Automatic profile generation
@@ -77,7 +77,7 @@ export class RPMSimulator extends Component {
     m_auto_mode_gamma_probability = 0.044;
     m_auto_mode_neutron_probability = 0.044;
     m_auto_mode_interval_seconds = 30.44;
-    m_auto_mode_next_occupancy_time: number = new Date().getTime() + 1000 * 60 * 60 * 24 * 365;
+    m_auto_mode_next_occupancy_time: number = new Date().getTime() + ONE_YEAR_IN_MS;
 
     private m_is_paused = false;
     private m_debug = false;
@@ -175,7 +175,10 @@ export class RPMSimulator extends Component {
         window.electronAPI.listen(this.m_rpm_port, this.m_ipaddr)
             .then(() => {
                 console.log("RPM listener created--setting timeout");
-                this.m_next_background_time = this.current_time();
+
+                // Wait up to 5 seconds so when all RPM simulators are being started (like during startup)
+                // they won't all be firing simultaneously
+                this.m_next_background_time = this.current_time() + Math.floor(Math.random() * 5000);
                 this.m_timer = setInterval(() => {
                     self.on_timer();
                 }, 10);
@@ -212,8 +215,12 @@ export class RPMSimulator extends Component {
     /** Start generating occupancies automatically */
     public StartAutoMode(): void {
         if (!this.m_auto_mode_active) {
-            this.m_auto_mode_next_occupancy_time = new Date().getTime();
+
+            // Wait up to 5 seconds so when all RPM simulators are being started (like during startup)
+            // they won't all be firing simultaneously
+            this.m_auto_mode_next_occupancy_time = new Date().getTime() + Math.floor(Math.random() * 5000);
             this.m_auto_mode_active = true;
+
             this.LogDebug("Auto mode started on lane " + this.m_name);
             this.LogDebug("    Gamma probability:        " + this.m_auto_mode_gamma_probability);
             this.LogDebug("    Neutron probability:      " + this.m_auto_mode_neutron_probability);
@@ -231,7 +238,7 @@ export class RPMSimulator extends Component {
     /** StopGenerating occupancies automatically */
     public StopAutoMode(): void {
         this.m_auto_mode_active = false;
-        this.m_auto_mode_next_occupancy_time = new Date().getTime() + 1000 * 60 * 60 * 24 * 365;
+        this.m_auto_mode_next_occupancy_time = new Date().getTime() + ONE_YEAR_IN_MS;
     }
 
     public Reset(): void {
@@ -297,11 +304,11 @@ export class RPMSimulator extends Component {
                 // we are turning occupancy mode on
                 this.m_next_gs_time = now + 100;
                 this.m_next_ns_time = now + 100;
-                this.m_next_background_time = now + ONE_YEAR;
+                this.m_next_background_time = now + ONE_YEAR_IN_MS;
             } else {
                 // we are turning occupancy mode off
-                this.m_next_gs_time = now + ONE_YEAR;
-                this.m_next_ns_time = now + ONE_YEAR;
+                this.m_next_gs_time = now + ONE_YEAR_IN_MS;
+                this.m_next_ns_time = now + ONE_YEAR_IN_MS;
                 this.m_next_background_time = now + 1000;
                 this.send_gx();
             }
