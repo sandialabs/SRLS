@@ -19,6 +19,12 @@ import { Network, NetworkConfig } from './network';
 // Get the directory name of the current module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const __windowStatePath = path.join(app.getPath('userData'), 'window-state.json');
+
+interface IWindowState extends Electron.Rectangle
+{
+    isMaximized?: boolean;
+}
 
 let vitePort: number = 5173;
 const devServer: string = `http://localhost:${vitePort}`;
@@ -27,14 +33,33 @@ const _network: Network = new Network();
 function createWindow() {
     console.log("__dirname:", __dirname);
 
+    const state: IWindowState = loadWindowState();
+
     const win = new BrowserWindow({
-        width: 800,
-        height: 600,
+        width: state?.width ?? 1800,
+        height: state?.height ?? 1200,
+        x: state?.x,
+        y: state?.y,
         webPreferences: {
             preload: join(__dirname, '../preload/index.js'),
             contextIsolation: true,
         }
     });
+
+    // Debounce so it only saves after moving/resizing has paused for a time
+    let t: NodeJS.Timeout | undefined;
+    let scheduleSave = () => {
+        if(t)
+            clearTimeout(t);
+        t = setTimeout(() => saveWindowState(win), 300);
+    }
+
+    win.on('resize', scheduleSave);
+    win.on('move', scheduleSave);
+    win.on('close', () => saveWindowState(win));
+
+    if(state?.isMaximized)
+        win.maximize();
 
     // Apparently this isn't always set properly. Let's use a
     // different way to identify if we're in dev or prod.
@@ -49,6 +74,23 @@ function createWindow() {
         console.log(`PRODUCTION -- Loading file ${filePath}`);
         win.loadFile(filePath);
     }
+}
+
+function loadWindowState(): IWindowState | undefined {
+    try {
+        return JSON.parse(fs.readFileSync(__windowStatePath, 'utf-8'))
+    } catch {
+        return undefined
+    }
+}
+
+function saveWindowState(window: BrowserWindow) {
+    const bounds = window.getBounds();
+    const state: IWindowState = {
+        ...bounds,
+        isMaximized: window.isMaximized()
+    };
+    fs.writeFileSync(__windowStatePath, JSON.stringify(state), 'utf-8');
 }
 
 app.whenReady().then(() => {
