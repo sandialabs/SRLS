@@ -67,7 +67,7 @@ export class SettingsManager {
     // }
 
     get lanes(): ILaneSettings[] {
-        return this.Data.Lanes; 0
+        return this.Data.Lanes;
     }
 
     get num_lanes(): number {
