@@ -43,35 +43,26 @@
 
             <v-spacer></v-spacer>
 
-            <router-link to="/">
-                <v-icon title="Lane Simulators">local_shipping</v-icon>
-                <span class="material-icons">local_shipping</span>
-                <!-- <v-icon icon="mdi-truck" /> -->
-                <!-- <v-icon title="Lane Simulators3" icon="mdi-help"></v-icon> -->
-            </router-link>
+            <v-btn to="/" icon variant="text" color="white" aria-label="Lane Simulators">
+                <v-icon icon="mdi-truck" />
+            </v-btn>
 
-            <router-link to="/settings" class="router-link">
-                <v-icon title="Settings">settings</v-icon>
-                <span class="material-icons">settings</span>
-            </router-link>
+            <v-btn to="/settings" icon variant="text" color="white" aria-label="Settings">
+                <v-icon icon="mdi-cog" />
+            </v-btn>
 
+            <!-- <router-link to="/test" class="router-link" v-if="appdata.is_dev">
+                            <v-icon title="Test">insert_chart</v-icon>
+                            <span class="material-icons">insert_chart</span>
+                        </router-link> -->
 
-            <router-link to="/test" class="router-link" v-if="appdata.is_dev">
-                <v-icon title="Test">insert_chart</v-icon>
-                <span class="material-icons">insert_chart</span>
-            </router-link>
+            <v-btn to="/about" icon variant="text" color="white" aria-label="Information">
+                <v-icon icon="mdi-information" />
+            </v-btn>
 
-
-            <router-link to="/about" class="router-link">
-                <v-icon title="About">info</v-icon>
-                <span class="material-icons">info</span>
-            </router-link>
-
-            <router-link to="/help" class="router-link">
-                <v-icon title="Help">help</v-icon>
-                <span class="material-icons">help</span>
-                <!-- <v-icon icon="mdi-truck" /> -->
-            </router-link>
+            <v-btn to="/help" icon variant="text" color="white" aria-label="Help">
+                <v-icon icon="mdi-help-circle" />
+            </v-btn>
         </v-app-bar>
 
         <v-main>
@@ -116,7 +107,7 @@ export default {
             await settings.loadSettings();
             settings.settingsManager?.create_default_lane();
         }
-        catch(e) {
+        catch (e) {
             console.error(`App.vue created(), error loading settings ${e}`);
         }
 

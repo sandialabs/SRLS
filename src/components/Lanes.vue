@@ -32,9 +32,9 @@
                     <thead class="white--text">
                         <tr>
                             <th>Name</th>
+                            <th>IP addr:port (connections)</th>
                             <th>&nbsp;</th>
-                            <th>&nbsp;</th>
-                            <th>Status</th>
+                            <th>Most recent message</th>
                             <th>Actions</th>
                             <th>Lane</th>
                         </tr>
@@ -42,7 +42,7 @@
                     <tbody>
                         <tr v-for="lane in lanedata" :key="lane.LaneID">
                             <td>{{ lane.LaneName }}</td>
-                            <td>{{ lane.RPM.IPAddr }}:{{ lane.RPM.Port }}</td>
+                            <td>{{ lane.RPM.IPAddr }}:{{ lane.RPM.Port }} ({{ connectionCount(lane) }})</td>
                             <td>
                                 <v-row class="align-center">
                                     <v-switch hide-details base-color="gray" color="green" :model-value="lane.Enabled"
@@ -426,6 +426,11 @@ export default defineComponent({
         mostRecentMessage(lane: ILaneSettings): string {
             let sim: LaneSimulator = this.simMap[lane.LaneID];
             return sim && sim.RPM ? sim.RPM.MostRecentMessage : "";
+        },
+
+        connectionCount(lane: ILaneSettings): number {
+            let sim: LaneSimulator = this.simMap[lane.LaneID];
+            return sim && sim.RPM ? sim.RPM.ConnectionCount : 0;
         },
 
         start_simulator: function (lane: ILaneSettings) {
