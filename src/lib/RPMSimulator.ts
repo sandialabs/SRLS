@@ -639,7 +639,7 @@ export class RPMSimulator extends Component {
 
             if(this.m_current_profile) {
                 this.m_current_profile.AddTimeOffset(now);
-                this.m_current_profile.Cursor = 0;
+                this.m_current_profile.m_cursor = 0;
             }
         }
 
