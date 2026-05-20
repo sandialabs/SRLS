@@ -1,4 +1,6 @@
 import * as net from "net";
+import { EventEmitter } from "events";
+import { ConnectionStats } from "../lib/ConnectionStats";
 
 export class NetworkConfig {
     constructor(private _ip: string, private _port: number) {
@@ -33,7 +35,7 @@ class SocketsManager {
     private _listener: net.Server;
     private _sockets: net.Socket[];
 
-    constructor(private config: NetworkConfig) {
+    constructor(private config: NetworkConfig, private onCountChanged?: () => void) {
         let self = this;
 
         this._sockets = [];
@@ -46,22 +48,32 @@ class SocketsManager {
 
                 console.log(`Connection to ${key}`);
                 self.add(socket);
+                self.onCountChanged?.();
+
+                const drop = () => {
+                    self.remove(socket);
+                    self.onCountChanged?.();
+                }
 
                 socket.on("close", () => {
                     console.log(`Connection ${key} is closing`);
-                    self.remove(socket);
+                    drop();
                 });
                 socket.on("end", () => {
                     console.log(`Connection ${key} is ending`);
-                    self.remove(socket);
+                    drop();
                 });
-                socket.on("error", (error) => {
+                socket.on("error", (error: any) => {
                     console.error(`Connection ${key} error: ${error}`);
-                    self.remove(socket);
+                    drop();
                 });
             }
         });
         this._listener = this._server.listen(config.port, config.ip);
+    }
+
+    get connectionCount(): number {
+        return this._sockets.length;
     }
 
     private add(socket: net.Socket): void {
@@ -69,8 +81,8 @@ class SocketsManager {
     }
 
     private remove(socket: net.Socket): void {
-        let doomed = this._sockets.findIndex(s => s == socket);
-        if (doomed)
+        let doomed = this._sockets.findIndex(s => s === socket);
+        if (doomed >= 0)
             this._sockets.splice(doomed, 1);
     }
 
@@ -89,10 +101,11 @@ interface SocketMap {
     [key:string]: SocketsManager;
 }
 
-export class Network {
+export class Network extends EventEmitter {
     private _socketMap: SocketMap;
 
     constructor() {
+        super();
         this._socketMap = {};
     }
 
@@ -111,8 +124,10 @@ export class Network {
             else {
                 try {
                     console.log(`Network.listen ${config}`);
-                    let sockets: SocketsManager = new SocketsManager(config);
+                    let sockets: SocketsManager = new SocketsManager(config, () => this.emitConnectionCount(key));
                     self._socketMap[key] = sockets;
+
+                    this.emitConnectionCount(key);
                     resolve(true);
                 }
                 catch(error) {
@@ -135,12 +150,12 @@ export class Network {
         // remove the key from the socket map
         delete this._socketMap[key];
 
-        if(sockets) {
+        if(sockets)
             sockets.close();
-            return true;
-        }
-        else
-            return false;
+
+        this.emitConnectionCount(key);
+
+        return !!sockets;
     }
 
     sendData(config: NetworkConfig, data: string): boolean {
@@ -149,11 +164,18 @@ export class Network {
         
         console.log(`Network.sendData -- sending '${data}' to ${key}`);
 
-        if (sockets) {
+        if (sockets)
             sockets.send(data);
-            return true;
-        }
-        else
-            return false;
+
+        return !!sockets;
+    }
+
+    private emitConnectionCount(key: string) {
+        let sockets: SocketsManager = this._socketMap[key];
+        let count: number = sockets ? sockets.connectionCount : 0;
+
+        console.log(`emitConnectionCount: ${key}:${count}`);
+
+        this.emit('connections-changed', { key, connectionCount: count } satisfies ConnectionStats);
     }
 }

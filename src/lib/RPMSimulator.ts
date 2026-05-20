@@ -6,6 +6,7 @@ import { ProfileGenerator2 } from "./ProfileGenerator2";
 import { ILaneSettings } from "./ILaneSettings";
 import { ELogLevel } from "./Logger";
 import { LaneSimulator } from "./LaneSim";
+import { ConnectionStats } from "./ConnectionStats";
 
 const ONE_YEAR_IN_MS = 60 * 60 * 24 * 365 * 1000;
 
@@ -36,8 +37,10 @@ export class RPMSimulator extends Component {
     m_queued_profiles: RPMProfile[] = [];
     m_current_profile: RPMProfile | null = null;
 
-    m_ipaddr: string;
-    m_rpm_port: number; // the port we are talking on
+    private m_ipaddr: string;
+    private m_rpm_port: number; // the port we are talking on
+    private m_connection_count: number;
+    private m_connection_count_unsubscribe: null | (() => void) = null;
 
     // m_listener: any; // the TCP/IP server
     // m_clients: any[] = []; // connected clients
@@ -98,6 +101,10 @@ export class RPMSimulator extends Component {
         return this.m_most_recent_message;
     }
 
+    get ConnectionCount(): number {
+        return this.m_connection_count;
+    }
+
     //------------------------------------------------------------
     //
     // Function:    constructor
@@ -122,6 +129,7 @@ export class RPMSimulator extends Component {
         this.LogDebug("    Creating RPM simulator " + name);
         this.m_ipaddr = ipaddr;
         this.m_rpm_port = port;
+        this.m_connection_count = 0;
         this.m_name = name;
         this.m_profile_generator =
             profile_generator == null ? new ProfileGenerator2() : profile_generator;
@@ -182,6 +190,15 @@ export class RPMSimulator extends Component {
             .catch((err) => {
                 console.error(`RPMSimulator.Start error -- ${err}`);
             });
+        this.m_connection_count_unsubscribe = window.electronAPI.onConnectionsChanged((stats: ConnectionStats) => {
+            const key = `${self.m_ipaddr}:${self.m_rpm_port}`;
+            if(key !== stats.key)
+                return;
+
+            console.log(`Updating connection count: ${key}:${stats.connectionCount}`);
+
+            this.m_connection_count = stats.connectionCount;
+        });
     }
 
     public Stop(): void {
@@ -190,6 +207,9 @@ export class RPMSimulator extends Component {
         this.LogDebug("Shutting down RPM simulator on port " + this.m_rpm_port);
 
         // ipcRenderer.invoke("network-stop-listening", [this.m_rpm_port, this.m_ipaddr]);
+
+        if(this.m_connection_count_unsubscribe)
+            this.m_connection_count_unsubscribe();
 
         window.electronAPI.stopListen(this.m_rpm_port, this.m_ipaddr);
 

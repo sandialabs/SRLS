@@ -4,7 +4,7 @@ import path, { dirname, join } from 'path';
 import fs from 'fs';
 import os from 'os';
 import { readFile, writeFile } from 'fs/promises';
-import { Network, NetworkConfig } from './network';
+import { ConnectionStats, Network, NetworkConfig } from './network';
 
 // make a directory for replay data if one doesn't exist
 // if (window.electronAPI && !window.electronAPI.existsSync("Replay")) {
@@ -58,6 +58,8 @@ function createWindow() {
     win.on('move', scheduleSave);
     win.on('close', () => saveWindowState(win));
 
+    attachNetworkToWindow(win);
+
     if(state?.isMaximized)
         win.maximize();
 
@@ -76,11 +78,17 @@ function createWindow() {
     }
 }
 
-function loadWindowState(): IWindowState | undefined {
+function loadWindowState(): IWindowState {
     try {
         return JSON.parse(fs.readFileSync(__windowStatePath, 'utf-8'))
     } catch {
-        return undefined
+        return {
+            height: 1200,
+            width: 1800,
+            x: 0,
+            y: 0,
+            isMaximized: false
+        };
     }
 }
 
@@ -91,6 +99,12 @@ function saveWindowState(window: BrowserWindow) {
         isMaximized: window.isMaximized()
     };
     fs.writeFileSync(__windowStatePath, JSON.stringify(state), 'utf-8');
+}
+
+function attachNetworkToWindow(window: BrowserWindow) {
+    _network.on('connections-changed', (stats: ConnectionStats) => {
+        window.webContents.send('network-connections-changed', stats);
+    })
 }
 
 app.whenReady().then(() => {
