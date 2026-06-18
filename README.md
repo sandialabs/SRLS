@@ -1,8 +1,12 @@
 # SRLS - Sandia RPM Lane Simulator
 
-# Building and Running
+## Executables
 
-## Project setup
+The most recent releases are kept at: https://github.com/sandialabs/SRLS/releases
+
+## Building and Running
+
+### Project setup
 
 ```
 npm install
@@ -12,22 +16,38 @@ npm install
 
 > Because the NodeJS back-end does a lot of the work, SRLS cannot be run apart from the electron environment. Appropriate debugging can be done, however, through VSCode using the provided launch configurations.
 
-
-# Creating an installer
+### Creating an installer
 
 To create an installer for SRLS, run the following command.
 
 ```
-npm run electron:build
+npm run app:build
 ```
 
-This will create an installer for the platform that you are running on and put it in ./dist_electron.
+This will create an installer for the platform that you are running on and put it in ./release/x.y.z
 
 | Platform | Build Product        |
 | -------- | -------------------- |
 | Windows  | Sandia RPM Lane Simulator_x.y.z.exe |
-| Mac      | TBD |
+| Mac      | Sandia RPM Lane Simulator_x.y.z.dmg |
 | Linux    | TBD |
+
+### Creating a new release
+
+Run the npm script:
+```
+npm run release
+```
+to increment the build patch version by 1 (i.e., from 1.2.111 to 1.2.112)
+
+### Creating a new installer
+
+Run the npm script:
+```
+npm run new-release
+```
+
+which will run the two scripts that increment the patch version and then build the installer
 
 ## License
 
