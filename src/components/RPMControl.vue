@@ -1,57 +1,154 @@
 <template>
-    <v-dialog v-model="is_visible" width="600">
+    <v-dialog v-model="is_visible" width="800">
         <v-card>
             <v-card-title class="d-flex align-left">
                 <span>{{ title }}</span>
-                <v-icon class="ms-auto" color="green" icon="mdi-information"
-                    v-on:click="info_visible = !info_visible"></v-icon>
+                <!-- <v-icon class="ms-auto" color="green" icon="mdi-information"
+                    v-on:click="info_visible = !info_visible"></v-icon> -->
             </v-card-title>
 
             <v-card-text>
-                <p v-if="info_visible">
-                    Use this popup to change the RPM detector values.
-                    <i>Gamma Sum</i> and
-                    <i>Neutron Sum</i>
-                    sliders control the sum of the four detectors and this total count will be distributed to
-                    the detectors according to the global gamma or neutron detector distribution settings.
-                    For the gamma detectors, you can control each detector individually as well using the
-                    Master/Slave and Upper/Lower sliders.
-                </p>
-                <p v-if="info_visible">
-                    Use the <i>Unoccupied/Occupied</i> switch to toggle the RPM's occupancy sensor.
-                </p>
-                <v-row>
-                    <v-col cols="12">
-                        <v-slider v-model="gamma_sum" label="Gamma Sum" thumb-label min="0" max="2000"
-                            style="height: 30px;" @update:modelValue="on_gamma_sum_change()"></v-slider>
-                        <v-slider v-model="gamma_vals[0]" label="Master Lower:" thumb-label min="0" max="500"
-                            :thumb-color="gamma_thumb_color(0)" style="margin-left: 1rem; height: 20px;"
-                            @update:modelValue="on_gamma_val_change(0)"></v-slider>
-                        <v-slider v-model="gamma_vals[1]" label="Master Upper" thumb-label min="0" max="500"
-                            :thumb-color="gamma_thumb_color(1)" style="margin-left: 1rem; height: 20px;"
-                            @update:modelValue="on_gamma_val_change(1)"></v-slider>
-                        <v-slider v-model="gamma_vals[2]" label="Slave Lower" thumb-label min="0" max="500"
-                            :thumb-color="gamma_thumb_color(2)" style="margin-left: 1rem; height: 20px;"
-                            @update:modelValue="on_gamma_val_change(2)"></v-slider>
-                        <v-slider v-model="gamma_vals[3]" label="Slave Upper" thumb-label min="0" max="500"
-                            :thumb-color="gamma_thumb_color(3)" style="margin-left: 1rem; height: 20px;"
-                            @update:modelValue="on_gamma_val_change(3)"></v-slider>
-                        <v-slider v-model="neutron_sum" label="Neutron Sum" thumb-label min="0" max="50"
-                            :thumb-color="neutron_thumb_color()" style="height: 30px; margin-top: 30px;"
-                            @update:modelValue="on_neutron_sum_change()"></v-slider>
-                    </v-col>
-                </v-row>
-                <div class="d-flex align-center">
-                    <span>Unoccupied</span>
-                    <v-switch hide-details inset :model-value="is_occupied"
-                        @update:model-value="on_occupancy_change()">
-                    </v-switch>
-                    <span>Occupied</span>
-                </div>
+                <v-card v-if="info_visible">
+                    <p>
+                        Use this popup to change the RPM detector values.
+                        <i>Gamma Sum</i> and <i>Neutron Sum</i>
+                        sliders control the sum of the four detectors and this total count will be distributed to
+                        the detectors according to the global gamma or neutron detector distribution settings.
+                        For the gamma detectors, you can control each detector individually as well using the
+                        Master/Slave and Upper/Lower sliders.
+                    </p>
+                    <p>
+                        Adjust the occupancy duration slider to update how long occupancies occur in seconds, and use
+                        the
+                        <i>Unoccupied/Occupied</i> switch to toggle the RPM's occupancy sensor.
+                    </p>
+                </v-card>
+                <v-card>
+                    <v-card-title>
+                        Gamma
+                    </v-card-title>
+                    <v-card-text>
+                        <v-row>
+                            <v-col cols="12">
+                                <v-slider v-model="gamma_sum" thumb-label min="0" max="2000" style="height: 20px"
+                                    @update:modelValue="on_gamma_sum_change()">
+                                    <template v-slot:prepend>
+                                        Sum
+                                    </template>
+                                    <template v-slot:append>
+                                        <v-chip>{{ format_number(gamma_sum) }}</v-chip>
+                                    </template>
+                                </v-slider>
+                            </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-col cols="11" offset="1">
+                                <v-slider v-model="gamma_vals[0]" thumb-label min="0" max="500" style="height: 20px"
+                                    :thumb-color="gamma_thumb_color(0)" @update:modelValue="on_gamma_val_change(0)">
+                                    <template v-slot:prepend>
+                                        Master Lower
+                                    </template>
+                                    <template v-slot:append>
+                                        <v-chip>{{ format_number(gamma_vals[0]) }}</v-chip>
+                                    </template>
+                                </v-slider>
+                            </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-col cols="11" offset="1">
+                                <v-slider v-model="gamma_vals[1]" thumb-label min="0" max="500" style="height: 20px"
+                                    :thumb-color="gamma_thumb_color(1)" @update:modelValue="on_gamma_val_change(1)">
+                                    <template v-slot:prepend>
+                                        Master Upper
+                                    </template>
+                                    <template v-slot:append>
+                                        <v-chip>{{ format_number(gamma_vals[1]) }}</v-chip>
+                                    </template>
+                                </v-slider>
+                            </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-col cols="11" offset="1">
+                                <v-slider v-model="gamma_vals[2]" thumb-label min="0" max="500" style="height: 20px"
+                                    :thumb-color="gamma_thumb_color(2)" @update:modelValue="on_gamma_val_change(2)">
+                                    <template v-slot:prepend>
+                                        Slave Lower
+                                    </template>
+                                    <template v-slot:append>
+                                        <v-chip>{{ format_number(gamma_vals[2]) }}</v-chip>
+                                    </template>
+                                </v-slider>
+                            </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-col cols="11" offset="1">
+                                <v-slider v-model="gamma_vals[3]" thumb-label min="0" max="500" style="height: 20px"
+                                    :thumb-color="gamma_thumb_color(3)" @update:modelValue="on_gamma_val_change(3)">
+                                    <template v-slot:prepend>
+                                        Slave Upper
+                                    </template>
+                                    <template v-slot:append>
+                                        <v-chip>{{ format_number(gamma_vals[3]) }}</v-chip>
+                                    </template>
+                                </v-slider>
+                            </v-col>
+                        </v-row>
+                    </v-card-text>
+                </v-card>
+                <v-card>
+                    <v-card-title>
+                        Neutron
+                    </v-card-title>
+                    <v-card-text>
+                        <v-row>
+                            <v-col cols="12">
+                                <v-slider v-model="neutron_sum" thumb-label min="0" max="50" style="height: 20px"
+                                    :thumb-color="neutron_thumb_color()" @update:modelValue="on_neutron_sum_change()">
+                                    <template v-slot:prepend>
+                                        Sum
+                                    </template>
+                                    <template v-slot:append>
+                                        <v-chip>{{ format_number(neutron_sum) }}</v-chip>
+                                    </template>
+                                </v-slider>
+                            </v-col>
+                        </v-row>
+                    </v-card-text>
+                </v-card>
+                <v-card>
+                    <v-card-title>
+                        Occupancy
+                    </v-card-title>
+                    <v-card-text>
+                        <v-row>
+                            <v-col cols="12">
+                                <v-range-slider v-model="occupancy_range" thumb-label min="5" max="50" style="height: 20px"
+                                    strict @update:modelValue="on_occupancy_duration_change()">
+                                    <template v-slot:prepend>
+                                        Duration
+                                    </template>
+                                    <template v-slot:append>
+                                        <v-chip>{{ format_number(occupancy_range[0]) }} to {{
+                                            format_number(occupancy_range[1]) }}</v-chip> seconds
+                                    </template>
+                                </v-range-slider>
+                            </v-col>
+                        </v-row>
+                        <v-row class="align-center">
+                            <span>Unoccupied</span>
+                            <v-switch hide-details inset :model-value="is_occupied"
+                                @update:model-value="on_occupancy_change()">
+                            </v-switch>
+                            <span>Occupied</span>
+                        </v-row>
+                    </v-card-text>
+                </v-card>
             </v-card-text>
 
             <v-card-actions>
-                <v-btn color="primary" @click="is_visible = false">Close</v-btn>
+                <v-btn v-if="!info_visible" color="secondary" text="Learn More" @click="info_visible = true"></v-btn>
+                <v-btn v-else color="secondary" text="Hide Information" @click="info_visible = false"></v-btn>
+                <v-btn color="primary" @click="is_visible = false" text="Close"></v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
@@ -60,9 +157,10 @@
 <script lang="ts">
 
 import { Reactive, reactive, Ref, ref } from "vue";
-import { ILaneSettings } from "../lib/ILaneSettings";
-import { RPMSimulator } from "../lib/RPMSimulator";
+import { Distribution } from "../lib/RPMSimulator";
 import { LaneSimulator } from "../lib/LaneSim";
+import { LaneSettings } from "../lib/LaneSettings";
+import { useSettingsStore } from "../store/settingsStore";
 
 console.log("Loading RPMControl");
 export default {
@@ -76,9 +174,11 @@ export default {
         const gamma_sum = ref(200);
         const gamma_vals: Reactive<number[]> = reactive([50, 50, 50, 50]);
         const neutron_sum = ref(6);
+        const occupancy_range = ref([10, 20]);
         const current_gamma_distribution: Reactive<number[]> = reactive([]);
-        const rpmsim: Ref<RPMSimulator | null> = ref(null);
-        const lane: Ref<ILaneSettings | null> = ref(null);
+        const lane: Ref<LaneSettings | null> = ref(null);
+        const lanesim: Ref<LaneSimulator | null> = ref(null);
+        const settingsStore = useSettingsStore();
 
         return {
             title,
@@ -88,39 +188,30 @@ export default {
             gamma_sum,
             gamma_vals,
             neutron_sum,
+            occupancy_range,
             current_gamma_distribution,
-            rpmsim,
-            lane
+            lane,
+            lanesim,
+            settingsStore,
         };
     },
-
-    // data: function () {
-    //     return {
-    //         title: "LANE" as string,
-    //         is_visible: false as boolean,
-    //         info_visible: false as boolean,
-    //         is_occupied: false,
-    //         gamma_sum: 200, // gamma count order is ml, mu, sl, su
-    //         gamma_vals: [50, 50, 50, 50],
-    //         neutron_sum: 6,
-    //         current_gamma_distribution: [] as number[],
-    //         rpmsim: null as IRPMSettings | null,
-    //         lane: null as ILaneSettings | null,
-    //     };
-    // },
     created: function () {
     },
     methods: {
-        show: function (lane: ILaneSettings, sim: LaneSimulator) {
+        show: function (lane: LaneSettings, sim: LaneSimulator) {
             console.log("RPMControl", lane, sim);
 
             this.lane = lane;
-            this.rpmsim = sim.RPM;
+            this.lanesim = sim;
             this.title = lane.LaneName;
             this.is_visible = true;
+            this.info_visible = false;
 
             this.current_gamma_distribution = this.lane.RPM.GammaDistribution.slice(0);    // duplicate
             this.set_gamma_sum(this.lane.RPM.GammaBG * 4);
+
+            this.occupancy_range[0] = this.lane.AutoMinOccupancyDurationSeconds;
+            this.occupancy_range[1] = this.lane.AutoMaxOccupancyDurationSeconds;
         },
 
         gamma_thumb_color(ix: number): string {
@@ -175,29 +266,49 @@ export default {
             console.log("on_gamma_sum_change", this.gamma_sum);
 
             this.set_gamma_sum(this.gamma_sum);
-            this.rpmsim?.SetGammaBackground(Math.round(this.gamma_sum / 4));
+            this.lanesim?.RPM?.SetGammaBackground(Math.round(this.gamma_sum / 4));
         },
 
         on_gamma_val_change: function (ix: number) {
-            console.log(`on_gamma_val_change, ${ix}`, this.rpmsim);
+            console.log(`on_gamma_val_change: ${ix} -- `, this.lanesim?.RPM);
 
             let newval = this.gamma_vals[ix];
             this.set_gamma_val(ix, newval);
-            this.rpmsim?.SetGammaDistribution(this.current_gamma_distribution);
-            this.rpmsim?.SetGammaBackground(Math.round(this.gamma_sum / 4));
+
+            const g_dist: number[] = this.current_gamma_distribution;
+            const dist: Distribution = new Distribution(g_dist[0], g_dist[1], g_dist[2], g_dist[3]);
+
+            this.lanesim?.RPM?.SetGammaDistribution(dist);
+            this.lanesim?.RPM?.SetGammaBackground(Math.round(this.gamma_sum / 4));
         },
 
         on_neutron_sum_change: function () {
             let newval = Math.round(this.neutron_sum / 4);
             console.log("Setting neutron background to " + newval);
-            this.rpmsim?.SetNeutronBackground(newval);
+            this.lanesim?.RPM?.SetNeutronBackground(newval);
         },
 
         on_occupancy_change: function () {
             this.is_occupied = !this.is_occupied;
             console.log("Occupied: ", this.is_occupied);
-            this.rpmsim?.SetOccupancy(this.is_occupied);
+            this.lanesim?.RPM?.SetOccupancy(this.is_occupied);
         },
+
+        on_occupancy_duration_change: function () {
+            console.log(`on_occupancy_duration_change ${this.occupancy_range}`);
+
+            if (this.lane) {
+                this.lane.set_occupancy_range(this.occupancy_range[0], this.occupancy_range[1]);
+                this.lanesim?.UpdateSettings(this.lane);
+
+                this.settingsStore.settingsManager.update_lane(this.lane);
+                this.settingsStore.settingsManager.save();
+            }
+        },
+
+        format_number(value: number): string {
+            return value.toFixed(1);
+        }
     },
 };
 </script>

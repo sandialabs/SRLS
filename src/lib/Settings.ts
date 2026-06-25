@@ -16,7 +16,9 @@ export class Settings implements ISettings {
     DefaultNHThreshold: number;
     DefaultAutoGammaProbability: number;
     DefaultAutoNeutronProbability: number;
-    DefaultAutoInterval: number;
+    DefaultAutoIntervalSeconds: number;
+    DefaultAutoMinOccupancyDurationSeconds: number;
+    DefaultAutoMaxOccupancyDurationSeconds: number;
     LogLevel: string;
     LogFilename: string;
     Lanes: ILaneSettings[];
@@ -34,7 +36,11 @@ export class Settings implements ISettings {
         this.DefaultNHThreshold = settings.DefaultNHThreshold;
         this.DefaultAutoGammaProbability = settings.DefaultAutoGammaProbability;
         this.DefaultAutoNeutronProbability = settings.DefaultAutoNeutronProbability;
-        this.DefaultAutoInterval = settings.DefaultAutoInterval;
+        this.DefaultAutoIntervalSeconds = settings.DefaultAutoIntervalSeconds;
+        this.DefaultAutoMinOccupancyDurationSeconds = settings.DefaultAutoMinOccupancyDurationSeconds;
+        this.DefaultAutoMaxOccupancyDurationSeconds = settings.DefaultAutoMaxOccupancyDurationSeconds;
+        // Make sure the max is at least 1 second more than the min
+        this.DefaultAutoMaxOccupancyDurationSeconds = Math.max(this.DefaultAutoMinOccupancyDurationSeconds + 1, this.DefaultAutoMaxOccupancyDurationSeconds);
         this.LogLevel = settings.LogLevel;
         this.LogFilename = settings.LogFilename;
         this.Lanes = [...settings.Lanes];
@@ -53,7 +59,12 @@ export class Settings implements ISettings {
         this.DefaultNHThreshold = settings.DefaultNHThreshold;
         this.DefaultAutoGammaProbability = settings.DefaultAutoGammaProbability;
         this.DefaultAutoNeutronProbability = settings.DefaultAutoNeutronProbability;
-        this.DefaultAutoInterval = settings.DefaultAutoInterval;
+        this.DefaultAutoIntervalSeconds = settings.DefaultAutoIntervalSeconds;
+        this.DefaultAutoMinOccupancyDurationSeconds = settings.DefaultAutoMinOccupancyDurationSeconds;
+        this.DefaultAutoMaxOccupancyDurationSeconds = settings.DefaultAutoMaxOccupancyDurationSeconds;
+        // Make sure the max is at least 1 second more than the min
+        this.DefaultAutoMaxOccupancyDurationSeconds = Math.max(this.DefaultAutoMinOccupancyDurationSeconds + 1, this.DefaultAutoMaxOccupancyDurationSeconds);
+        this.LogLevel = settings.LogLevel;
         this.LogLevel = settings.LogLevel;
         this.LogFilename = settings.LogFilename;
         this.Lanes.splice(0, this.Lanes.length, ...settings.Lanes);
@@ -77,7 +88,9 @@ export class Settings implements ISettings {
             DefaultNHThreshold: 7,
             DefaultAutoGammaProbability: 0.05,
             DefaultAutoNeutronProbability: 0.05,
-            DefaultAutoInterval: 30.0,
+            DefaultAutoIntervalSeconds: 30.0,
+            DefaultAutoMinOccupancyDurationSeconds: 10.0,
+            DefaultAutoMaxOccupancyDurationSeconds: 20.0,
             LogLevel: "warning",
             LogFilename: "",
             Lanes: [],

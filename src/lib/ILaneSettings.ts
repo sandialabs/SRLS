@@ -8,7 +8,9 @@ export interface ILaneSettings {
 
     AutoGammaProbability: number;
     AutoNeutronProbability: number;
-    AutoInterval: number;
+    AutoIntervalSeconds: number;
+    AutoMinOccupancyDurationSeconds: number;
+    AutoMaxOccupancyDurationSeconds: number;
 
     RPM: IRPMSettings;
 

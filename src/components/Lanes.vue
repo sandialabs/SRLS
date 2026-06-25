@@ -1,6 +1,6 @@
 <template>
     <v-container fluid>
-        <LaneSettings ref="settingsdialog" />
+        <LaneSettingsDlg ref="settingsdialog" />
         <Confirm ref="confirmdialog" />
         <Notify ref="notifydialog" />
         <RPMControl ref="rpmcontrol" />
@@ -105,17 +105,18 @@
 <script lang="ts">
 
 import ActionIcon from "./ActionIcon.vue";
-import LaneSettings from "./LaneSettings.vue";
+import LaneSettingsDlg from "./LaneSettingsDlg.vue";
 import Confirm from "./Confirm.vue";
 import Notify from "./Notify.vue";
 import RPMControl from "./RPMControl.vue";
 import { SettingsManager } from "../lib/SettingsManager";
+import { LaneSettings } from "../lib/LaneSettings";
 import { ILaneSettings } from "../lib/ILaneSettings";
 import { LaneSimulator } from "../lib/LaneSim";
 import { banner } from "../lib/Utility";
 import { defineComponent, Reactive, reactive, ref } from "vue";
 import { useSettingsStore } from "../store/settingsStore";
-import { storeToRefs } from "pinia";
+// import { storeToRefs } from "pinia";
 
 console.log("Lanes.vue loaded");
 
@@ -137,15 +138,15 @@ export default defineComponent({
     },
     components: {
         ActionIcon: ActionIcon,
-        LaneSettings: LaneSettings,
+        LaneSettingsDlg: LaneSettingsDlg,
         Confirm: Confirm,
         Notify: Notify,
         RPMControl: RPMControl,
     },
     computed: {
-        lanedata(): ILaneSettings[] {
+        lanedata(): LaneSettings[] {
             // console.log("Lanes.vue.computed.lanedata", this.settingsManager.lanes.length);
-            return useSettingsStore().settingsManager.lanes;
+            return useSettingsStore().settingsManager.lanes.map(lane => new LaneSettings(lane));
         },
         areAllLanesOn(): boolean {
             const allAreOn: boolean = useSettingsStore().settingsManager.lanes.find(lane => !lane.Enabled) == undefined;
@@ -217,7 +218,7 @@ export default defineComponent({
             const maxPort = this.lanedata.reduce((acc, currentValue) => Math.max(currentValue.RPM.Port, acc), 0);
             let settings = useSettingsStore().settingsManager.default_lane_settings("New Lane", "127.0.0.1", maxPort + 1);
             console.log("Lane Settings", settings);
-            (<typeof LaneSettings>this.$refs["settingsdialog"]).open("Add New Lane", settings, function (updated_settings: ILaneSettings) {
+            (<typeof LaneSettingsDlg>this.$refs["settingsdialog"]).open("Add New Lane", settings, function (updated_settings: ILaneSettings) {
                 console.log("Lanes on_add_lane callback");
 
                 updated_settings.Enabled = false;
@@ -262,7 +263,7 @@ export default defineComponent({
             });
         },
 
-        on_trigger_lane: function (lane: ILaneSettings, event_name: LaneEvents): void {
+        on_trigger_lane: function (lane: LaneSettings, event_name: LaneEvents): void {
             let sim: LaneSimulator = this.simMap[lane.LaneID];
             console.log("on_trigger_lane--simMap", this.simMap);
             console.log("on_trigger_lane--lane", lane);
@@ -378,7 +379,7 @@ export default defineComponent({
             if (sim)
                 return sim;
 
-            let ls = new LaneSimulator(lane,
+            let ls = new LaneSimulator(new LaneSettings(lane),
                 <HTMLCanvasElement>document.getElementById("render-canvas")
             );
 
@@ -494,7 +495,7 @@ export default defineComponent({
                 if (this.lanedata[ix].LaneID == lane.LaneID) lane_index = ix;
             }
             if (lane_index >= 0) {
-                let settingsdlg = <typeof LaneSettings>this.$refs["settingsdialog"];
+                let settingsdlg = <typeof LaneSettingsDlg>this.$refs["settingsdialog"];
                 settingsdlg.open("Edit Lane", lane, function (updated_settings: ILaneSettings) {
                     updated_settings.Enabled = false;
                     let rc = useSettingsStore().settingsManager.update_lane(updated_settings);
@@ -509,14 +510,14 @@ export default defineComponent({
                             // lane.Simulator = undefined;
                             lane.Enabled = false;
                             let sim = new LaneSimulator(
-                                updated_settings,
+                                new LaneSettings(updated_settings),
                                 <HTMLCanvasElement>document.getElementById("render-canvas")
                             );
                             if (updated_settings.Enabled) {
                                 self.start_simulator(updated_settings);
                                 self.simMap[updated_settings.LaneID] = sim;
                             }
-                            self.lanedata[lane_index] = updated_settings;
+                            self.lanedata[lane_index] = new LaneSettings(updated_settings);
                             console.log("Updated lanedata:", self.lanedata);
                             self.$forceUpdate();
                         }

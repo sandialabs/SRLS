@@ -12,7 +12,9 @@ export class LaneSettings implements ILaneSettings {
     RPMAlgorithm: "simulated";
     AutoGammaProbability: number;
     AutoNeutronProbability: number;
-    AutoInterval: number;
+    AutoIntervalSeconds: number;
+    AutoMinOccupancyDurationSeconds: number;
+    AutoMaxOccupancyDurationSeconds: number;
     RPM: IRPMSettings;
     Status: string;
     OccupancyState: string;
@@ -24,13 +26,25 @@ export class LaneSettings implements ILaneSettings {
         this.RPMAlgorithm = "simulated";
         this.AutoGammaProbability = settings.AutoGammaProbability;
         this.AutoNeutronProbability = settings.AutoNeutronProbability;
-        this.AutoInterval = settings.AutoInterval;
+        this.AutoIntervalSeconds = settings.AutoIntervalSeconds;
+        this.AutoMinOccupancyDurationSeconds = settings.AutoMinOccupancyDurationSeconds ?? 10;
+        this.AutoMaxOccupancyDurationSeconds = settings.AutoMaxOccupancyDurationSeconds ?? 20;
+        // Make sure the max is at least 1 second more than the min
+        this.AutoMaxOccupancyDurationSeconds = Math.max(this.AutoMinOccupancyDurationSeconds + 1, this.AutoMaxOccupancyDurationSeconds);
         this.RPM = new RPMSettings(settings.RPM);
         this.Status = "";
         this.OccupancyState = "";
     }
 
-    clone(lane: LaneSettings): LaneSettings {
+    public set_occupancy_range(min: number, max: number): void {
+        this.AutoMinOccupancyDurationSeconds = min;
+        this.AutoMaxOccupancyDurationSeconds = max;
+        
+        // Make sure the max is at least 1 second more than the min
+        this.AutoMaxOccupancyDurationSeconds = Math.max(this.AutoMinOccupancyDurationSeconds + 1, this.AutoMaxOccupancyDurationSeconds);
+    }
+
+    static clone(lane: ILaneSettings): ILaneSettings {
         return new LaneSettings(lane);
     }
 
@@ -50,7 +64,9 @@ export class LaneSettings implements ILaneSettings {
             RPMAlgorithm: "simulated",
             AutoGammaProbability: settings.DefaultAutoGammaProbability,
             AutoNeutronProbability: settings.DefaultAutoNeutronProbability,
-            AutoInterval: settings.DefaultAutoInterval,
+            AutoIntervalSeconds: settings.DefaultAutoIntervalSeconds,
+            AutoMinOccupancyDurationSeconds: settings.DefaultAutoMinOccupancyDurationSeconds,
+            AutoMaxOccupancyDurationSeconds: settings.DefaultAutoMaxOccupancyDurationSeconds,
             RPM: RPMSettings.default_settings(),
             Status: "",
             OccupancyState: "",
