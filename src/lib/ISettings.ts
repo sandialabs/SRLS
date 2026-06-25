@@ -16,7 +16,9 @@ export interface ISettings {
 
     DefaultAutoGammaProbability: number;
     DefaultAutoNeutronProbability: number;
-    DefaultAutoInterval: number;
+    DefaultAutoIntervalSeconds: number;
+    DefaultAutoMinOccupancyDurationSeconds: number;
+    DefaultAutoMaxOccupancyDurationSeconds: number;
 
     LogLevel: string;
     LogFilename: string;

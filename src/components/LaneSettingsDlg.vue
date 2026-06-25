@@ -24,13 +24,11 @@
                         <v-row justify="center">
                             <v-col cols="12" sm="3" md="3">
                                 <v-text-field label="Gamma Background" v-model="settings.RPM.GammaBG"
-                                    hint="Single detector gamma background level"
-                                    persistent-hint></v-text-field>
+                                    hint="Single detector gamma background level" persistent-hint></v-text-field>
                             </v-col>
                             <v-col cols="12" sm="3" md="3">
                                 <v-text-field label="Neutron Background" v-model="settings.RPM.NeutronBG"
-                                    hint="Single detector neutron background level"
-                                    persistent-hint></v-text-field>
+                                    hint="Single detector neutron background level" persistent-hint></v-text-field>
                             </v-col>
                             <v-col cols="12" sm="3" md="3">
                                 <v-text-field label="N-Sigma" v-model="settings.RPM.GammaNSigma"
@@ -38,8 +36,7 @@
                             </v-col>
                             <v-col cols="12" sm="3" md="3">
                                 <v-text-field label="Neutron Alarm" v-model="settings.RPM.NeutronThreshold"
-                                    hint="Single detector neutron alarm threshold"
-                                    persistent-hint></v-text-field>
+                                    hint="Single detector neutron alarm threshold" persistent-hint></v-text-field>
                             </v-col>
                         </v-row>
 
@@ -79,7 +76,7 @@
                                     persistent-hint></v-text-field>
                             </v-col>
                             <v-col cols="12" sm="3" md="3">
-                                <v-text-field label="Interval" v-model="settings.AutoInterval"
+                                <v-text-field label="Interval" v-model="settings.AutoIntervalSeconds"
                                     hint="Number of seconds between occupancies" persistent-hint></v-text-field>
                             </v-col>
                         </v-row>

@@ -8,7 +8,34 @@ import { ELogLevel } from "./Logger";
 import { LaneSimulator } from "./LaneSim";
 import { ConnectionStats } from "./ConnectionStats";
 
-const ONE_YEAR_IN_MS = 60 * 60 * 24 * 365 * 1000;
+const ONE_DAY_IN_MS = 60 * 60 * 24 * 1000;
+const ONE_YEAR_IN_MS = ONE_DAY_IN_MS * 365;
+
+export type AlarmType = "OC" | "NG" | "GA" | "NA" | "GB" | "GL" | "GH" | "NS" | "GS" | "NB" | "NH";
+
+export class Distribution {
+    constructor(private ml: number, private mu: number, private sl: number, private su: number) {
+    }
+
+    public toString(): string {
+        return `${this.ml}, ${this.mu}, ${this.sl}, ${this.su}`;
+    }
+
+    public generate_bg(bgval: number, randomization: number): number[] {
+        // console.log("RPMSimulator.generate_bg  bgval:" + bgval + "  weights:" + weights);
+        let counts: number[] = this.asArray().map(weight => {
+            let count = bgval * weight;
+            count = Math.round(count + count * (0.5 - Math.random()) * randomization);
+            return count;
+        });
+        // console.log("generate_bg: ", counts);
+        return counts;
+    }
+
+    public asArray(): number[] {
+        return [this.ml, this.mu, this.sl, this.su];
+    }
+}
 
 interface IProfileGenerator {
     generate_profile(settings: any): number[][];
@@ -26,12 +53,12 @@ export class RPMSimulator extends Component {
 
     m_owner: LaneSimulator; // the LaneSimulator that created us
 
-    m_ga_file_cursor = 0;
-    m_na_file_cursor = 0;
-    m_ng_file_cursor = 0;
+    m_ga_file_cursor: number = 0;
+    m_na_file_cursor: number = 0;
+    m_ng_file_cursor: number = 0;
 
-    m_is_tamper_active = false;
-    m_name = "RPMSim";
+    m_is_tamper_active: boolean = false;
+    m_name: string = "RPMSim";
     m_profile_generator: IProfileGenerator;
 
     m_queued_profiles: RPMProfile[] = [];
@@ -42,44 +69,42 @@ export class RPMSimulator extends Component {
     private m_connection_count: number;
     private m_connection_count_unsubscribe: null | (() => void) = null;
 
-    // m_listener: any; // the TCP/IP server
-    // m_clients: any[] = []; // connected clients
-    m_gamma_background = 220; // mean single gamma detector background count
-    m_neutron_background = 2; // mean single neutron detector background count
+    m_gamma_background: number = 220; // mean single gamma detector background count
+    m_neutron_background: number = 2; // mean single neutron detector background count
 
     // Alarm thresholds
-    m_gamma_nsigma = 2; // sigma > this value is alarm
-    m_neutron_threshold = 2;
+    m_gamma_nsigma: number = 2; // sigma > this value is alarm
+    m_neutron_threshold: number = 2;
 
     // fault thresholds - these will be updated from RPMSettings
-    m_gamma_low_threshold = 50;
-    m_gamma_high_threshold = 400;
-    m_neutron_high_threshold = 20;
+    m_gamma_low_threshold: number = 50;
+    m_gamma_high_threshold: number = 400;
+    m_neutron_high_threshold: number = 20;
 
-    m_gx_counter = 0;
+    m_gx_counter: number = 0;
     // distribution of counts: ML, MU, SL, SU
-    m_gamma_distribution = [0.25, 0.25, 0.25, 0.25]; // ml, mu, sl, su
-    m_neutron_distribution = [0.25, 0.25, 0.25, 0.25]; // mu, ml, su, sl
+    m_gamma_distribution: Distribution = new Distribution(0.25, 0.25, 0.25, 0.25); // ml, mu, sl, su
+    m_neutron_distribution: Distribution = new Distribution(0.25, 0.25, 0.25, 0.25); // mu, ml, su, sl
     m_current_gamma_counts: number[] = [];
     m_current_neutron_counts: number[] = [];
-    m_gamma_count_randomization = 0.1;
-    m_neutron_count_randomization = 1.0;
-    m_next_background_time: number;
-    m_background_interval = 5000;
-    m_is_occupied = false;
-    m_next_gs_time = new Date().getTime() + ONE_YEAR_IN_MS; // used when m_is_occupied is on
-    m_next_ns_time = new Date().getTime() + ONE_YEAR_IN_MS; // used when m_is_occupied is on
+    m_gamma_count_randomization: number = 0.1;
+    m_neutron_count_randomization: number = 1.0;
+    m_next_background_time: Date;
+    m_background_interval_ms: number = 5000;
+    m_is_occupied: boolean = false;
+    m_next_gs_time: Date = RPMSimulator.future_time(ONE_YEAR_IN_MS); // used when m_is_occupied is on
+    m_next_ns_time: Date = RPMSimulator.future_time(ONE_YEAR_IN_MS); // used when m_is_occupied is on
     m_timer: NodeJS.Timeout | undefined;
 
     // Automatic profile generation
-    m_auto_mode_active = false;
-    m_auto_mode_gamma_probability = 0.044;
-    m_auto_mode_neutron_probability = 0.044;
-    m_auto_mode_interval_seconds = 30.44;
-    m_auto_mode_next_occupancy_time: number = new Date().getTime() + ONE_YEAR_IN_MS;
+    m_auto_mode_active: boolean = false;
+    m_auto_mode_gamma_probability: number = 0.044;
+    m_auto_mode_neutron_probability: number = 0.044;
+    m_auto_mode_interval_seconds: number = 30.44;
+    m_auto_mode_next_occupancy_time: Date = RPMSimulator.future_time(ONE_YEAR_IN_MS);
 
-    private m_is_paused = false;
-    private m_debug = false;
+    private m_is_paused: boolean = false;
+    private m_debug: boolean = false;
     private m_most_recent_message: string = "";
 
     get Name(): string {
@@ -133,7 +158,7 @@ export class RPMSimulator extends Component {
         this.m_name = name;
         this.m_profile_generator =
             profile_generator == null ? new ProfileGenerator2() : profile_generator;
-        this.m_next_background_time = this.current_time();
+        this.m_next_background_time = RPMSimulator.future_time(1000);
         this.m_current_profile = null;
         // this.m_listener = null;
         this.m_gamma_background = 212;
@@ -141,10 +166,6 @@ export class RPMSimulator extends Component {
         this.m_gamma_nsigma = 5;
         this.m_neutron_threshold = 7;
     }
-
-    // public SetOwner(owner: LaneSimulator) {
-    //     this.m_owner = owner;
-    // }
 
     public UpdateGlobalSettings(
         gamma_bg: number,
@@ -182,7 +203,7 @@ export class RPMSimulator extends Component {
 
                 // Wait up to 5 seconds so when all RPM simulators are being started (like during startup)
                 // they won't all be firing simultaneously
-                this.m_next_background_time = this.current_time() + Math.floor(Math.random() * 5000);
+                this.m_next_background_time = RPMSimulator.future_time(Math.floor(Math.random() * 5000));
                 this.m_timer = setInterval(() => {
                     self.on_timer();
                 }, 10);
@@ -192,7 +213,7 @@ export class RPMSimulator extends Component {
             });
         this.m_connection_count_unsubscribe = window.electronAPI.onConnectionsChanged((stats: ConnectionStats) => {
             const key = `${self.m_ipaddr}:${self.m_rpm_port}`;
-            if(key !== stats.key)
+            if (key !== stats.key)
                 return;
 
             console.log(`Updating connection count: ${key}:${stats.connectionCount}`);
@@ -208,7 +229,7 @@ export class RPMSimulator extends Component {
 
         // ipcRenderer.invoke("network-stop-listening", [this.m_rpm_port, this.m_ipaddr]);
 
-        if(this.m_connection_count_unsubscribe)
+        if (this.m_connection_count_unsubscribe)
             this.m_connection_count_unsubscribe();
 
         window.electronAPI.stopListen(this.m_rpm_port, this.m_ipaddr);
@@ -234,7 +255,7 @@ export class RPMSimulator extends Component {
 
             // Wait up to 5 seconds so when all RPM simulators are being started (like during startup)
             // they won't all be firing simultaneously
-            this.m_auto_mode_next_occupancy_time = new Date().getTime() + Math.floor(Math.random() * 5000);
+            this.m_auto_mode_next_occupancy_time = RPMSimulator.future_time(Math.floor(Math.random() * 5000));
             this.m_auto_mode_active = true;
 
             this.LogDebug("Auto mode started on lane " + this.m_name);
@@ -254,7 +275,7 @@ export class RPMSimulator extends Component {
     /** StopGenerating occupancies automatically */
     public StopAutoMode(): void {
         this.m_auto_mode_active = false;
-        this.m_auto_mode_next_occupancy_time = new Date().getTime() + ONE_YEAR_IN_MS;
+        this.m_auto_mode_next_occupancy_time = RPMSimulator.future_time(ONE_YEAR_IN_MS);
     }
 
     public Reset(): void {
@@ -274,7 +295,7 @@ export class RPMSimulator extends Component {
         this.m_neutron_high_threshold = settings.RPM.NHThreshold;
         this.m_auto_mode_gamma_probability = settings.AutoGammaProbability;
         this.m_auto_mode_neutron_probability = settings.AutoNeutronProbability;
-        this.m_auto_mode_interval_seconds = settings.AutoInterval;
+        this.m_auto_mode_interval_seconds = settings.AutoIntervalSeconds ?? 30;
     }
 
     public DumpSettings(): void {
@@ -317,17 +338,18 @@ export class RPMSimulator extends Component {
 
         if (this.m_is_occupied != state) {
             this.m_is_occupied = state;
-            let now = this.current_time();
             if (state) {
                 // we are turning occupancy mode on
-                this.m_next_gs_time = now + 100;
-                this.m_next_ns_time = now + 100;
-                this.m_next_background_time = now + ONE_YEAR_IN_MS;
+                const future = RPMSimulator.future_time(100);
+                this.m_next_gs_time = future;
+                this.m_next_ns_time = future;
+                this.m_next_background_time = RPMSimulator.future_time(ONE_YEAR_IN_MS);
             } else {
                 // we are turning occupancy mode off
-                this.m_next_gs_time = now + ONE_YEAR_IN_MS;
-                this.m_next_ns_time = now + ONE_YEAR_IN_MS;
-                this.m_next_background_time = now + 1000;
+                const future = RPMSimulator.future_time(ONE_YEAR_IN_MS);
+                this.m_next_gs_time = future;
+                this.m_next_ns_time = future;
+                this.m_next_background_time = RPMSimulator.future_time(1000);
                 this.send_gx();
             }
         }
@@ -348,13 +370,13 @@ export class RPMSimulator extends Component {
             console.log("New gamma background counts: " + counts);
     }
 
-    public SetGammaDistribution(weights: number[]): void {
-        this.m_gamma_distribution = weights;
+    public SetGammaDistribution(dist: Distribution): void {
+        this.m_gamma_distribution = dist;
         if (this.m_logger.Level >= ELogLevel.LOG_DEBUG)
-            console.log("New gamma distribution: ", weights);
+            console.log(`New gamma distribution: ${dist.toString()}`);
     }
 
-    public GenerateFromFile(alarmtype: string): RPMProfile | null {
+    public GenerateFromFile(alarmtype: AlarmType): RPMProfile | null {
         let result: RPMProfile | null = null;
         let filename: string = "";
         switch (alarmtype) {
@@ -558,15 +580,11 @@ export class RPMSimulator extends Component {
         }
         // results contains merged gamma and neutron counts
         // add a GX
-        this.m_gx_counter += 1;
+        // this.m_gx_counter += 1;
         result.AddGX(this.m_gx_counter);
         if (save) this.m_queued_profiles.push(result);
         //this.LogDebug("Occupancy:", result);
         return result;
-    }
-
-    public GenerateOccupancy(alarmtype: string): void {
-        this.m_owner.GenerateAlarm(alarmtype);
     }
 
     private convert_count_to_detector_values(
@@ -580,7 +598,7 @@ export class RPMSimulator extends Component {
         let is_alarm = false;
         let detector_threshold = alarm_threshold / 4.0;
         // generate individual detector counts based on distribution
-        for (let w of this.m_gamma_distribution) {
+        for (let w of this.m_gamma_distribution.asArray()) {
             let detector_value = w * summed_counts;
             is_alarm = is_alarm || detector_value >= detector_threshold;
             counts.push(Math.round(detector_value));
@@ -645,8 +663,7 @@ export class RPMSimulator extends Component {
     //------------------------------------------------------------
     /** Handle timer tick */
     private on_timer() {
-        let now = this.current_time();
-
+        const now: Date = new Date();
         // console.log("RPMSimulator.on_timer");
 
         if (this.m_current_profile == null && this.m_queued_profiles.length > 0) {
@@ -657,8 +674,8 @@ export class RPMSimulator extends Component {
 
             this.m_current_profile = this.m_queued_profiles.shift() ?? null;
 
-            if(this.m_current_profile) {
-                this.m_current_profile.AddTimeOffset(now);
+            if (this.m_current_profile) {
+                this.m_current_profile.AddTimeOffset(now.getTime());
                 this.m_current_profile.m_cursor = 0;
             }
         }
@@ -667,8 +684,8 @@ export class RPMSimulator extends Component {
             // has the user turned on the is_occupied flag?
             if (this.m_is_occupied) {
                 // send appropriate occupancy messages if it is time
-                if (now >= this.m_next_ns_time) {
-                    this.m_next_ns_time += 1000;
+                if (now.getTime() >= this.m_next_ns_time.getTime()) {
+                    this.m_next_ns_time = RPMSimulator.increment_time(this.m_next_ns_time, 1000);
                     let counts = this.generate_neutron_bg();
                     let msg = this.generate_count_msg(
                         ["NS", "NS", "NA"],
@@ -678,10 +695,10 @@ export class RPMSimulator extends Component {
                     );
                     this.say(msg);
                 }
-                if (now >= this.m_next_gs_time) {
-                    this.m_next_gs_time += 200;
+                if (now.getTime() >= this.m_next_gs_time.getTime()) {
+                    this.m_next_gs_time = RPMSimulator.increment_time(this.m_next_gs_time, 200);
                     let counts = this.generate_gamma_bg();
-                    this.scale_counts(counts, 0.2);
+                    RPMSimulator.scale_counts(counts, 0.2);
                     let msg = this.generate_count_msg(
                         ["GS", "GS", "GA"],
                         counts,
@@ -691,53 +708,32 @@ export class RPMSimulator extends Component {
                     this.say(msg);
                 }
             } else {
+                // Not occupied...is it time to generate an occupancy?
                 if (this.m_auto_mode_active && now > this.m_auto_mode_next_occupancy_time) {
                     // prevent another alarm from firing until this one finishes
-                    this.m_auto_mode_next_occupancy_time +=
-                        this.m_auto_mode_interval_seconds * 1000 * 60 * 60 * 24;
-                    let is_gamma = Math.random() <= this.m_auto_mode_gamma_probability;
-                    let is_neutron = Math.random() <= this.m_auto_mode_neutron_probability;
-                    let alarmtype = "OC";
-                    if (is_gamma) {
-                        alarmtype = is_neutron ? "NG" : "GA";
-                    } else if (is_neutron) {
-                        alarmtype = "NA";
-                    }
-                    this.GenerateOccupancy(alarmtype);
+                    this.m_auto_mode_next_occupancy_time = RPMSimulator.future_time(ONE_DAY_IN_MS);
+
+                    this.generate_occupancy();
                 } else {
                     // send a background count if it's time
-                    if (now > this.m_next_background_time) {
-                        this.m_next_background_time += this.m_background_interval;
-                        // if (this.m_clients.length > 0) {
-                        let counts = this.generate_neutron_bg();
-                        let msg = this.generate_count_msg(
-                            ["NB", "NB", "NH"],
-                            counts,
-                            0,
-                            this.m_neutron_high_threshold
-                        );
-                        this.say(msg);
-                        counts = this.generate_gamma_bg();
-                        msg = this.generate_count_msg(
-                            ["GB", "GL", "GH"],
-                            counts,
-                            this.m_gamma_low_threshold,
-                            this.m_gamma_high_threshold
-                        );
-                        this.say(msg);
-                        // }
+                    if (now.getTime() > this.m_next_background_time.getTime()) {
+                        this.m_next_background_time = RPMSimulator.increment_time(this.m_next_background_time, this.m_background_interval_ms);
+
+                        console.log(`Setting m_next_background_time to ${RPMSimulator.format_time(this.m_next_background_time)}`);
+
+                        this.generate_auto_mode_background();
                     }
                 }
             }
         } else {
             // send all pending occupancy messages
-            let counts = this.m_current_profile.GetNextMessage(now);
+            let counts = this.m_current_profile.GetNextMessage(now.getTime());
             let msgs: string[] = [];
             while (counts != null) {
                 let msg = counts.ToString();
                 //this.LogDebug("Sending next profile message: " + msg);
                 msgs.push(msg);
-                counts = this.m_current_profile.GetNextMessage(now);
+                counts = this.m_current_profile.GetNextMessage(now.getTime());
             }
             msgs.forEach(msg => this.say(msg));
             if (this.m_current_profile.IsEOF()) {
@@ -745,19 +741,48 @@ export class RPMSimulator extends Component {
                 //this.LogDebug("    Counts: ", this.m_current_profile.m_counts.length);
                 //this.LogDebug("    Cursor: ", this.m_current_profile.m_cursor);
                 this.m_current_profile = null;
-                this.m_next_background_time = now + 2000;
+                this.m_next_background_time = RPMSimulator.future_time(2000);
                 if (this.m_auto_mode_active) {
-                    let delay = this.m_auto_mode_interval_seconds * 1000;
-                    this.m_auto_mode_next_occupancy_time = now + delay;
-                    console.log(
-                        this.m_name +
-                        ": next alarm in " +
-                        this.m_auto_mode_interval_seconds +
-                        " seconds"
-                    );
+                    const delay = this.m_auto_mode_interval_seconds * 1000;
+                    this.m_auto_mode_next_occupancy_time = RPMSimulator.future_time(delay);
+                    console.log(`${this.m_name}: delaying ${this.m_auto_mode_interval_seconds} seconds -- next occupancy at ${RPMSimulator.format_time(this.m_auto_mode_next_occupancy_time)}`);
                 }
             }
         }
+    }
+
+    private generate_auto_mode_background() {
+        // if (this.m_clients.length > 0) {
+        let counts: number[] = this.generate_neutron_bg();
+        let msg = this.generate_count_msg(
+            ["NB", "NB", "NH"],
+            counts,
+            0,
+            this.m_neutron_high_threshold
+        );
+        this.say(msg);
+        counts = this.generate_gamma_bg();
+        msg = this.generate_count_msg(
+            ["GB", "GL", "GH"],
+            counts,
+            this.m_gamma_low_threshold,
+            this.m_gamma_high_threshold
+        );
+        this.say(msg);
+        // }
+    }
+
+    private generate_occupancy() {
+        let is_gamma = Math.random() <= this.m_auto_mode_gamma_probability;
+        let is_neutron = Math.random() <= this.m_auto_mode_neutron_probability;
+
+        let alarmtype: AlarmType = "OC";
+        if (is_gamma) {
+            alarmtype = is_neutron ? "NG" : "GA";
+        } else if (is_neutron) {
+            alarmtype = "NA";
+        }
+        this.m_owner.GenerateAlarm(alarmtype);
     }
 
     //------------------------------------------------------------
@@ -780,7 +805,7 @@ export class RPMSimulator extends Component {
     //------------------------------------------------------------
     /** Generate a gamma or neutron count message */
     private generate_count_msg(
-        msgtypes: string[],
+        msgtypes: [AlarmType, AlarmType, AlarmType],
         counts: number[],
         low_threshold: number,
         high_threshold: number
@@ -792,20 +817,10 @@ export class RPMSimulator extends Component {
         counts.forEach(count => {
             if (count > high_threshold) msgindex = 2;
         });
-        let parts = [msgtypes[msgindex]];
-        for (let count of counts) parts.push(this.pad_number(count, 6));
+        let parts: string[] = [msgtypes[msgindex]];
+        for (let count of counts)
+            parts.push(RPMSimulator.pad_number(count, 6));
         return parts.join(",");
-    }
-
-    private generate_bg(bgval: number, weights: number[], randomization: number): number[] {
-        // console.log("RPMSimulator.generate_bg  bgval:" + bgval + "  weights:" + weights);
-        let counts: number[] = weights.map(weight => {
-            let count = bgval * weight;
-            count = Math.round(count + count * (0.5 - Math.random()) * randomization);
-            return count;
-        });
-        // console.log("generate_bg: ", counts);
-        return counts;
     }
 
     private generate_gamma_bg(): number[] {
@@ -821,9 +836,8 @@ export class RPMSimulator extends Component {
                 counts[i] = Math.max(0, Math.round(scale * counts[i]));
             }
         } else {
-            counts = this.generate_bg(
+            counts = this.m_gamma_distribution.generate_bg(
                 this.m_gamma_background * 4, // m_gamma_background is the level for a single detector
-                this.m_gamma_distribution,
                 this.m_gamma_count_randomization
             );
         }
@@ -831,7 +845,7 @@ export class RPMSimulator extends Component {
     }
 
     private generate_neutron_bg(): number[] {
-        let counts;
+        let counts: number[];
         if (this.m_current_neutron_counts?.length > 0) {
             counts = this.m_current_neutron_counts.slice(0);
             // console.log("generate_neutron_bg: ", counts);
@@ -842,9 +856,8 @@ export class RPMSimulator extends Component {
                 counts[i] = Math.max(0, Math.round(scale * counts[i]));
             }
         } else {
-            counts = this.generate_bg(
+            counts = this.m_neutron_distribution.generate_bg(
                 this.m_neutron_background * 4,
-                this.m_neutron_distribution,
                 this.m_neutron_count_randomization
             );
         }
@@ -860,33 +873,51 @@ export class RPMSimulator extends Component {
     // param text:  the text to send
     //
     //------------------------------------------------------------
-    /** send some text to every connected client */
     private say(text: string): void {
         if (this.m_is_paused)
             return;
 
-        console.log(`RPMSimulator.say: ${this.Name} -- '${text}'`);
+        console.log(`RPMSimulator.say (${RPMSimulator.current_timestamp()}) -- ${this.Name}: '${text}'`);
 
         window.electronAPI.sendData(this.m_rpm_port, this.m_ipaddr, text);
 
         this.m_most_recent_message = text;
     }
 
-    private current_time(): number {
-        return new Date().getTime();
+    private send_gx(): void {
+        this.m_gx_counter += 1;
+        const counter = RPMSimulator.pad_number(this.m_gx_counter, 6);
+        this.say(`GX,${counter},004741,000000,000000`);
     }
 
-    private scale_counts(counts: number[], scaler: number) {
+    private static future_time(futureMS: number): Date {
+        const future = new Date().getTime() + futureMS;
+        return new Date(future);
+    }
+
+    private static increment_time(time: Date, ms: number): Date {
+        return new Date(time.getTime() + ms);
+    }
+
+    private static format_time(date: Date): string {
+        const hour = RPMSimulator.pad_number(date.getHours(), 2);
+        const min = RPMSimulator.pad_number(date.getMinutes(), 2);
+        const sec = RPMSimulator.pad_number(date.getSeconds(), 2);
+        const ms = RPMSimulator.pad_number(date.getMilliseconds(), 3);
+
+        return `${hour}:${min}:${sec}.${ms}`;
+    }
+
+    private static current_timestamp(): string {
+        return this.format_time(new Date());
+    }
+
+    private static scale_counts(counts: number[], scaler: number) {
         for (let i = 0; i < counts.length; i++) counts[i] = Math.round(counts[i] * scaler);
     }
 
-    private send_gx(): void {
-        this.m_gx_counter += 1;
-        let counter = this.pad_number(this.m_gx_counter, 6);
-        this.say("GX," + counter + ",004741,000000,000000\r\n");
-    }
-
-    private pad_number(val: number, digits: number): string {
-        return ("00000000000000000000" + val).substr(-digits);
+    private static pad_number(val: number, digits: number): string {
+        return String(val).padStart(digits, '0');
+        // return ("00000000000000000000" + val).substr(-digits);
     }
 }

@@ -161,7 +161,7 @@ export class SettingsManager {
         to.DefaultNHThreshold = from.DefaultNHThreshold;
         to.DefaultAutoGammaProbability = from.DefaultAutoGammaProbability;
         to.DefaultAutoNeutronProbability = from.DefaultAutoNeutronProbability;
-        to.DefaultAutoInterval = from.DefaultAutoInterval;
+        to.DefaultAutoIntervalSeconds = from.DefaultAutoIntervalSeconds;
         to.LogLevel = from.LogLevel;
         to.LogFilename = from.LogFilename;
         to.Lanes = from.Lanes.slice(0);

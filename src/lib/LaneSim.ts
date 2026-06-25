@@ -1,16 +1,17 @@
 import { RPMProfile } from "./RPMProfile";
 import { ProfileGenerator2 } from "./ProfileGenerator2";
-import { RPMSimulator } from "./RPMSimulator";
+import { AlarmType, RPMSimulator } from "./RPMSimulator";
 import { ISettings } from "./ISettings";
 import { ILaneSettings } from "./ILaneSettings";
 import { Logger, ELogLevel } from "./Logger";
+import { LaneSettings } from "./LaneSettings";
 
 var NextLaneID = 1;
 
 export class LaneSimulator {
     m_is_paused: boolean = false;
 
-    Settings: ILaneSettings;
+    Settings: LaneSettings;
     Name: string;
     IsEnabled: boolean = false;
     IsRunning: boolean = false;
@@ -32,8 +33,8 @@ export class LaneSimulator {
             this.RPM.IsPaused = val;
     }
 
-    constructor(settings: ILaneSettings, canvas: HTMLCanvasElement) {
-        this.Log = new Logger(settings.LaneName, ELogLevel.LOG_INFO);
+    constructor(settings: LaneSettings, canvas: HTMLCanvasElement) {
+        this.Log = new Logger(settings.LaneName, ELogLevel.LOG_DEBUG);
         console.log("Creating LaneSimulator", settings);
         this.Settings = settings;
         this.CanvasElement = canvas;
@@ -45,6 +46,10 @@ export class LaneSimulator {
         this.create_rpm(settings);
     }
 
+    public UpdateSettings(settings: LaneSettings): void {
+        this.Settings = settings;
+    }
+
     public Clone() {
         let result = new LaneSimulator(this.Settings, this.CanvasElement);
         return result;
@@ -53,16 +58,12 @@ export class LaneSimulator {
     public static CreateLanes(settings: ISettings, canvas: HTMLCanvasElement): LaneSimulator[] {
         let result: LaneSimulator[] = [];
         for (let lanedef of settings.Lanes) {
-            let lane = new LaneSimulator(lanedef, canvas);
+            const laneSetting = new LaneSettings(lanedef);
+            let lane = new LaneSimulator(laneSetting, canvas);
             result.push(lane);
         }
         return result;
     }
-
-    // public UpdateGlobalSettings(global_settings: Settings) {
-    //     console.log("LaneSim.UpdateGlobalSettings: ", global_settings);
-    //     this.RPM.UpdateGlobalSettings(global_settings.GammaBG, global_settings.NeutronBG, global_settings.GammaNSigma, global_settings.NeutronThreshold);
-    // }
 
     public Start(): void {
         console.log(
@@ -92,8 +93,8 @@ export class LaneSimulator {
     }
 
     public GenerateRPMData(
-        alarmtype: string,
-        duration: number,
+        alarmtype: AlarmType,
+        durationSeconds: number,
         save: boolean,
         algorithm: string = "computed"
     ): RPMProfile {
@@ -108,13 +109,11 @@ export class LaneSimulator {
                     this.RPM.m_neutron_threshold + Math.random() * this.RPM.m_neutron_threshold;
             //console.log("RPM n-sigma: " + this.RPM.m_gamma_nsigma);
             //console.log("Model n-sigma: " + gamma_nsigma);
-            this.Log.Debug(
-                "Generating " + alarmtype + " alarm in " + this.Name + " with duration " + duration
-            );
+            this.Log.Debug(`Generating ${alarmtype} alarm in ${this.Name} with duration ${durationSeconds} seconds`);
             let model = {
                 type: alarmtype,
-                duration: duration,
-                stddev: Math.random() * duration * 1.0,
+                duration: durationSeconds,
+                stddev: Math.random() * durationSeconds * 1.0,
                 time_increment: 1,
                 humps: 1,
                 xshift: 1.0 - Math.random() * 2.0,
@@ -127,26 +126,27 @@ export class LaneSimulator {
         return result;
     }
 
-    public GenerateAlarm(alarmtype: string, algorithm: string = "computed"): void {
+    public GenerateAlarm(alarmtype: AlarmType, algorithm: string = "computed"): void {
         if (this.RPM) {
-            let duration = 7.0 + Math.random() * 10; // 7 to 17 second duration
-            // this.Log.Debug("Checking " + this.Cameras.length + " cameras");
-            if (algorithm == "files") this.RPM.GenerateFromFile(alarmtype);
-            else this.GenerateRPMData(alarmtype, duration, true, algorithm);
+            if (algorithm == "files")
+                this.RPM.GenerateFromFile(alarmtype);
+            else {
+                // Duration is at least minimum seconds, plus a random amount between minimum and maximum seconds
+                let duration = this.Settings.AutoMinOccupancyDurationSeconds +
+                    (Math.random() * (this.Settings.AutoMaxOccupancyDurationSeconds - this.Settings.AutoMinOccupancyDurationSeconds));
+                
+                console.log(`Generating alarm of ${duration} seconds (min ${this.Settings.AutoMinOccupancyDurationSeconds}, max ${this.Settings.AutoMaxOccupancyDurationSeconds})`);
+
+                this.GenerateRPMData(alarmtype, duration, true, algorithm);
+            }
         } else {
             console.log(this.Name + " is not active");
         }
     }
 
     public Poll(): void {
-        let result = false;
         this.OccupancyState = this.RPM ? this.RPM.OccupancyState() : "";
         this.Settings.OccupancyState = this.OccupancyState;
-        // if (this.RPM && this.RPM.m_clients.length > 0) {
-        //     this.Settings.ClientCount = this.RPM.m_clients.length;
-        // } else {
-        //     this.Settings.ClientCount = 0;
-        // }
     }
 
     public SetAutoMode(val: boolean): void {
